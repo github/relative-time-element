@@ -1,3 +1,6 @@
 {
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "bower": "~1.3.2"
+  }
 }

@@ -1,0 +1,12 @@
+{
+  "name": "local-time-element",
+  "version": "0.0.0",
+  "private": true,
+  "main": "local-time-element.js",
+  "ignore": [
+    ".*",
+    "package.json"
+  ],
+  "devDependencies": {
+  }
+}
