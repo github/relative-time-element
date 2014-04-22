@@ -14,5 +14,8 @@
   "trailing": true,
   "boss": true,
   "eqnull": true,
-  "browser": true
+  "browser": true,
+  "globals": {
+    "moment": false
+  }
 }

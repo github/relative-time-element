@@ -30,6 +30,8 @@
 // ```
 //
 (function() {
+  'use strict';
+
   var LocalTimePrototype, attachedInstances, formatFrom, ldml, parseISO8601, strftime, updateFromNowLocalTimeElements;
 
   ldml = {
@@ -57,7 +59,7 @@
     momentFormat = format;
     for (key in ldml) {
       value = ldml[key];
-      momentFormat = momentFormat.replace("%" + key, value);
+      momentFormat = momentFormat.replace('%' + key, value);
     }
     return moment(date).format(momentFormat);
   };
@@ -89,10 +91,10 @@
       from = Date.now();
     }
     text = moment(to).from(moment(from));
-    if (text === "a few seconds ago") {
-      return "just now";
-    } else if (text === "in a few seconds") {
-      return "just now";
+    if (text === 'a few seconds ago') {
+      return 'just now';
+    } else if (text === 'in a few seconds') {
+      return 'just now';
     } else {
       return text;
     }
