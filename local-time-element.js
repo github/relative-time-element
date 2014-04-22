@@ -26,6 +26,7 @@
 //
 (function() {
   'use strict';
+  /* global moment */
 
   var ldml = {
     a: 'ddd',
