@@ -27,9 +27,7 @@
 (function() {
   'use strict';
 
-  var LocalTimePrototype, attachedInstances, formatFrom, ldml, parseISO8601, strftime, updateFromNowLocalTimeElements;
-
-  ldml = {
+  var ldml = {
     a: 'ddd',
     A: 'dddd',
     b: 'MMM',
@@ -49,30 +47,29 @@
     '%': '%'
   };
 
-  strftime = function(date, format) {
-    var key, momentFormat, value;
-    momentFormat = format;
+  function strftime(date, format) {
+    var momentFormat = format;
+    var key, value;
     for (key in ldml) {
       value = ldml[key];
       momentFormat = momentFormat.replace('%' + key, value);
     }
     return moment(date).format(momentFormat);
-  };
+  }
 
   // Internal: Parse ISO8601 String.
   //
   // str - String in ISO8601 format.
   //
   // Returns Moment or null if input is invalid.
-  parseISO8601 = function(str) {
-    var date;
-    date = moment(str, 'YYYY-MM-DDTHH:mm:ssZ');
+  function parseISO8601(str) {
+    var date = moment(str, 'YYYY-MM-DDTHH:mm:ssZ');
     if (date.isValid()) {
       return date.toDate();
     } else {
       return null;
     }
-  };
+  }
 
   // Internal: Format to from range as a relative time.
   //
@@ -80,12 +77,11 @@
   // from - Date (default: Date.now())
   //
   // Returns String.
-  formatFrom = function(to, from) {
-    var text;
+  function formatFrom(to, from) {
     if (from == null) {
       from = Date.now();
     }
-    text = moment(to).from(moment(from));
+    var text = moment(to).from(moment(from));
     if (text === 'a few seconds ago') {
       return 'just now';
     } else if (text === 'in a few seconds') {
@@ -93,13 +89,13 @@
     } else {
       return text;
     }
-  };
+  }
 
   // Internal: Array tracking all elements attached to the document.
-  attachedInstances = [];
+  var attachedInstances = [];
 
   // Public: Exposed as LocalTimeElement.prototype.
-  LocalTimePrototype = Object.create(HTMLElement.prototype);
+  var LocalTimePrototype = Object.create(HTMLElement.prototype);
 
   // Internal: Initialize state.
   //
@@ -118,7 +114,6 @@
   //
   // Returns nothing.
   LocalTimePrototype.attributeChangedCallback = function(attrName, oldValue, newValue) {
-    var text, title;
     if (attrName === 'datetime') {
       this._date = parseISO8601(newValue);
     }
@@ -131,9 +126,12 @@
         this._fromDate = parseISO8601(newValue);
       }
     }
+    var title;
     if (title = this.getFormattedTitle()) {
       this.setAttribute('title', title);
     }
+
+    var text;
     if (text = this.getFormattedDate() || this.getFormattedFromDate()) {
       this.textContent = text;
     }
@@ -154,8 +152,7 @@
   //
   // Returns nothing.
   LocalTimePrototype.detachedCallback = function() {
-    var i;
-    i = attachedInstances.indexOf(this);
+    var i = attachedInstances.indexOf(this);
     if (i !== -1) {
       attachedInstances.splice(i, 1);
     }
@@ -190,15 +187,15 @@
 
   // Internal: Install a timer to refresh all attached local-time elements every
   // minute.
-  updateFromNowLocalTimeElements = function() {
-    var time, _i, _len;
-    for (_i = 0, _len = attachedInstances.length; _i < _len; _i++) {
-      time = attachedInstances[_i];
+  function updateFromNowLocalTimeElements() {
+    var time, i, len;
+    for (i = 0, len = attachedInstances.length; i < len; i++) {
+      time = attachedInstances[i];
       if (time._date && time._fromNowDate) {
         time.textContent = time.getFormattedFromDate();
       }
     }
-  };
+  }
 
   setInterval(updateFromNowLocalTimeElements, 60000);
 
@@ -211,4 +208,4 @@
     prototype: LocalTimePrototype
   });
 
-}).call(this);
+})();
