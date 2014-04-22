@@ -1,4 +1,4 @@
-# <local-time> Element
+# &lt;local-time&gt; Element
 
 ## Development
 
