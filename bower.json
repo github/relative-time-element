@@ -5,6 +5,7 @@
   "main": "local-time-element.js",
   "ignore": [
     ".*",
+    "Makefile",
     "package.json"
   ],
   "devDependencies": {
