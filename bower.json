@@ -3,16 +3,19 @@
   "version": "0.0.0",
   "private": true,
   "main": "local-time-element.js",
-  "ignore": [
-    ".*",
-    "Makefile",
-    "package.json"
-  ],
+  "dependencies": {
+    "moment": "~2.0"
+  },
   "devDependencies": {
     "CustomElements": "0.2.1",
     "es5-basic-shim": "1.0.6",
     "MutationObserver": "0.2.0",
     "qunit": "1.14.0",
     "WeakMap": "0.2.1"
-  }
+  },
+  "ignore": [
+    ".*",
+    "Makefile",
+    "package.json"
+  ]
 }
