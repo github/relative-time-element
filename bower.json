@@ -10,6 +10,7 @@
   ],
   "devDependencies": {
     "CustomElements": "0.2.1",
+    "es5-basic-shim": "1.0.6",
     "MutationObserver": "0.2.0",
     "qunit": "1.14.0",
     "WeakMap": "0.2.1"
