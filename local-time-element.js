@@ -198,7 +198,7 @@
     }
   }
 
-  setInterval(updateFromNowLocalTimeElements, 60000);
+  setInterval(updateFromNowLocalTimeElements, 60 * 1000);
 
   // Public: LocalTimeElement constructor.
   //
