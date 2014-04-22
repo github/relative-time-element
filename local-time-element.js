@@ -1,29 +1,3 @@
-// LocalTime Element
-//
-// Formats date as a localized string or as relative text that auto updates in
-// the user's browser.
-//
-// ### Attributes
-//
-// datetime     - MUST be a ISO8601 String
-// format       - A strftime token String
-// title-format - A strftime token String
-// from         - A String "now" or an ISO8601 string
-//
-// ### Examples
-//
-// ``` html
-// <local-time datetime="<%= created_at.iso8601 %>" format="%m/%d/%y">
-//   <%= created_at.to_date %>
-// </local-time>
-// ```
-//
-// ``` html
-// <local-time datetime="<%= created_at.iso8601 %>" from="now">
-//   <%= created_at.to_date %>
-// </local-time>
-// ```
-//
 (function() {
   'use strict';
   /* global moment */
