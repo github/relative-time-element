@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Polymer &lt;local-time&gt;</title>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/polymer/0.2.2/platform.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/polymer/0.2.2/polymer.js"></script>
+
+  <script src="../bower_components/moment/moment.js"></script>
+  <script src="../local-time-element.js"></script>
+</head>
+<body>
+  <p>
+    Unix epoch in your local time zone:
+    <local-time datetime="1970-01-01T00:00:00.000Z" format="%m/%d/%Y %I:%M%p">
+      Oops! You're browser doesn't support Web Components.
+    </local-time>
+  </p>
+
+  <p>
+    Happened
+    <local-time datetime="1970-01-01T00:00:00.000Z" from=now>
+    </local-time>
+  </p>
+</body>
+</html>
