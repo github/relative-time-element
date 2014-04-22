@@ -17,6 +17,18 @@
   <script src="../local-time-element.js"></script>
 
   <script src="../bower_components/qunit/qunit/qunit.js"></script>
+  <script>
+    var epochLocalYear = new Date(0).getFullYear().toString();
+
+    if (epochLocalYear === '1969') {
+      var epochLocalDate = '1969-12-31';
+      var yearAfterEpochLocalDate = '1970-12-31';
+    } else {
+      var epochLocalDate = '1970-01-01';
+      var yearAfterEpochLocalDate = '1971-01-01';
+    }
+  </script>
   <script src="./test.js"></script>
+  <script src="./title-format.js"></script>
 </body>
 </html>

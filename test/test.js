@@ -1,15 +1,3 @@
-module('LocalTimeElement');
-
-var epochLocalYear = new Date(0).getFullYear().toString();
-
-if (epochLocalYear === '1969') {
-  var epochLocalDate = '1969-12-31';
-  var yearAfterEpochLocalDate = '1970-12-31';
-} else {
-  var epochLocalDate = '1970-01-01';
-  var yearAfterEpochLocalDate = '1971-01-01';
-}
-
 test('create from document.createElement', function() {
   var time;
   time = document.createElement('local-time');
@@ -41,7 +29,7 @@ test('getFormattedDate for datetime and format attributes', function() {
   time = document.createElement('local-time');
   time.setAttribute('datetime', '1970-01-01T00:00:00.000Z');
   time.setAttribute('format', '%Y-%m-%d');
-  return equal(time.getFormattedDate(), epochLocalDate);
+  return equal(time.getFormattedDate(), window.epochLocalDate);
 });
 
 test('ignores elements without a datetime attr', function() {
@@ -69,7 +57,7 @@ test('sets formatted contents to format attribute', function() {
   time = document.createElement('local-time');
   time.setAttribute('datetime', '1970-01-01T00:00:00.000Z');
   time.setAttribute('format', '%Y-%m-%d');
-  return equal(time.textContent, epochLocalDate);
+  return equal(time.textContent, window.epochLocalDate);
 });
 
 test('sets formatted contents when parsed element is upgraded', function() {
@@ -80,7 +68,7 @@ test('sets formatted contents when parsed element is upgraded', function() {
   if ('CustomElements' in window) {
     window.CustomElements.upgradeSubtree(root);
   }
-  return equal(root.children[0].textContent, epochLocalDate);
+  return equal(root.children[0].textContent, window.epochLocalDate);
 });
 
 test('null getFormattedFromDate when datetime missing', function() {
@@ -169,79 +157,4 @@ test('sets relative contents when parsed element is upgraded', function() {
     window.CustomElements.upgradeSubtree(root);
   }
   return equal(root.children[0].textContent, 'just now');
-});
-
-test('null getFormattedTitle if title-format is missing', function() {
-  var time;
-  time = document.createElement('local-time');
-  time.setAttribute('datetime', '1970-01-01T00:00:00.000Z');
-  return equal(time.getFormattedTitle(), null);
-});
-
-test('null getFormattedTitle if datetime is missing', function() {
-  var time;
-  time = document.createElement('local-time');
-  time.setAttribute('title-format', '%Y-%m-%d %H:%M');
-  return equal(time.getFormattedTitle(), null);
-});
-
-test('getFormattedTitle with title-formatted datetime', function() {
-  var time;
-  time = document.createElement('local-time');
-  time.setAttribute('datetime', '1970-01-01T00:00:00.000Z');
-  time.setAttribute('title-format', '%Y-%m-%d');
-  return equal(time.getFormattedTitle(), epochLocalDate);
-});
-
-test('skips setting a title if title-format is missing', function() {
-  var time;
-  time = document.createElement('local-time');
-  time.setAttribute('datetime', '1970-01-01T00:00:00.000Z');
-  return equal(time.getAttribute('title'), null);
-});
-
-test('skips setting a title if datetime is missing', function() {
-  var time;
-  time = document.createElement('local-time');
-  time.setAttribute('title-format', '%Y-%m-%d %H:%M');
-  return equal(time.getAttribute('title'), null);
-});
-
-test('sets the title title-formatted datetime', function() {
-  var time;
-  time = document.createElement('local-time');
-  time.setAttribute('datetime', '1970-01-01T00:00:00.000Z');
-  time.setAttribute('title-format', '%Y-%m-%d');
-  return equal(time.getAttribute('title'), epochLocalDate);
-});
-
-test('set the title when parsed element is upgraded', function() {
-  var root;
-  root = document.createElement('div');
-  root.innerHTML = '<local-time datetime="1970-01-01T00:00:00.000Z"' +
-    ' title-format="%Y-%m-%d"></local-time>';
-  if ('CustomElements' in window) {
-    window.CustomElements.upgradeSubtree(root);
-  }
-  return equal(root.children[0].getAttribute('title'), epochLocalDate);
-});
-
-test('updates title if title-formatted changes', function() {
-  var time;
-  time = document.createElement('local-time');
-  time.setAttribute('datetime', '1970-01-01T00:00:00.000Z');
-  time.setAttribute('title-format', '%Y-%m-%d');
-  equal(time.getAttribute('title'), epochLocalDate);
-  time.setAttribute('title-format', '%Y');
-  return equal(time.getAttribute('title'), epochLocalYear);
-});
-
-test('updates title if datetime changes', function() {
-  var time;
-  time = document.createElement('local-time');
-  time.setAttribute('datetime', '1970-01-01T00:00:00.000Z');
-  time.setAttribute('title-format', '%Y-%m-%d');
-  equal(time.getAttribute('title'), epochLocalDate);
-  time.setAttribute('datetime', '1971-01-01T00:00:00.000Z');
-  return equal(time.getAttribute('title'), yearAfterEpochLocalDate);
 });
