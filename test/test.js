@@ -75,7 +75,8 @@ test('sets formatted contents to format attribute', function() {
 test('sets formatted contents when parsed element is upgraded', function() {
   var root;
   root = document.createElement('div');
-  root.innerHTML = '<local-time datetime=\'1970-01-01T00:00:00.000Z\' format=\'%Y-%m-%d\'>\n</local-time>';
+  root.innerHTML = '<local-time datetime="1970-01-01T00:00:00.000Z" ' +
+    'format="%Y-%m-%d"></local-time>';
   if ('CustomElements' in window) {
     window.CustomElements.upgradeSubtree(root);
   }
@@ -124,7 +125,8 @@ test('sets contents to duration between from', function() {
 test('sets duration contents when parsed element is upgraded', function() {
   var root;
   root = document.createElement('div');
-  root.innerHTML = '<local-time datetime=\'1970-01-01T00:00:00.000Z\'\n            from=\'1971-01-01T00:00:00.000Z\'>\n</local-time>';
+  root.innerHTML = '<local-time datetime="1970-01-01T00:00:00.000Z"' +
+    ' from="1971-01-01T00:00:00.000Z"></local-time>';
   if ('CustomElements' in window) {
     window.CustomElements.upgradeSubtree(root);
   }
@@ -162,7 +164,7 @@ test('sets relative contents when parsed element is upgraded', function() {
   var now, root;
   now = new Date(Date.now() + 3000).toISOString();
   root = document.createElement('div');
-  root.innerHTML = '<local-time datetime=\'' + now + '\' from=now>\n</local-time>';
+  root.innerHTML = '<local-time datetime="'+now+'" from=now></local-time>';
   if ('CustomElements' in window) {
     window.CustomElements.upgradeSubtree(root);
   }
@@ -216,7 +218,8 @@ test('sets the title title-formatted datetime', function() {
 test('set the title when parsed element is upgraded', function() {
   var root;
   root = document.createElement('div');
-  root.innerHTML = '<local-time datetime=\'1970-01-01T00:00:00.000Z\'\n            title-format=\'%Y-%m-%d\'>\n</local-time>';
+  root.innerHTML = '<local-time datetime="1970-01-01T00:00:00.000Z"' +
+    ' title-format="%Y-%m-%d"></local-time>';
   if ('CustomElements' in window) {
     window.CustomElements.upgradeSubtree(root);
   }
