@@ -9,8 +9,9 @@
     "package.json"
   ],
   "devDependencies": {
-    "CustomElements": "~0.2.0",
-    "MutationObserver": "~0.2.0",
-    "WeakMap": "~0.2.0"
+    "CustomElements": "0.2.1",
+    "MutationObserver": "0.2.0",
+    "qunit": "1.14.0",
+    "WeakMap": "0.2.1"
   }
 }

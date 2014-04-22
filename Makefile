@@ -1,5 +1,5 @@
 lint: node_modules/
-	./node_modules/.bin/jshint *.js
+	./node_modules/.bin/jshint *.js test/*.js
 
 bower_components/: node_modules/
 	./node_modules/.bin/bower install
