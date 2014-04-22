@@ -15,7 +15,10 @@
   },
   "ignore": [
     ".*",
+    ".md",
+    "examples/",
     "Makefile",
-    "package.json"
+    "package.json",
+    "test/"
   ]
 }
