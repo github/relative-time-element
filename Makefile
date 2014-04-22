@@ -1,4 +1,4 @@
-test: node_modules/ lint
+test: node_modules/ bower_components/ lint
 	./node_modules/.bin/phantomjs ./test/runner.js ./test/test.html
 
 lint: node_modules/
@@ -10,4 +10,7 @@ bower_components/: node_modules/
 node_modules/:
 	npm install
 
-.PHONY: lint test
+clean:
+	rm -rf ./bower_components ./node_modules
+
+.PHONY: lint test clean
