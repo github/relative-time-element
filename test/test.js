@@ -93,15 +93,6 @@ test('getFormattedFromDate for datetime and from attributes', function() {
   return equal(time.getFormattedFromDate(), 'a year ago');
 });
 
-test('getFormattedFromDate for datetime and from=now attributes', function() {
-  var minsAgo, time;
-  minsAgo = new Date(Date.now() - 180000).toISOString();
-  time = document.createElement('local-time');
-  time.setAttribute('datetime', minsAgo);
-  time.setAttribute('from', 'now');
-  return equal(time.getFormattedFromDate(), '3 minutes ago');
-});
-
 test('sets contents to duration between from', function() {
   var time;
   time = document.createElement('local-time');
@@ -119,42 +110,4 @@ test('sets duration contents when parsed element is upgraded', function() {
     window.CustomElements.upgradeSubtree(root);
   }
   return equal(root.children[0].textContent, 'a year ago');
-});
-
-test('rewrites from now past datetime to minutes ago', function() {
-  var now, time;
-  now = new Date(Date.now() - 180000).toISOString();
-  time = document.createElement('local-time');
-  time.setAttribute('datetime', now);
-  time.setAttribute('from', 'now');
-  return equal(time.textContent, '3 minutes ago');
-});
-
-test('rewrites from now a few seconds ago to just now', function() {
-  var now, time;
-  now = new Date().toISOString();
-  time = document.createElement('local-time');
-  time.setAttribute('datetime', now);
-  time.setAttribute('from', 'now');
-  return equal(time.textContent, 'just now');
-});
-
-test('rewrites from now a few seconds from now to just now', function() {
-  var now, time;
-  now = new Date(Date.now() + 3000).toISOString();
-  time = document.createElement('local-time');
-  time.setAttribute('datetime', now);
-  time.setAttribute('from', 'now');
-  return equal(time.textContent, 'just now');
-});
-
-test('sets relative contents when parsed element is upgraded', function() {
-  var now, root;
-  now = new Date(Date.now() + 3000).toISOString();
-  root = document.createElement('div');
-  root.innerHTML = '<local-time datetime="'+now+'" from=now></local-time>';
-  if ('CustomElements' in window) {
-    window.CustomElements.upgradeSubtree(root);
-  }
-  return equal(root.children[0].textContent, 'just now');
 });
