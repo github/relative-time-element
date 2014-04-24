@@ -1,5 +1,5 @@
 test: node_modules/ bower_components/ lint
-	./node_modules/.bin/phantomjs ./test/runner.js ./test/test.html
+	node ./node_modules/.bin/node-qunit-phantomjs ./test/test.html
 
 lint: node_modules/
 	./node_modules/.bin/jshint *.js test/*.js
