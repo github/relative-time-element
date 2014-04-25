@@ -49,13 +49,10 @@
   // Internal: Format to from range as a relative time.
   //
   // to - Date
-  // from - Date (default: Date.now())
+  // from - Date
   //
   // Returns String.
   function formatFrom(to, from) {
-    if (from == null) {
-      from = Date.now();
-    }
     var text = moment(to).from(moment(from));
     if (text === 'a few seconds ago') {
       return 'just now';
@@ -89,7 +86,7 @@
   //
   // Returns nothing.
   function checkNowElement(time) {
-    if (time._attached && time._date && time._fromNowDate) {
+    if (time._attached && time._date && time._fromDate) {
       nowElements.push(time);
     } else {
       var i = nowElements.indexOf(time);
@@ -136,13 +133,7 @@
       this._date = parseISO8601(newValue);
     }
     if (attrName === 'from') {
-      if (newValue === 'now') {
-        this._fromNowDate = true;
-        this._fromDate = null;
-      } else {
-        this._fromNowDate = false;
-        this._fromDate = parseISO8601(newValue);
-      }
+      this._fromDate = true;
       checkNowElement(this);
     }
     var title;
@@ -190,7 +181,7 @@
   // Returns String or null.
   LocalTimePrototype.getFormattedFromDate = function() {
     if (this._date && this.hasAttribute('from')) {
-      return formatFrom(this._date, this._fromDate);
+      return formatFrom(this._date, new Date());
     }
   };
 
