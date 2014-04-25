@@ -76,7 +76,7 @@
     var time, i, len;
     for (i = 0, len = nowElements.length; i < len; i++) {
       time = nowElements[i];
-      time.textContent = time.getFormattedFromDate();
+      time.textContent = time.getFormattedDate();
     }
   }
 
@@ -86,7 +86,7 @@
   //
   // Returns nothing.
   function checkNowElement(time) {
-    if (time._attached && time._date && time._fromDate) {
+    if (time._attached && time._date && time._relativeDate) {
       nowElements.push(time);
     } else {
       var i = nowElements.indexOf(time);
@@ -120,8 +120,8 @@
     if (value = this.getAttribute('datetime')) {
       this.attributeChangedCallback('datetime', null, value);
     }
-    if (value = this.getAttribute('from')) {
-      this.attributeChangedCallback('from', null, value);
+    if (value = this.getAttribute('format')) {
+      this.attributeChangedCallback('format', null, value);
     }
   };
 
@@ -132,8 +132,12 @@
     if (attrName === 'datetime') {
       this._date = parseISO8601(newValue);
     }
-    if (attrName === 'from') {
-      this._fromDate = true;
+    if (attrName === 'format') {
+      if (newValue === 'relative') {
+        this._relativeDate = true;
+      } else {
+        this._relativeDate = false;
+      }
       checkNowElement(this);
     }
     var title;
@@ -142,7 +146,7 @@
     }
 
     var text;
-    if (text = this.getFormattedDate() || this.getFormattedFromDate()) {
+    if (text = this.getFormattedDate()) {
       this.textContent = text;
     }
   };
@@ -172,16 +176,11 @@
   // Returns String or null.
   LocalTimePrototype.getFormattedDate = function() {
     if (this._date && this.hasAttribute('format')) {
-      return strftime(this._date, this.getAttribute('format'));
-    }
-  };
-
-  // Public: Get formatted from.
-  //
-  // Returns String or null.
-  LocalTimePrototype.getFormattedFromDate = function() {
-    if (this._date && this.hasAttribute('from')) {
-      return formatFrom(this._date, new Date());
+      if (this.getAttribute('format') === 'relative') {
+        return formatFrom(this._date, new Date());
+      } else {
+        return strftime(this._date, this.getAttribute('format'));
+      }
     }
   };
 
