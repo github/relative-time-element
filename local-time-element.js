@@ -66,8 +66,51 @@
     }
   }
 
-  // Internal: Array tracking all elements attached to the document.
-  var attachedInstances = [];
+  // Internal: Array tracking all elements attached to the document that need
+  // to be updated every minute.
+  var nowElements = [];
+
+  // Internal: Timer ID for `updateNowElements` interval.
+  var updateNowElementsId;
+
+  // Internal: Install a timer to refresh all attached local-time elements every
+  // minute.
+  function updateNowElements() {
+    var time, i, len;
+    for (i = 0, len = nowElements.length; i < len; i++) {
+      time = nowElements[i];
+      time.textContent = time.getFormattedFromDate();
+    }
+  }
+
+  // Internal: Add/remove local-time element to now elements live element list.
+  //
+  // time - LocalTimeElement
+  //
+  // Returns nothing.
+  function checkNowElement(time) {
+    if (time._attached && time._date && time._fromNowDate) {
+      nowElements.push(time);
+    } else {
+      var i = nowElements.indexOf(time);
+      if (i !== -1) {
+        nowElements.splice(i, 1);
+      }
+    }
+
+    if (nowElements.length) {
+      if (!updateNowElementsId) {
+        updateNowElements();
+        updateNowElementsId = setInterval(updateNowElements, 60 * 1000);
+      }
+    } else {
+      if (updateNowElementsId) {
+        clearInterval(updateNowElementsId);
+        updateNowElementsId = null;
+      }
+    }
+  }
+
 
   // Public: Exposed as LocalTimeElement.prototype.
   var LocalTimePrototype = Object.create(HTMLElement.prototype);
@@ -100,6 +143,7 @@
         this._fromNowDate = false;
         this._fromDate = parseISO8601(newValue);
       }
+      checkNowElement(this);
     }
     var title;
     if (title = this.getFormattedTitle()) {
@@ -118,7 +162,8 @@
   //
   // Returns nothing.
   LocalTimePrototype.attachedCallback = function() {
-    attachedInstances.push(this);
+    this._attached = true;
+    checkNowElement(this);
   };
 
   // Internal: Run detached from document hooks.
@@ -127,10 +172,8 @@
   //
   // Returns nothing.
   LocalTimePrototype.detachedCallback = function() {
-    var i = attachedInstances.indexOf(this);
-    if (i !== -1) {
-      attachedInstances.splice(i, 1);
-    }
+    this._attached = false;
+    checkNowElement(this);
   };
 
   // Public: Get formatted datetime.
@@ -159,20 +202,6 @@
       return strftime(this._date, this.getAttribute('title-format'));
     }
   };
-
-  // Internal: Install a timer to refresh all attached local-time elements every
-  // minute.
-  function updateFromNowLocalTimeElements() {
-    var time, i, len;
-    for (i = 0, len = attachedInstances.length; i < len; i++) {
-      time = attachedInstances[i];
-      if (time._date && time._fromNowDate) {
-        time.textContent = time.getFormattedFromDate();
-      }
-    }
-  }
-
-  setInterval(updateFromNowLocalTimeElements, 60 * 1000);
 
   // Public: LocalTimeElement constructor.
   //
