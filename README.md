@@ -70,4 +70,4 @@ Most of this implementation is based on Basecamp's [local_time](https://github.c
 
 [Moment.js](http://momentjs.com/) is a popular date parsing and timeago JS library.
 
-@rmm5t's (jquery-timeago)[https://github.com/rmm5t/jquery-timeago] is one of the olds timeago in words JS plugins.
+@rmm5t's [jquery-timeago](https://github.com/rmm5t/jquery-timeago) is one of the olds timeago in words JS plugins.
