@@ -49,13 +49,10 @@
   // Internal: Format to from range as a relative time.
   //
   // to - Date
-  // from - Date (default: Date.now())
+  // from - Date
   //
   // Returns String.
   function formatFrom(to, from) {
-    if (from == null) {
-      from = Date.now();
-    }
     var text = moment(to).from(moment(from));
     if (text === 'a few seconds ago') {
       return 'just now';
@@ -79,7 +76,7 @@
     var time, i, len;
     for (i = 0, len = nowElements.length; i < len; i++) {
       time = nowElements[i];
-      time.textContent = time.getFormattedFromDate();
+      time.textContent = time.getFormattedDate();
     }
   }
 
@@ -89,7 +86,7 @@
   //
   // Returns nothing.
   function checkNowElement(time) {
-    if (time._attached && time._date && time._fromNowDate) {
+    if (time._attached && time._date && time._relativeDate) {
       nowElements.push(time);
     } else {
       var i = nowElements.indexOf(time);
@@ -123,8 +120,8 @@
     if (value = this.getAttribute('datetime')) {
       this.attributeChangedCallback('datetime', null, value);
     }
-    if (value = this.getAttribute('from')) {
-      this.attributeChangedCallback('from', null, value);
+    if (value = this.getAttribute('format')) {
+      this.attributeChangedCallback('format', null, value);
     }
   };
 
@@ -135,13 +132,11 @@
     if (attrName === 'datetime') {
       this._date = parseISO8601(newValue);
     }
-    if (attrName === 'from') {
-      if (newValue === 'now') {
-        this._fromNowDate = true;
-        this._fromDate = null;
+    if (attrName === 'format') {
+      if (newValue === 'relative') {
+        this._relativeDate = true;
       } else {
-        this._fromNowDate = false;
-        this._fromDate = parseISO8601(newValue);
+        this._relativeDate = false;
       }
       checkNowElement(this);
     }
@@ -151,7 +146,7 @@
     }
 
     var text;
-    if (text = this.getFormattedDate() || this.getFormattedFromDate()) {
+    if (text = this.getFormattedDate()) {
       this.textContent = text;
     }
   };
@@ -181,16 +176,11 @@
   // Returns String or null.
   LocalTimePrototype.getFormattedDate = function() {
     if (this._date && this.hasAttribute('format')) {
-      return strftime(this._date, this.getAttribute('format'));
-    }
-  };
-
-  // Public: Get formatted from.
-  //
-  // Returns String or null.
-  LocalTimePrototype.getFormattedFromDate = function() {
-    if (this._date && this.hasAttribute('from')) {
-      return formatFrom(this._date, this._fromDate);
+      if (this.getAttribute('format') === 'relative') {
+        return formatFrom(this._date, new Date());
+      } else {
+        return strftime(this._date, this.getAttribute('format'));
+      }
     }
   };
 
