@@ -32,20 +32,6 @@
     return moment(date).format(momentFormat);
   }
 
-  // Internal: Parse ISO8601 String.
-  //
-  // str - String in ISO8601 format.
-  //
-  // Returns Moment or null if input is invalid.
-  function parseISO8601(str) {
-    var date = moment(str, 'YYYY-MM-DDTHH:mm:ssZ');
-    if (date.isValid()) {
-      return date.toDate();
-    } else {
-      return null;
-    }
-  }
-
   // Internal: Format to from range as a relative time.
   //
   // to - Date
@@ -130,7 +116,7 @@
   // Returns nothing.
   LocalTimePrototype.attributeChangedCallback = function(attrName, oldValue, newValue) {
     if (attrName === 'datetime') {
-      this._date = parseISO8601(newValue);
+      this._date = moment(Date.parse(newValue));
     }
     if (attrName === 'format') {
       if (newValue === 'relative') {
