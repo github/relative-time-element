@@ -164,7 +164,7 @@
         var min = Math.round(sec / 60);
         var hr = Math.round(min / 60);
         if (ms < 0) {
-          return null;
+          return "just now";
         } else if (sec < 10) {
           return "just now";
         } else if (sec < 45) {
