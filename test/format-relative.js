@@ -24,6 +24,14 @@ test('rewrites a few seconds ago to just now', function() {
   equal(time.textContent, 'just now');
 });
 
+test('displays future times as just now', function() {
+  var now = new Date(Date.now() + 3000).toISOString();
+  var time = document.createElement('local-time');
+  time.setAttribute('datetime', now);
+  time.setAttribute('format', 'relative');
+  equal(time.textContent, 'just now');
+});
+
 test('sets relative contents when parsed element is upgraded', function() {
   var now = new Date().toISOString();
   var root = document.createElement('div');
