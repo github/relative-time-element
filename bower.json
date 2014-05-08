@@ -4,7 +4,7 @@
   "private": true,
   "main": "local-time-element.js",
   "dependencies": {
-    "moment": "~2.0"
+
   },
   "devDependencies": {
     "CustomElements": "0.2.1",
