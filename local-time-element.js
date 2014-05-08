@@ -142,7 +142,7 @@
       RelativeTime.prototype.toString = function() {
         var ago, day;
         if (ago = this.timeElapsed()) {
-          return "" + ago + " ago";
+          return ago;
         } else if (day = this.relativeWeekday()) {
           return "" + day + " at " + (this.formatTime());
         } else {
@@ -166,17 +166,17 @@
         if (ms < 0) {
           return null;
         } else if (sec < 10) {
-          return "a second";
+          return "just now";
         } else if (sec < 45) {
-          return "" + sec + " seconds";
+          return "" + sec + " seconds ago";
         } else if (sec < 90) {
-          return "a minute";
+          return "a minute ago";
         } else if (min < 45) {
-          return "" + min + " minutes";
+          return "" + min + " minutes ago";
         } else if (min < 90) {
-          return "an hour";
+          return "an hour ago";
         } else if (hr < 24) {
-          return "" + hr + " hours";
+          return "" + hr + " hours ago";
         } else {
           return null;
         }
