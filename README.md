@@ -10,8 +10,6 @@ Available on [Bower](http://bower.io) as **local-time-element**.
 $ bower install local-time-element
 ```
 
-Installing from Bower will also the [Moment.js](http://momentjs.com/) dependency.
-
 This component is built on the upcoming [Web Component](http://webcomponents.github.io/) stack. Specifically, it requires a feature called [Custom Elements](http://www.html5rocks.com/en/tutorials/webcomponents/customelements/). You'll need need to use a Polyfill to get this feature today. Either the [Polymer](http://www.polymer-project.org/) or [X-Tag](http://www.x-tags.org/) frameworks supply a polyfill or you can install the standalone [CustomElements](https://github.com/Polymer/CustomElements) polyfill.
 
 ``` html
@@ -66,7 +64,5 @@ Latest ✔ | Latest ✔ | 9+ ✔ | Latest ✔ | 6.1+ ✔ |
 ## See Also
 
 Most of this implementation is based on Basecamp's [local_time](https://github.com/basecamp/local_time) component. Thanks to @javan for open sourcing that work and allowing for others to build on top of it.
-
-[Moment.js](http://momentjs.com/) is a popular date parsing and timeago JS library.
 
 @rmm5t's [jquery-timeago](https://github.com/rmm5t/jquery-timeago) is one of the olds timeago in words JS plugins.
