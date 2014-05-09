@@ -9,15 +9,15 @@
 <body>
   <p>
     Unix epoch in your local time zone:
-    <local-time datetime="1970-01-01T00:00:00.000Z" format="%m/%d/%Y %I:%M%p">
+    <time is="local-time" datetime="1970-01-01T00:00:00.000Z" format="%m/%d/%Y %I:%M%p">
       Oops! You're browser doesn't support Web Components.
-    </local-time>
+    </time>
   </p>
 
   <p>
     Happened
-    <local-time datetime="1970-01-01T00:00:00.000Z" format=relative>
-    </local-time>
+    <time is="relative-time" datetime="1970-01-01T00:00:00.000Z" title-format="%m/%d/%Y %I:%M%p">
+    </time>
   </p>
 </body>
 </html>
