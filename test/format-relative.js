@@ -1,12 +1,5 @@
 module('relative-time');
 
-test('getFormattedFromDate for datetime and from=now attributes', function() {
-  var minsAgo = new Date(Date.now() - 180000).toISOString();
-  var time = document.createElement('time', 'relative-time');
-  time.setAttribute('datetime', minsAgo);
-  equal(time.getFormattedDate(), '3 minutes ago');
-});
-
 test('rewrites from now past datetime to minutes ago', function() {
   var now = new Date(Date.now() - 180000).toISOString();
   var time = document.createElement('time', 'relative-time');
