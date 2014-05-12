@@ -1,15 +1,27 @@
 module('constructor');
 
-test('create from document.createElement', function() {
+test('create local-time from document.createElement', function() {
   var time = document.createElement('time', 'local-time');
   equal('TIME', time.nodeName);
   equal('local-time', time.getAttribute('is'))
 });
 
-test('create from constructor', function() {
+test('create local-time from constructor', function() {
   var time = new window.LocalTimeElement();
   equal('TIME', time.nodeName);
   equal('local-time', time.getAttribute('is'));
+});
+
+test('create relative-time from document.createElement', function() {
+  var time = document.createElement('time', 'relative-time');
+  equal('TIME', time.nodeName);
+  equal('relative-time', time.getAttribute('is'))
+});
+
+test('create relative-time from constructor', function() {
+  var time = new window.RelativeTimeElement();
+  equal('TIME', time.nodeName);
+  equal('relative-time', time.getAttribute('is'));
 });
 
 test('ignores elements without a datetime attr', function() {
