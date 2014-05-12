@@ -233,7 +233,6 @@
   })();
 
 
-
   // Internal: Array tracking all elements attached to the document that need
   // to be updated every minute.
   var nowElements = [];
@@ -241,7 +240,7 @@
   // Internal: Timer ID for `updateNowElements` interval.
   var updateNowElementsId;
 
-  // Internal: Install a timer to refresh all attached local-time elements every
+  // Internal: Install a timer to refresh all attached relative-time elements every
   // minute.
   function updateNowElements() {
     var time, i, len;
@@ -251,41 +250,90 @@
     }
   }
 
-  // Internal: Add/remove local-time element to now elements live element list.
-  //
-  // time - LocalTimeElement
+  // Internal: Refresh the time element's formatted date when an attribute changes.
   //
   // Returns nothing.
-  function checkNowElement(time) {
-    if (time._attached && time._date && time._relativeDate) {
-      nowElements.push(time);
-    } else {
-      var i = nowElements.indexOf(time);
-      if (i !== -1) {
-        nowElements.splice(i, 1);
-      }
+  function attributeChanged(attrName, oldValue, newValue) {
+    if (attrName === 'datetime') {
+      this._date = new Date(Date.parse(newValue));
     }
 
-    if (nowElements.length) {
-      if (!updateNowElementsId) {
-        updateNowElements();
-        updateNowElementsId = setInterval(updateNowElements, 60 * 1000);
-      }
-    } else {
+    var title = this.getFormattedTitle();
+    if (title) {
+      this.setAttribute('title', title);
+    }
+
+    var text = this.getFormattedDate();
+    if (text) {
+      this.textContent = text;
+    }
+  };
+
+  // Internal: Format the ISO 8601 timestamp according to the strftime format
+  // string assigned to the time element's `title-format` attribute.
+  //
+  // Returns a formatted time String or null if no title-format attribute is set.
+  function formattedTitle() {
+    if (this._date && this.hasAttribute('title-format')) {
+      return LocalTime.strftime(this._date, this.getAttribute('title-format'));
+    }
+  };
+
+
+  var parent = HTMLElement;
+  if ('HTMLTimeElement' in window) {
+    parent = HTMLTimeElement;
+  }
+
+  var RelativeTimePrototype = Object.create(parent.prototype);
+
+  RelativeTimePrototype.attributeChangedCallback = attributeChanged;
+
+  RelativeTimePrototype.getFormattedTitle = formattedTitle;
+
+  RelativeTimePrototype.createdCallback = function() {
+    var value = this.getAttribute('datetime');
+    if (value) {
+      this.attributeChangedCallback('datetime', null, value);
+    }
+  };
+
+  RelativeTimePrototype.getFormattedDate = function() {
+    if (this._date) {
+      return LocalTime.relativeTimeAgo(this._date);
+    }
+  };
+
+  RelativeTimePrototype.attachedCallback = function() {
+    nowElements.push(this);
+
+    if (!updateNowElementsId) {
+      updateNowElements();
+      updateNowElementsId = setInterval(updateNowElements, 60 * 1000);
+    }
+  };
+
+  RelativeTimePrototype.detachedCallback = function() {
+    var ix = nowElements.indexOf(this);
+    if (ix !== -1) {
+      nowElements.splice(ix, 1);
+    }
+
+    if (!nowElements.length) {
       if (updateNowElementsId) {
         clearInterval(updateNowElementsId);
         updateNowElementsId = null;
       }
     }
-  }
+  };
 
 
-  // Public: Exposed as LocalTimeElement.prototype.
-  var LocalTimePrototype = Object.create(HTMLElement.prototype);
+  var LocalTimePrototype = Object.create(parent.prototype);
 
-  // Internal: Initialize state.
-  //
-  // Returns nothing.
+  LocalTimePrototype.attributeChangedCallback = attributeChanged;
+
+  LocalTimePrototype.getFormattedTitle = formattedTitle;
+
   LocalTimePrototype.createdCallback = function() {
     var value;
     if (value = this.getAttribute('datetime')) {
@@ -296,81 +344,32 @@
     }
   };
 
-  // Internal: Update internal state when any attribute changes.
-  //
-  // Returns nothing.
-  LocalTimePrototype.attributeChangedCallback = function(attrName, oldValue, newValue) {
-    if (attrName === 'datetime') {
-      this._date = new Date(Date.parse(newValue));
-    }
-    if (attrName === 'format') {
-      if (newValue === 'relative') {
-        this._relativeDate = true;
-      } else {
-        this._relativeDate = false;
-      }
-      checkNowElement(this);
-    }
-    var title;
-    if (title = this.getFormattedTitle()) {
-      this.setAttribute('title', title);
-    }
-
-    var text;
-    if (text = this.getFormattedDate()) {
-      this.textContent = text;
-    }
-  };
-
-  // Internal: Run attached to document hooks.
-  //
-  // Track element for refreshing every minute.
-  //
-  // Returns nothing.
-  LocalTimePrototype.attachedCallback = function() {
-    this._attached = true;
-    checkNowElement(this);
-  };
-
-  // Internal: Run detached from document hooks.
-  //
-  // Stops tracking element for time refreshes every minute.
-  //
-  // Returns nothing.
-  LocalTimePrototype.detachedCallback = function() {
-    this._attached = false;
-    checkNowElement(this);
-  };
-
-  // Public: Get formatted datetime.
-  //
-  // Returns String or null.
   LocalTimePrototype.getFormattedDate = function() {
     if (this._date && this.hasAttribute('format')) {
-      if (this.getAttribute('format') === 'relative') {
-        return LocalTime.relativeTimeAgo(this._date);
-      } else {
-        return LocalTime.strftime(this._date, this.getAttribute('format'));
-      }
+      return LocalTime.strftime(this._date, this.getAttribute('format'));
     }
   };
 
-  // Public: Get formatted title string
+
+  // Public: RelativeTimeElement constructor.
   //
-  // Returns String or null.
-  LocalTimePrototype.getFormattedTitle = function() {
-    if (this._date && this.hasAttribute('title-format')) {
-      return LocalTime.strftime(this._date, this.getAttribute('title-format'));
-    }
-  };
+  //   var time = new RelativeTimeElement()
+  //   # => <time is="relative-time"></time>
+  //
+  window.RelativeTimeElement = document.registerElement('relative-time', {
+    prototype: RelativeTimePrototype,
+    extends: 'time'
+  });
+
 
   // Public: LocalTimeElement constructor.
   //
-  //   time = new LocalTimeElement
-  //   # => <local-time></local-time>
+  //   var time = new LocalTimeElement()
+  //   # => <time is="local-time"></time>
   //
   window.LocalTimeElement = document.registerElement('local-time', {
-    prototype: LocalTimePrototype
+    prototype: LocalTimePrototype,
+    extends: 'time'
   });
 
 })();
