@@ -250,35 +250,6 @@
     }
   }
 
-  // Internal: Add/remove relative-time element to now elements live element list.
-  //
-  // time - RelativeTimeElement
-  //
-  // Returns nothing.
-  function checkNowElement(time) {
-    if (time._attached && time._date) {
-      nowElements.push(time);
-    } else {
-      var i = nowElements.indexOf(time);
-      if (i !== -1) {
-        nowElements.splice(i, 1);
-      }
-    }
-
-    if (nowElements.length) {
-      if (!updateNowElementsId) {
-        updateNowElements();
-        updateNowElementsId = setInterval(updateNowElements, 60 * 1000);
-      }
-    } else {
-      if (updateNowElementsId) {
-        clearInterval(updateNowElementsId);
-        updateNowElementsId = null;
-      }
-    }
-  }
-
-
   // Internal: Refresh the time element's formatted date when an attribute changes.
   //
   // Returns nothing.
@@ -335,12 +306,27 @@
 
   RelativeTimePrototype.attachedCallback = function() {
     this._attached = true;
-    checkNowElement(this);
+    nowElements.push(this);
+
+    if (!updateNowElementsId) {
+      updateNowElements();
+      updateNowElementsId = setInterval(updateNowElements, 60 * 1000);
+    }
   };
 
   RelativeTimePrototype.detachedCallback = function() {
     this._attached = false;
-    checkNowElement(this);
+    var ix = nowElements.indexOf(this);
+    if (ix !== -1) {
+      nowElements.splice(ix, 1);
+    }
+
+    if (!nowElements.length) {
+      if (updateNowElementsId) {
+        clearInterval(updateNowElementsId);
+        updateNowElementsId = null;
+      }
+    }
   };
 
 
