@@ -305,7 +305,6 @@
   };
 
   RelativeTimePrototype.attachedCallback = function() {
-    this._attached = true;
     nowElements.push(this);
 
     if (!updateNowElementsId) {
@@ -315,7 +314,6 @@
   };
 
   RelativeTimePrototype.detachedCallback = function() {
-    this._attached = false;
     var ix = nowElements.indexOf(this);
     if (ix !== -1) {
       nowElements.splice(ix, 1);
