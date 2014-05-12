@@ -309,7 +309,12 @@
   };
 
 
-  var RelativeTimePrototype = Object.create(HTMLElement.prototype);
+  var parent = HTMLElement;
+  if ('HTMLTimeElement' in window) {
+    parent = HTMLTimeElement;
+  }
+
+  var RelativeTimePrototype = Object.create(parent.prototype);
 
   RelativeTimePrototype.attributeChangedCallback = attributeChanged;
 
@@ -339,7 +344,7 @@
   };
 
 
-  var LocalTimePrototype = Object.create(HTMLElement.prototype);
+  var LocalTimePrototype = Object.create(parent.prototype);
 
   LocalTimePrototype.attributeChangedCallback = attributeChanged;
 
