@@ -1,7 +1,7 @@
 module('relative-time');
 
 test('rewrites from now past datetime to minutes ago', function() {
-  var now = new Date(Date.now() - 180000).toISOString();
+  var now = new Date(Date.now() - 3 * 60 * 1000).toISOString();
   var time = document.createElement('time', 'relative-time');
   time.setAttribute('datetime', now);
   equal(time.textContent, '3 minutes ago');
@@ -15,7 +15,7 @@ test('rewrites a few seconds ago to just now', function() {
 });
 
 test('displays future times as just now', function() {
-  var now = new Date(Date.now() + 3000).toISOString();
+  var now = new Date(Date.now() + 3 * 1000).toISOString();
   var time = document.createElement('time', 'relative-time');
   time.setAttribute('datetime', now);
   equal(time.textContent, 'just now');
