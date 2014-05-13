@@ -102,12 +102,8 @@
     return (calendarDate != null ? calendarDate.value : void 0) === this.value;
   };
 
-  CalendarDate.prototype.is = function(calendarDate) {
-    return this.equals(calendarDate);
-  };
-
   CalendarDate.prototype.isToday = function() {
-    return this.is(this.constructor.today());
+    return this.equals(this.constructor.today());
   };
 
   CalendarDate.prototype.occursOnSameYearAs = function(date) {
