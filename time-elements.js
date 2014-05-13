@@ -241,12 +241,12 @@
   }
 
 
-  var parent = HTMLElement;
+  var ExtendedTimePrototype;
   if ('HTMLTimeElement' in window) {
-    parent = window.HTMLTimeElement;
+    ExtendedTimePrototype = Object.create(window.HTMLTimeElement.prototype);
+  } else {
+    ExtendedTimePrototype = Object.create(window.HTMLElement.prototype);
   }
-
-  var ExtendedTimePrototype = Object.create(parent.prototype);
 
   // Internal: Refresh the time element's formatted date when an attribute changes.
   //
