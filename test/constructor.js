@@ -3,7 +3,7 @@ module('constructor');
 test('create local-time from document.createElement', function() {
   var time = document.createElement('time', 'local-time');
   equal('TIME', time.nodeName);
-  equal('local-time', time.getAttribute('is'))
+  equal('local-time', time.getAttribute('is'));
 });
 
 test('create local-time from constructor', function() {
@@ -15,7 +15,7 @@ test('create local-time from constructor', function() {
 test('create relative-time from document.createElement', function() {
   var time = document.createElement('time', 'relative-time');
   equal('TIME', time.nodeName);
-  equal('relative-time', time.getAttribute('is'))
+  equal('relative-time', time.getAttribute('is'));
 });
 
 test('create relative-time from constructor', function() {

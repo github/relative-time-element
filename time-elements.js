@@ -21,7 +21,7 @@
       var second = time.getSeconds();
       return formatString.replace(/%([%aAbBcdeHIlmMpPSwyYZ])/g, function(_arg) {
         var _ref, _ref1;
-        var match = _arg[0]
+        var match = _arg[0];
         var modifier = _arg[1];
         switch (modifier) {
           case '%':
@@ -267,7 +267,7 @@
     if (text) {
       this.textContent = text;
     }
-  };
+  }
 
   // Internal: Format the ISO 8601 timestamp according to the strftime format
   // string assigned to the time element's `title-format` attribute.
@@ -277,7 +277,7 @@
     if (this._date && this.hasAttribute('title-format')) {
       return LocalTime.strftime(this._date, this.getAttribute('title-format'));
     }
-  };
+  }
 
 
   var parent = HTMLElement;
