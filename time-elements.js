@@ -90,7 +90,7 @@
       };
 
       CalendarDate.today = function() {
-        return this.fromDate(new Date);
+        return this.fromDate(new Date());
       };
 
       function CalendarDate(year, month, day) {
