@@ -21,7 +21,6 @@
       var second = time.getSeconds();
       return formatString.replace(/%([%aAbBcdeHIlmMpPSwyYZ])/g, function(_arg) {
         var _ref, _ref1;
-        var match = _arg[0];
         var modifier = _arg[1];
         switch (modifier) {
           case '%':
