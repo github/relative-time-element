@@ -2,9 +2,8 @@
   'use strict';
 
   // Shout out to https://github.com/basecamp/local_time/blob/master/app/assets/javascripts/local_time.js.coffee
-  var weekdays = 'Sunday Monday Tuesday Wednesday Thursday Friday Saturday'.split(' ');
-
-  var months = 'January February March April May June July August September October November December'.split(' ');
+  var weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
   function pad(num) {
     return ('0' + num).slice(-2);
