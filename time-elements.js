@@ -351,7 +351,7 @@
   //
   window.RelativeTimeElement = document.registerElement('relative-time', {
     prototype: RelativeTimePrototype,
-    extends: 'time'
+    'extends': 'time'
   });
 
 
@@ -362,7 +362,7 @@
   //
   window.LocalTimeElement = document.registerElement('local-time', {
     prototype: LocalTimePrototype,
-    extends: 'time'
+    'extends': 'time'
   });
 
 })();
