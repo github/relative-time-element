@@ -288,7 +288,7 @@
 
   RelativeTimePrototype.getFormattedDate = function() {
     if (this._date) {
-      return LocalTime.relativeTimeAgo(this._date);
+      return new RelativeTime(this._date).toString();
     }
   };
 
