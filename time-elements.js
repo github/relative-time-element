@@ -203,24 +203,6 @@
     return strftime(this.date, '%l:%M%P');
   };
 
-  var LocalTime = {
-    relativeDate: function(date) {
-      return new RelativeTime(date).formatDate();
-    },
-    relativeTimeAgo: function(date) {
-      return new RelativeTime(date).toString();
-    },
-    relativeTimeOrDate: function(date) {
-      return new RelativeTime(date).toTimeOrDateString();
-    },
-    relativeWeekday: function(date) {
-      var day;
-      if (day = new RelativeTime(date).relativeWeekday()) {
-        return day.charAt(0).toUpperCase() + day.substring(1);
-      }
-    }
-  };
-
 
   // Internal: Array tracking all elements attached to the document that need
   // to be updated every minute.
