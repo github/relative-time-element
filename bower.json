@@ -2,7 +2,7 @@
   "name": "time-elements",
   "version": "0.0.0",
   "private": true,
-  "main": "local-time-element.js",
+  "main": "time-elements.js",
   "dependencies": {
 
   },
