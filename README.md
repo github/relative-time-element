@@ -4,7 +4,7 @@ Formats date as a localized string or as relative text that auto updates in the 
 
 ## Installation
 
-Available on [Bower](http://bower.io) as **local-time-element**.
+Available on [Bower](http://bower.io) as **time-elements**.
 
 ```
 $ bower install time-elements

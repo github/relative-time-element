@@ -5,13 +5,13 @@
 Clone the repository from GitHub.
 
 ```
-$ git clone https://github.com/github/local-time-element
+$ git clone https://github.com/github/time-elements
 ```
 
 Now just cd into the directory and run `make` to install the development dependencies.
 
 ```
-$ cd local-time-element/
+$ cd time-elements/
 $ make
 ```
 
