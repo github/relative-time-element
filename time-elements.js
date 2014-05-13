@@ -75,7 +75,8 @@
         case 'Y':
           return year;
         case 'Z':
-          return (_ref = (_ref1 = time.toString().match(/\((\w+)\)$/)) != null ? _ref1[1] : void 0) != null ? _ref : '';
+          var match = time.toString().match(/\((\w+)\)$/);
+          return match ? match[1] : '';
       }
     });
   }
