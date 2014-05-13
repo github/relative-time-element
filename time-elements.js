@@ -103,7 +103,7 @@
   };
 
   CalendarDate.prototype.isToday = function() {
-    return this.equals(this.constructor.today());
+    return this.equals(CalendarDate.today());
   };
 
   CalendarDate.prototype.occursOnSameYearAs = function(date) {
@@ -111,7 +111,7 @@
   };
 
   CalendarDate.prototype.occursThisYear = function() {
-    return this.occursOnSameYearAs(this.constructor.today());
+    return this.occursOnSameYearAs(CalendarDate.today());
   };
 
   CalendarDate.prototype.daysSince = function(date) {
@@ -121,7 +121,7 @@
   };
 
   CalendarDate.prototype.daysPassed = function() {
-    return this.constructor.today().daysSince(this);
+    return CalendarDate.today().daysSince(this);
   };
 
 
