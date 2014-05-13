@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "main": "time-elements.js",
   "devDependencies": {
-    "CustomElements": "0.2.1",
+    "CustomElements": "0.2.3",
     "es5-basic-shim": "1.0.6",
     "MutationObserver": "0.2.0",
     "qunit": "1.14.0",
