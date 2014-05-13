@@ -50,6 +50,7 @@
             } else {
               return (hour + 12) % 12;
             }
+            break;
           case 'm':
             return pad(month + 1);
           case 'M':
@@ -60,12 +61,14 @@
             } else {
               return 'AM';
             }
+            break;
           case 'P':
             if (hour > 11) {
               return 'pm';
             } else {
               return 'am';
             }
+            break;
           case 'S':
             return pad(second);
           case 'w':
