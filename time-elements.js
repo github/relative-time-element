@@ -274,7 +274,7 @@
 
   var parent = HTMLElement;
   if ('HTMLTimeElement' in window) {
-    parent = HTMLTimeElement;
+    parent = window.HTMLTimeElement;
   }
 
   var RelativeTimePrototype = Object.create(parent.prototype);
