@@ -242,10 +242,18 @@
     }
   }
 
+
+  var parent = HTMLElement;
+  if ('HTMLTimeElement' in window) {
+    parent = window.HTMLTimeElement;
+  }
+
+  var ExtendedTimePrototype = Object.create(parent.prototype);
+
   // Internal: Refresh the time element's formatted date when an attribute changes.
   //
   // Returns nothing.
-  function attributeChanged(attrName, oldValue, newValue) {
+  ExtendedTimePrototype.attributeChangedCallback = function(attrName, oldValue, newValue) {
     if (attrName === 'datetime') {
       this._date = new Date(Date.parse(newValue));
     }
@@ -259,29 +267,20 @@
     if (text) {
       this.textContent = text;
     }
-  }
+  };
 
   // Internal: Format the ISO 8601 timestamp according to the strftime format
   // string assigned to the time element's `title-format` attribute.
   //
   // Returns a formatted time String or null if no title-format attribute is set.
-  function formattedTitle() {
+  ExtendedTimePrototype.getFormattedTitle = function() {
     if (this._date && this.hasAttribute('title-format')) {
       return LocalTime.strftime(this._date, this.getAttribute('title-format'));
     }
-  }
+  };
 
 
-  var parent = HTMLElement;
-  if ('HTMLTimeElement' in window) {
-    parent = window.HTMLTimeElement;
-  }
-
-  var RelativeTimePrototype = Object.create(parent.prototype);
-
-  RelativeTimePrototype.attributeChangedCallback = attributeChanged;
-
-  RelativeTimePrototype.getFormattedTitle = formattedTitle;
+  var RelativeTimePrototype = Object.create(ExtendedTimePrototype);
 
   RelativeTimePrototype.createdCallback = function() {
     var value = this.getAttribute('datetime');
@@ -320,11 +319,7 @@
   };
 
 
-  var LocalTimePrototype = Object.create(parent.prototype);
-
-  LocalTimePrototype.attributeChangedCallback = attributeChanged;
-
-  LocalTimePrototype.getFormattedTitle = formattedTitle;
+  var LocalTimePrototype = Object.create(ExtendedTimePrototype);
 
   LocalTimePrototype.createdCallback = function() {
     var value;
