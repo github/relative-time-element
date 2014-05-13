@@ -18,7 +18,6 @@
     var minute = time.getMinutes();
     var second = time.getSeconds();
     return formatString.replace(/%([%aAbBcdeHIlmMpPSwyYZz])/g, function(_arg) {
-      var _ref, _ref1;
       var modifier = _arg[1];
       switch (modifier) {
         case '%':
