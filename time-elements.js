@@ -6,11 +6,11 @@
 
   var months = 'January February March April May June July August September October November December'.split(' ');
 
-  var pad = function(num) {
+  function pad(num) {
     return ('0' + num).slice(-2);
-  };
+  }
 
-  var strftime = function(time, formatString) {
+  function strftime(time, formatString) {
     var day = time.getDay();
     var date = time.getDate();
     var month = time.getMonth();
@@ -79,7 +79,7 @@
           return (_ref = (_ref1 = time.toString().match(/\((\w+)\)$/)) != null ? _ref1[1] : void 0) != null ? _ref : '';
       }
     });
-  };
+  }
 
 
   function CalendarDate(year, month, day) {
