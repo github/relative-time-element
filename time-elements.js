@@ -218,8 +218,7 @@
       if (day = new RelativeTime(date).relativeWeekday()) {
         return day.charAt(0).toUpperCase() + day.substring(1);
       }
-    },
-    strftime: strftime
+    }
   };
 
 
@@ -273,7 +272,7 @@
   // Returns a formatted time String or null if no title-format attribute is set.
   ExtendedTimePrototype.getFormattedTitle = function() {
     if (this._date && this.hasAttribute('title-format')) {
-      return LocalTime.strftime(this._date, this.getAttribute('title-format'));
+      return strftime(this._date, this.getAttribute('title-format'));
     }
   };
 
@@ -331,7 +330,7 @@
 
   LocalTimePrototype.getFormattedDate = function() {
     if (this._date && this.hasAttribute('format')) {
-      return LocalTime.strftime(this._date, this.getAttribute('format'));
+      return strftime(this._date, this.getAttribute('format'));
     }
   };
 
