@@ -1,4 +1,4 @@
-module('format');
+module('local-time');
 
 test('null getFormattedDate when datetime missing', function() {
   var time = document.createElement('time', 'local-time');
