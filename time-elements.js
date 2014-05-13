@@ -18,6 +18,7 @@
     var minute = time.getMinutes();
     var second = time.getSeconds();
     return formatString.replace(/%([%aAbBcdeHIlmMpPSwyYZz])/g, function(_arg) {
+      var match;
       var modifier = _arg[1];
       switch (modifier) {
         case '%':
@@ -74,10 +75,10 @@
         case 'Y':
           return year;
         case 'Z':
-          var match = time.toString().match(/\((\w+)\)$/);
+          match = time.toString().match(/\((\w+)\)$/);
           return match ? match[1] : '';
         case 'z':
-          var match = time.toString().match(/\w(\-\d\d\d\d) /);
+          match = time.toString().match(/\w(\-\d\d\d\d) /);
           return match ? match[1] : '';
       }
     });
