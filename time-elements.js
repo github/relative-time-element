@@ -83,135 +83,125 @@
       });
     };
 
-    var CalendarDate;
-    CalendarDate = (function() {
-      CalendarDate.fromDate = function(date) {
-        return new this(date.getFullYear(), date.getMonth() + 1, date.getDate());
-      };
+    function CalendarDate(year, month, day) {
+      this.date = new Date(Date.UTC(year, month - 1));
+      this.date.setUTCDate(day);
+      this.year = this.date.getUTCFullYear();
+      this.month = this.date.getUTCMonth() + 1;
+      this.day = this.date.getUTCDate();
+      this.value = this.date.getTime();
+    }
 
-      CalendarDate.today = function() {
-        return this.fromDate(new Date());
-      };
+    CalendarDate.fromDate = function(date) {
+      return new this(date.getFullYear(), date.getMonth() + 1, date.getDate());
+    };
 
-      function CalendarDate(year, month, day) {
-        this.date = new Date(Date.UTC(year, month - 1));
-        this.date.setUTCDate(day);
-        this.year = this.date.getUTCFullYear();
-        this.month = this.date.getUTCMonth() + 1;
-        this.day = this.date.getUTCDate();
-        this.value = this.date.getTime();
+    CalendarDate.today = function() {
+      return this.fromDate(new Date());
+    };
+
+    CalendarDate.prototype.equals = function(calendarDate) {
+      return (calendarDate != null ? calendarDate.value : void 0) === this.value;
+    };
+
+    CalendarDate.prototype.is = function(calendarDate) {
+      return this.equals(calendarDate);
+    };
+
+    CalendarDate.prototype.isToday = function() {
+      return this.is(this.constructor.today());
+    };
+
+    CalendarDate.prototype.occursOnSameYearAs = function(date) {
+      return this.year === (date != null ? date.year : void 0);
+    };
+
+    CalendarDate.prototype.occursThisYear = function() {
+      return this.occursOnSameYearAs(this.constructor.today());
+    };
+
+    CalendarDate.prototype.daysSince = function(date) {
+      if (date) {
+        return (this.date - date.date) / (1000 * 60 * 60 * 24);
       }
+    };
 
-      CalendarDate.prototype.equals = function(calendarDate) {
-        return (calendarDate != null ? calendarDate.value : void 0) === this.value;
-      };
+    CalendarDate.prototype.daysPassed = function() {
+      return this.constructor.today().daysSince(this);
+    };
 
-      CalendarDate.prototype.is = function(calendarDate) {
-        return this.equals(calendarDate);
-      };
+    function RelativeTime(date) {
+      this.date = date;
+      this.calendarDate = CalendarDate.fromDate(this.date);
+    }
 
-      CalendarDate.prototype.isToday = function() {
-        return this.is(this.constructor.today());
-      };
-
-      CalendarDate.prototype.occursOnSameYearAs = function(date) {
-        return this.year === (date != null ? date.year : void 0);
-      };
-
-      CalendarDate.prototype.occursThisYear = function() {
-        return this.occursOnSameYearAs(this.constructor.today());
-      };
-
-      CalendarDate.prototype.daysSince = function(date) {
-        if (date) {
-          return (this.date - date.date) / (1000 * 60 * 60 * 24);
-        }
-      };
-
-      CalendarDate.prototype.daysPassed = function() {
-        return this.constructor.today().daysSince(this);
-      };
-
-      return CalendarDate;
-    })();
-
-    var RelativeTime;
-    RelativeTime = (function() {
-      function RelativeTime(date) {
-        this.date = date;
-        this.calendarDate = CalendarDate.fromDate(this.date);
+    RelativeTime.prototype.toString = function() {
+      var ago, day;
+      if (ago = this.timeElapsed()) {
+        return ago;
+      } else if (day = this.relativeWeekday()) {
+        return '' + day + ' at ' + (this.formatTime());
+      } else {
+        return 'on ' + (this.formatDate());
       }
+    };
 
-      RelativeTime.prototype.toString = function() {
-        var ago, day;
-        if (ago = this.timeElapsed()) {
-          return ago;
-        } else if (day = this.relativeWeekday()) {
-          return '' + day + ' at ' + (this.formatTime());
-        } else {
-          return 'on ' + (this.formatDate());
-        }
-      };
+    RelativeTime.prototype.toTimeOrDateString = function() {
+      if (this.calendarDate.isToday()) {
+        return this.formatTime();
+      } else {
+        return this.formatDate();
+      }
+    };
 
-      RelativeTime.prototype.toTimeOrDateString = function() {
-        if (this.calendarDate.isToday()) {
-          return this.formatTime();
-        } else {
-          return this.formatDate();
-        }
-      };
+    RelativeTime.prototype.timeElapsed = function() {
+      var ms = new Date().getTime() - this.date.getTime();
+      var sec = Math.round(ms / 1000);
+      var min = Math.round(sec / 60);
+      var hr = Math.round(min / 60);
+      if (ms < 0) {
+        return 'just now';
+      } else if (sec < 10) {
+        return 'just now';
+      } else if (sec < 45) {
+        return '' + sec + ' seconds ago';
+      } else if (sec < 90) {
+        return 'a minute ago';
+      } else if (min < 45) {
+        return '' + min + ' minutes ago';
+      } else if (min < 90) {
+        return 'an hour ago';
+      } else if (hr < 24) {
+        return '' + hr + ' hours ago';
+      } else {
+        return null;
+      }
+    };
 
-      RelativeTime.prototype.timeElapsed = function() {
-        var ms = new Date().getTime() - this.date.getTime();
-        var sec = Math.round(ms / 1000);
-        var min = Math.round(sec / 60);
-        var hr = Math.round(min / 60);
-        if (ms < 0) {
-          return 'just now';
-        } else if (sec < 10) {
-          return 'just now';
-        } else if (sec < 45) {
-          return '' + sec + ' seconds ago';
-        } else if (sec < 90) {
-          return 'a minute ago';
-        } else if (min < 45) {
-          return '' + min + ' minutes ago';
-        } else if (min < 90) {
-          return 'an hour ago';
-        } else if (hr < 24) {
-          return '' + hr + ' hours ago';
-        } else {
-          return null;
-        }
-      };
+    RelativeTime.prototype.relativeWeekday = function() {
+      var daysPassed = this.calendarDate.daysPassed();
+      if (daysPassed > 6) {
+        return null;
+      } else if (daysPassed === 0) {
+        return 'today';
+      } else if (daysPassed === 1) {
+        return 'yesterday';
+      } else {
+        return strftime(this.date, '%A');
+      }
+    };
 
-      RelativeTime.prototype.relativeWeekday = function() {
-        var daysPassed = this.calendarDate.daysPassed();
-        if (daysPassed > 6) {
-          return null;
-        } else if (daysPassed === 0) {
-          return 'today';
-        } else if (daysPassed === 1) {
-          return 'yesterday';
-        } else {
-          return strftime(this.date, '%A');
-        }
-      };
+    RelativeTime.prototype.formatDate = function() {
+      var format = '%b %e';
+      if (!this.calendarDate.occursThisYear()) {
+        format += ', %Y';
+      }
+      return strftime(this.date, format);
+    };
 
-      RelativeTime.prototype.formatDate = function() {
-        var format = '%b %e';
-        if (!this.calendarDate.occursThisYear()) {
-          format += ', %Y';
-        }
-        return strftime(this.date, format);
-      };
-
-      RelativeTime.prototype.formatTime = function() {
-        return strftime(this.date, '%l:%M%P');
-      };
-
-      return RelativeTime;
-    })();
+    RelativeTime.prototype.formatTime = function() {
+      return strftime(this.date, '%l:%M%P');
+    };
 
     var LocalTime = {
       relativeDate: function(date) {
