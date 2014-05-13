@@ -3,9 +3,9 @@
 
   // Shout out to https://github.com/basecamp/local_time/blob/master/app/assets/javascripts/local_time.js.coffee
   var LocalTime = (function() {
-    var weekdays = "Sunday Monday Tuesday Wednesday Thursday Friday Saturday".split(" ");
+    var weekdays = 'Sunday Monday Tuesday Wednesday Thursday Friday Saturday'.split(' ');
 
-    var months = "January February March April May June July August September October November December".split(" ");
+    var months = 'January February March April May June July August September October November December'.split(' ');
 
     var pad = function(num) {
       return ('0' + num).slice(-2);
@@ -144,9 +144,9 @@
         if (ago = this.timeElapsed()) {
           return ago;
         } else if (day = this.relativeWeekday()) {
-          return "" + day + " at " + (this.formatTime());
+          return '' + day + ' at ' + (this.formatTime());
         } else {
-          return "on " + (this.formatDate());
+          return 'on ' + (this.formatDate());
         }
       };
 
@@ -164,19 +164,19 @@
         var min = Math.round(sec / 60);
         var hr = Math.round(min / 60);
         if (ms < 0) {
-          return "just now";
+          return 'just now';
         } else if (sec < 10) {
-          return "just now";
+          return 'just now';
         } else if (sec < 45) {
-          return "" + sec + " seconds ago";
+          return '' + sec + ' seconds ago';
         } else if (sec < 90) {
-          return "a minute ago";
+          return 'a minute ago';
         } else if (min < 45) {
-          return "" + min + " minutes ago";
+          return '' + min + ' minutes ago';
         } else if (min < 90) {
-          return "an hour ago";
+          return 'an hour ago';
         } else if (hr < 24) {
-          return "" + hr + " hours ago";
+          return '' + hr + ' hours ago';
         } else {
           return null;
         }
@@ -187,18 +187,18 @@
         if (daysPassed > 6) {
           return null;
         } else if (daysPassed === 0) {
-          return "today";
+          return 'today';
         } else if (daysPassed === 1) {
-          return "yesterday";
+          return 'yesterday';
         } else {
-          return strftime(this.date, "%A");
+          return strftime(this.date, '%A');
         }
       };
 
       RelativeTime.prototype.formatDate = function() {
-        var format = "%b %e";
+        var format = '%b %e';
         if (!this.calendarDate.occursThisYear()) {
-          format += ", %Y";
+          format += ', %Y';
         }
         return strftime(this.date, format);
       };
@@ -354,7 +354,7 @@
   // Public: RelativeTimeElement constructor.
   //
   //   var time = new RelativeTimeElement()
-  //   # => <time is="relative-time"></time>
+  //   # => <time is='relative-time'></time>
   //
   window.RelativeTimeElement = document.registerElement('relative-time', {
     prototype: RelativeTimePrototype,
@@ -365,7 +365,7 @@
   // Public: LocalTimeElement constructor.
   //
   //   var time = new LocalTimeElement()
-  //   # => <time is="local-time"></time>
+  //   # => <time is='local-time'></time>
   //
   window.LocalTimeElement = document.registerElement('local-time', {
     prototype: LocalTimePrototype,
