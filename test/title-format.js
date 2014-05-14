@@ -19,6 +19,13 @@ test('getFormattedTitle with title-formatted datetime', function() {
   equal(time.getFormattedTitle(), window.epochLocalDate);
 });
 
+test('getFormattedTitle with %z timezone offset', function() {
+  var time = document.createElement('time', 'local-time');
+  time.setAttribute('datetime', '1970-01-01T00:00:00.000Z');
+  time.setAttribute('title-format', '%z');
+  ok(time.getFormattedTitle().match(/\-\d\d\d\d/)[0]);
+});
+
 test('skips setting a title if title-format is missing', function() {
   var time = document.createElement('time', 'local-time');
   time.setAttribute('datetime', '1970-01-01T00:00:00.000Z');
