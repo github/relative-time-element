@@ -29,7 +29,7 @@ This component is built on the upcoming [Web Component](http://webcomponents.git
 All elements MUST have a `datetime` attribute set to a ISO8601 formatted timestamp. `format` is a unix strftime format to set to the text contents of the element.
 
 ``` html
-<time is="local-time" datetime="2014-04-01T16:30:00-08:00" format="%m/%d/%y" title-format="%m/%d/%y %l:%M%p">
+<time is="local-time" datetime="2014-04-01T16:30:00-08:00" format="%m/%d/%y">
   04/01/14
 </time>
 <!-- <local-time title="04/01/14 6:30PM">04/01/14</local-time> -->
