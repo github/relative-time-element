@@ -191,6 +191,15 @@
   };
 
   RelativeTime.prototype.formatDate = function() {
+    if ('Intl' in window) {
+      var options = {day: 'numeric', month: 'short'}
+      if (!this.calendarDate.occursThisYear()) {
+        options.year = 'numeric'
+      }
+      var formatter = Intl.DateTimeFormat(navigator.language, options);
+      return formatter.format(this.date);
+    }
+
     var format = '%b %e';
     if (!this.calendarDate.occursThisYear()) {
       format += ', %Y';
