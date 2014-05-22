@@ -209,7 +209,7 @@
 
   RelativeTime.prototype.formatTime = function() {
     if ('Intl' in window) {
-      var formatter = Intl.DateTimeFormat(navigator.language, {hour: '2-digit', minute: '2-digit'});
+      var formatter = Intl.DateTimeFormat(navigator.language, {hour: 'numeric', minute: '2-digit'});
       return formatter.format(this.date);
     } else {
       return strftime(this.date, '%l:%M%P');
