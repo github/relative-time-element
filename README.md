@@ -52,7 +52,6 @@ Attribute      | Options                                | Description
 ---            | ---                                    | ---
 `datetime`     | ISO8601 *string*                       | Required date of element
 `format`       | strftime format *string*               | Format to localize the text content
-`title-format` | strftime format *string*               | Format to localize the `title` attribute
 
 ## Browser Support
 
