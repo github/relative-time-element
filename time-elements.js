@@ -192,11 +192,11 @@
 
   RelativeTime.prototype.formatDate = function() {
     if ('Intl' in window) {
-      var options = {day: 'numeric', month: 'short'}
+      var options = {day: 'numeric', month: 'short'};
       if (!this.calendarDate.occursThisYear()) {
-        options.year = 'numeric'
+        options.year = 'numeric';
       }
-      var formatter = Intl.DateTimeFormat(navigator.language, options);
+      var formatter = window.Intl.DateTimeFormat(navigator.language, options);
       return formatter.format(this.date);
     }
 
