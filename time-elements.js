@@ -139,7 +139,7 @@
     if (ago = this.timeElapsed()) {
       return ago;
     } else if (day = this.relativeWeekday()) {
-      return '' + day + ' at ' + (this.formatTime());
+      return day + ' at ' + (this.formatTime());
     } else {
       return 'on ' + (this.formatDate());
     }
@@ -163,15 +163,15 @@
     } else if (sec < 10) {
       return 'just now';
     } else if (sec < 45) {
-      return '' + sec + ' seconds ago';
+      return sec + ' seconds ago';
     } else if (sec < 90) {
       return 'a minute ago';
     } else if (min < 45) {
-      return '' + min + ' minutes ago';
+      return min + ' minutes ago';
     } else if (min < 90) {
       return 'an hour ago';
     } else if (hr < 24) {
-      return '' + hr + ' hours ago';
+      return hr + ' hours ago';
     } else {
       return null;
     }
