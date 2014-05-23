@@ -247,14 +247,27 @@
     }
   };
 
-  // Internal: Format the ISO 8601 timestamp according to the strftime format
-  // string assigned to the time element's `title-format` attribute.
+  // Internal: Format the ISO 8601 timestamp according to the user agent's
+  // locale-aware formatting rules. The element's existing `title` attribute
+  // value takes precedence over this custom format.
   //
-  // Returns a formatted time String or null if no title-format attribute is set.
+  // Returns a formatted time String.
   ExtendedTimePrototype.getFormattedTitle = function() {
-    if (this._date && this.hasAttribute('title-format')) {
-      return strftime(this._date, this.getAttribute('title-format'));
+    if (!this._date) {
+      return;
     }
+
+    if (this.hasAttribute('title')) {
+      return this.getAttribute('title');
+    }
+
+    if ('Intl' in window) {
+      var options = {day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit'};
+      var formatter = new window.Intl.DateTimeFormat(navigator.language, options);
+      return formatter.format(this._date);
+    }
+
+    return this._date.toLocaleString();
   };
 
 
