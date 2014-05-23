@@ -19,6 +19,13 @@ test('getFormattedDate for datetime and format attributes', function() {
   equal(time.getFormattedDate(), window.epochLocalDate);
 });
 
+test('getFormattedDate with %z timezone offset', function() {
+  var time = document.createElement('time', 'local-time');
+  time.setAttribute('datetime', '1970-01-01T00:00:00.000Z');
+  time.setAttribute('format', '%z');
+  ok(time.getFormattedDate().match(/\-\d\d\d\d/)[0]);
+});
+
 test('ignores contents if datetime attribute is missing', function() {
   var time = document.createElement('time', 'local-time');
   time.setAttribute('format', '%Y-%m-%dT%H:%M:%SZ');
