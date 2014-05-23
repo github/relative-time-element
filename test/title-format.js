@@ -13,7 +13,7 @@ test('locale-aware getFormattedTitle for datetime value', function() {
 
 test('skips setting a title attribute if already provided', function() {
   var time = document.createElement('time', 'local-time');
-  time.setAttribute('title', 'does not change')
+  time.setAttribute('title', 'does not change');
   time.setAttribute('datetime', '1970-01-01T00:00:00.000Z');
   equal(time.getAttribute('title'), 'does not change');
 });

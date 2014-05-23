@@ -253,7 +253,9 @@
   //
   // Returns a formatted time String.
   ExtendedTimePrototype.getFormattedTitle = function() {
-    if (!this._date) return;
+    if (!this._date) {
+      return;
+    }
 
     if (this.hasAttribute('title')) {
       return this.getAttribute('title');
@@ -265,7 +267,7 @@
       return formatter.format(this._date);
     }
 
-    return this._date.toLocaleString()
+    return this._date.toLocaleString();
   };
 
 
