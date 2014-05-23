@@ -177,6 +177,43 @@
     }
   };
 
+  RelativeTime.prototype.timeAgo = function() {
+    var ms = new Date().getTime() - this.date.getTime();
+    var sec = Math.round(ms / 1000);
+    var min = Math.round(sec / 60);
+    var hr = Math.round(min / 60);
+    var day = Math.round(hr / 24);
+    var month = Math.round(day / 30);
+    var year = Math.round(month / 12);
+    if (ms < 0) {
+      return 'just now';
+    } else if (sec < 10) {
+      return 'just now';
+    } else if (sec < 45) {
+      return sec + ' seconds ago';
+    } else if (sec < 90) {
+      return 'a minute ago';
+    } else if (min < 45) {
+      return min + ' minutes ago';
+    } else if (min < 90) {
+      return 'an hour ago';
+    } else if (hr < 24) {
+      return hr + ' hours ago';
+    } else if (hr < 36) {
+      return 'a day ago';
+    } else if (day < 30) {
+      return day + ' days ago';
+    } else if (day < 45) {
+      return 'a month ago';
+    } else if (month < 12) {
+      return month + ' months ago';
+    } else if (month < 18) {
+        return 'a year ago';
+    } else {
+      return year + ' years ago';
+    }
+  };
+
   RelativeTime.prototype.relativeWeekday = function() {
     var daysPassed = this.calendarDate.daysPassed();
     if (daysPassed > 6) {
@@ -323,6 +360,14 @@
     }
   };
 
+  var RelativeTimeAgoPrototype = Object.create(RelativeTimePrototype);
+  RelativeTimeAgoPrototype.getFormattedDate = function() {
+    if (this._date) {
+      return new RelativeTime(this._date).timeAgo();
+    }
+  };
+
+
 
   var LocalTimePrototype = Object.create(ExtendedTimePrototype);
 
@@ -353,6 +398,10 @@
     'extends': 'time'
   });
 
+  window.RelativeTimeAgoElement = document.registerElement('relative-time-ago', {
+    prototype: RelativeTimeAgoPrototype,
+    'extends': 'time'
+  });
 
   // Public: LocalTimeElement constructor.
   //
