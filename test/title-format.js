@@ -1,74 +1,39 @@
 module('title-format');
 
-test('null getFormattedTitle if title-format is missing', function() {
-  var time = document.createElement('time', 'local-time');
-  time.setAttribute('datetime', '1970-01-01T00:00:00.000Z');
-  equal(time.getFormattedTitle(), null);
-});
-
 test('null getFormattedTitle if datetime is missing', function() {
   var time = document.createElement('time', 'local-time');
-  time.setAttribute('title-format', '%Y-%m-%d %H:%M');
   equal(time.getFormattedTitle(), null);
 });
 
-test('getFormattedTitle with title-formatted datetime', function() {
+test('locale-aware getFormattedTitle for datetime value', function() {
   var time = document.createElement('time', 'local-time');
   time.setAttribute('datetime', '1970-01-01T00:00:00.000Z');
-  time.setAttribute('title-format', '%Y-%m-%d');
-  equal(time.getFormattedTitle(), window.epochLocalDate);
+  ok(time.getFormattedTitle().match(/\d\d\d\d/)[0]);
 });
 
-test('getFormattedTitle with %z timezone offset', function() {
+test('skips setting a title attribute if already provided', function() {
   var time = document.createElement('time', 'local-time');
+  time.setAttribute('title', 'does not change');
   time.setAttribute('datetime', '1970-01-01T00:00:00.000Z');
-  time.setAttribute('title-format', '%z');
-  ok(time.getFormattedTitle().match(/\-\d\d\d\d/)[0]);
+  equal(time.getAttribute('title'), 'does not change');
 });
 
-test('skips setting a title if title-format is missing', function() {
+test('skips setting a title attribute if datetime is missing', function() {
   var time = document.createElement('time', 'local-time');
-  time.setAttribute('datetime', '1970-01-01T00:00:00.000Z');
   equal(time.getAttribute('title'), null);
 });
 
-test('skips setting a title if datetime is missing', function() {
-  var time = document.createElement('time', 'local-time');
-  time.setAttribute('title-format', '%Y-%m-%d %H:%M');
-  equal(time.getAttribute('title'), null);
-});
-
-test('sets the title title-formatted datetime', function() {
+test('sets the title attribute for datetime value', function() {
   var time = document.createElement('time', 'local-time');
   time.setAttribute('datetime', '1970-01-01T00:00:00.000Z');
-  time.setAttribute('title-format', '%Y-%m-%d');
-  equal(time.getAttribute('title'), window.epochLocalDate);
+  ok(time.getAttribute('title').match(/\d\d\d\d/)[0]);
 });
 
-test('set the title when parsed element is upgraded', function() {
+test('set the title attribute when parsed element is upgraded', function() {
   var root = document.createElement('div');
-  root.innerHTML = '<time is="local-time" datetime="1970-01-01T00:00:00.000Z"' +
-    ' title-format="%Y-%m-%d"></time>';
+  root.innerHTML = '<time is="local-time" datetime="1970-01-01T00:00:00.000Z"></time>';
   if ('CustomElements' in window) {
     window.CustomElements.upgradeSubtree(root);
   }
-  equal(root.children[0].getAttribute('title'), window.epochLocalDate);
-});
-
-test('updates title if title-formatted changes', function() {
-  var time = document.createElement('time', 'local-time');
-  time.setAttribute('datetime', '1970-01-01T00:00:00.000Z');
-  time.setAttribute('title-format', '%Y-%m-%d');
-  equal(time.getAttribute('title'), window.epochLocalDate);
-  time.setAttribute('title-format', '%Y');
-  equal(time.getAttribute('title'), window.epochLocalYear);
-});
-
-test('updates title if datetime changes', function() {
-  var time = document.createElement('time', 'local-time');
-  time.setAttribute('datetime', '1970-01-01T00:00:00.000Z');
-  time.setAttribute('title-format', '%Y-%m-%d');
-  equal(time.getAttribute('title'), window.epochLocalDate);
-  time.setAttribute('datetime', '1971-01-01T00:00:00.000Z');
-  equal(time.getAttribute('title'), window.yearAfterEpochLocalDate);
+  ok(root.children[0].getAttribute('title').match(/\d\d\d\d/)[0]);
 });
