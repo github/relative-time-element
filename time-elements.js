@@ -191,6 +191,15 @@
   };
 
   RelativeTime.prototype.formatDate = function() {
+    if ('Intl' in window) {
+      var options = {day: 'numeric', month: 'short'};
+      if (!this.calendarDate.occursThisYear()) {
+        options.year = 'numeric';
+      }
+      var formatter = window.Intl.DateTimeFormat(navigator.language, options);
+      return formatter.format(this.date);
+    }
+
     var format = '%b %e';
     if (!this.calendarDate.occursThisYear()) {
       format += ', %Y';
@@ -199,7 +208,12 @@
   };
 
   RelativeTime.prototype.formatTime = function() {
-    return strftime(this.date, '%l:%M%P');
+    if ('Intl' in window) {
+      var formatter = window.Intl.DateTimeFormat(navigator.language, {hour: 'numeric', minute: '2-digit'});
+      return formatter.format(this.date);
+    } else {
+      return strftime(this.date, '%l:%M%P');
+    }
   };
 
 
