@@ -8,7 +8,7 @@ test('null getFormattedTitle if datetime is missing', function() {
 test('locale-aware getFormattedTitle for datetime value', function() {
   var time = document.createElement('time', 'local-time');
   time.setAttribute('datetime', '1970-01-01T00:00:00.000Z');
-  ok(time.getFormattedTitle().match(/ \d\d\d\d /)[0]);
+  ok(time.getFormattedTitle().match(/\d\d\d\d/)[0]);
 });
 
 test('skips setting a title attribute if already provided', function() {
@@ -26,7 +26,7 @@ test('skips setting a title attribute if datetime is missing', function() {
 test('sets the title attribute for datetime value', function() {
   var time = document.createElement('time', 'local-time');
   time.setAttribute('datetime', '1970-01-01T00:00:00.000Z');
-  ok(time.getAttribute('title').match(/ \d\d\d\d /)[0]);
+  ok(time.getAttribute('title').match(/\d\d\d\d/)[0]);
 });
 
 test('set the title attribute when parsed element is upgraded', function() {
@@ -35,5 +35,5 @@ test('set the title attribute when parsed element is upgraded', function() {
   if ('CustomElements' in window) {
     window.CustomElements.upgradeSubtree(root);
   }
-  ok(root.children[0].getAttribute('title').match(/ \d\d\d\d /)[0]);
+  ok(root.children[0].getAttribute('title').match(/\d\d\d\d/)[0]);
 });
