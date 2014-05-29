@@ -360,8 +360,8 @@
     }
   };
 
-  var RelativeTimeAgoPrototype = Object.create(RelativeTimePrototype);
-  RelativeTimeAgoPrototype.getFormattedDate = function() {
+  var TimeAgoPrototype = Object.create(RelativeTimePrototype);
+  TimeAgoPrototype.getFormattedDate = function() {
     if (this._date) {
       return new RelativeTime(this._date).timeAgo();
     }
@@ -398,8 +398,8 @@
     'extends': 'time'
   });
 
-  window.RelativeTimeAgoElement = document.registerElement('relative-time-ago', {
-    prototype: RelativeTimeAgoPrototype,
+  window.TimeAgoElement = document.registerElement('time-ago', {
+    prototype: TimeAgoPrototype,
     'extends': 'time'
   });
 
