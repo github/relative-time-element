@@ -313,7 +313,7 @@
     }
 
     if ('Intl' in window) {
-      var options = {day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit'};
+      var options = {day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short'};
       var formatter = new window.Intl.DateTimeFormat(navigator.language, options);
       return formatter.format(this._date);
     }
