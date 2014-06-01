@@ -78,7 +78,7 @@
           match = time.toString().match(/\((\w+)\)$/);
           return match ? match[1] : '';
         case 'z':
-          match = time.toString().match(/\w(\-\d\d\d\d) /);
+          match = time.toString().match(/\w([+-]\d\d\d\d) /);
           return match ? match[1] : '';
       }
     });

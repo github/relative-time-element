@@ -23,7 +23,7 @@ test('getFormattedDate with %z timezone offset', function() {
   var time = document.createElement('time', 'local-time');
   time.setAttribute('datetime', '1970-01-01T00:00:00.000Z');
   time.setAttribute('format', '%z');
-  ok(time.getFormattedDate().match(/\-\d\d\d\d/)[0]);
+  ok(time.getFormattedDate().match(/[+-]\d\d\d\d/)[0]);
 });
 
 test('ignores contents if datetime attribute is missing', function() {
