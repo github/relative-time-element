@@ -381,10 +381,35 @@
     }
   };
 
+
+  // weekday - Possible values are "narrow", "short", "long".
+  // year    - Possible values are "numeric", "2-digit".
+  // month   - Possible values are "numeric", "2-digit", "narrow", "short", "long".
+  // day     - Possible values are "numeric", "2-digit".
+  // hour    - Possible values are "numeric", "2-digit".
+  // minute  - Possible values are "numeric", "2-digit".
+  // second  - Possible values are "numeric", "2-digit".
   LocalTimePrototype.getFormattedDate = function() {
-    if (this._date && this.hasAttribute('format')) {
-      return strftime(this._date, this.getAttribute('format'));
+    if (!this._date) {
+      return;
     }
+
+    if (!('Intl' in window)) {
+      return;
+    }
+
+    var options = {};
+    var props = ['weekday', 'year', 'month', 'day', 'hour', 'minute', 'second'];
+    var prop, i, len;
+    for (i = 0, len = props.length; i < len; i++) {
+      prop = props[i];
+      if (this.hasAttribute(prop)) {
+        options[prop] = this.getAttribute(prop);
+      }
+    }
+
+    var formatter = window.Intl.DateTimeFormat(undefined, options);
+    return formatter.format(this._date);
   };
 
 
