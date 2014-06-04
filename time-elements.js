@@ -223,7 +223,13 @@
     } else if (daysPassed === 1) {
       return 'yesterday';
     } else {
-      return strftime(this.date, '%A');
+      if ('Intl' in window) {
+        var options = {weekday: 'long'};
+        var formatter = new window.Intl.DateTimeFormat(undefined, options);
+        return formatter.format(this.date);
+      } else {
+        return strftime(this.date, '%A');
+      }
     }
   };
 
