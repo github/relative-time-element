@@ -239,7 +239,7 @@
 
     var options = {day: 'numeric', month: 'short'};
     var formatter = new window.Intl.DateTimeFormat(undefined, options);
-    var output = formatter.format(new Date());
+    var output = formatter.format(new Date(0));
     return !!output.match(/^\d/);
   }
 
@@ -254,7 +254,7 @@
 
     var options = {day: 'numeric', month: 'short', year: 'numeric'};
     var formatter = new window.Intl.DateTimeFormat(undefined, options);
-    var output = formatter.format(new Date());
+    var output = formatter.format(new Date(0));
     return !!output.match(/\d,/);
   }
 
