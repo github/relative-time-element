@@ -227,19 +227,43 @@
     }
   };
 
-  RelativeTime.prototype.formatDate = function() {
-    if ('Intl' in window) {
-      var options = {day: 'numeric', month: 'short'};
-      if (!this.calendarDate.occursThisYear()) {
-        options.year = 'numeric';
-      }
-      var formatter = new window.Intl.DateTimeFormat(undefined, options);
-      return formatter.format(this.date);
+  /* Private: Determine if the day should be formatted before the month name in
+   * the user's current locale. For example, `9 Jun` for en-GB and `Jun 9`
+   * for en-US.
+   *
+   * Returns true if the day appears before the month.
+   */
+  function isDayFirst() {
+    if (!('Intl' in window)) {
+      return false;
     }
 
-    var format = '%b %e';
+    var options = {day: 'numeric', month: 'short'};
+    var formatter = new window.Intl.DateTimeFormat(undefined, options);
+    var output = formatter.format(new Date());
+    return !!output.match(/^\d/);
+  }
+
+  /* Private: Determine if the year should be separated from the month and day
+   * with a comma. For example, `9 Jun 2014` in en-GB and `Jun 9, 2014` in en-US.
+   *
+   * Returns true if the date needs a separator.
+   */
+  function isYearSeparator() {
+    if (!('Intl' in window)) {
+      return true;
+    }
+
+    var options = {day: 'numeric', month: 'short', year: 'numeric'};
+    var formatter = new window.Intl.DateTimeFormat(undefined, options);
+    var output = formatter.format(new Date());
+    return !!output.match(/\d,/);
+  }
+
+  RelativeTime.prototype.formatDate = function() {
+    var format = isDayFirst() ? '%e %b' : '%b %e';
     if (!this.calendarDate.occursThisYear()) {
-      format += ', %Y';
+      format += isYearSeparator() ? ', %Y': ' %Y';
     }
     return strftime(this.date, format);
   };
