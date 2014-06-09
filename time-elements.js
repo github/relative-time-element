@@ -233,6 +233,10 @@
   //
   // Returns true if the day appears before the month.
   function isDayFirst() {
+    if (dayFirst !== null) {
+      return dayFirst;
+    }
+
     if (!('Intl' in window)) {
       return false;
     }
@@ -240,14 +244,21 @@
     var options = {day: 'numeric', month: 'short'};
     var formatter = new window.Intl.DateTimeFormat(undefined, options);
     var output = formatter.format(new Date(0));
-    return !!output.match(/^\d/);
+
+    dayFirst = !!output.match(/^\d/);
+    return dayFirst;
   }
+  var dayFirst = null;
 
   // Private: Determine if the year should be separated from the month and day
   // with a comma. For example, `9 Jun 2014` in en-GB and `Jun 9, 2014` in en-US.
   //
   // Returns true if the date needs a separator.
   function isYearSeparator() {
+    if (yearSeparator !== null) {
+      return yearSeparator;
+    }
+
     if (!('Intl' in window)) {
       return true;
     }
@@ -255,8 +266,11 @@
     var options = {day: 'numeric', month: 'short', year: 'numeric'};
     var formatter = new window.Intl.DateTimeFormat(undefined, options);
     var output = formatter.format(new Date(0));
-    return !!output.match(/\d,/);
+
+    yearSeparator = !!output.match(/\d,/);
+    return yearSeparator;
   }
+  var yearSeparator = null;
 
   RelativeTime.prototype.formatDate = function() {
     var format = isDayFirst() ? '%e %b' : '%b %e';
