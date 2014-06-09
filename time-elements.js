@@ -139,9 +139,9 @@
     if (ago = this.timeElapsed()) {
       return ago;
     } else if (day = this.relativeWeekday()) {
-      return day + ' at ' + (this.formatTime());
+      return day + ' at ' + this.formatTime();
     } else {
-      return 'on ' + (this.formatDate());
+      return 'on ' + this.formatDate();
     }
   };
 
