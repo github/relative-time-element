@@ -139,9 +139,9 @@
     if (ago = this.timeElapsed()) {
       return ago;
     } else if (day = this.relativeWeekday()) {
-      return day + ' at ' + (this.formatTime());
+      return day + ' at ' + this.formatTime();
     } else {
-      return 'on ' + (this.formatDate());
+      return 'on ' + this.formatDate();
     }
   };
 
@@ -227,26 +227,62 @@
     }
   };
 
-  RelativeTime.prototype.formatDate = function() {
-    if ('Intl' in window) {
-      var options = {day: 'numeric', month: 'short'};
-      if (!this.calendarDate.occursThisYear()) {
-        options.year = 'numeric';
-      }
-      var formatter = window.Intl.DateTimeFormat(undefined, options);
-      return formatter.format(this.date);
+  // Private: Determine if the day should be formatted before the month name in
+  // the user's current locale. For example, `9 Jun` for en-GB and `Jun 9`
+  // for en-US.
+  //
+  // Returns true if the day appears before the month.
+  function isDayFirst() {
+    if (dayFirst !== null) {
+      return dayFirst;
     }
 
-    var format = '%b %e';
+    if (!('Intl' in window)) {
+      return false;
+    }
+
+    var options = {day: 'numeric', month: 'short'};
+    var formatter = new window.Intl.DateTimeFormat(undefined, options);
+    var output = formatter.format(new Date(0));
+
+    dayFirst = !!output.match(/^\d/);
+    return dayFirst;
+  }
+  var dayFirst = null;
+
+  // Private: Determine if the year should be separated from the month and day
+  // with a comma. For example, `9 Jun 2014` in en-GB and `Jun 9, 2014` in en-US.
+  //
+  // Returns true if the date needs a separator.
+  function isYearSeparator() {
+    if (yearSeparator !== null) {
+      return yearSeparator;
+    }
+
+    if (!('Intl' in window)) {
+      return true;
+    }
+
+    var options = {day: 'numeric', month: 'short', year: 'numeric'};
+    var formatter = new window.Intl.DateTimeFormat(undefined, options);
+    var output = formatter.format(new Date(0));
+
+    yearSeparator = !!output.match(/\d,/);
+    return yearSeparator;
+  }
+  var yearSeparator = null;
+
+  RelativeTime.prototype.formatDate = function() {
+    var format = isDayFirst() ? '%e %b' : '%b %e';
     if (!this.calendarDate.occursThisYear()) {
-      format += ', %Y';
+      format += isYearSeparator() ? ', %Y': ' %Y';
     }
     return strftime(this.date, format);
   };
 
   RelativeTime.prototype.formatTime = function() {
     if ('Intl' in window) {
-      var formatter = window.Intl.DateTimeFormat(undefined, {hour: 'numeric', minute: '2-digit'});
+      var formatter = new window.Intl.DateTimeFormat(undefined, {hour: 'numeric', minute: '2-digit'});
       return formatter.format(this.date);
     } else {
       return strftime(this.date, '%l:%M%P');
