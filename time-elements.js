@@ -233,7 +233,7 @@
       if (!this.calendarDate.occursThisYear()) {
         options.year = 'numeric';
       }
-      var formatter = window.Intl.DateTimeFormat(undefined, options);
+      var formatter = new window.Intl.DateTimeFormat(undefined, options);
       return formatter.format(this.date);
     }
 
@@ -246,7 +246,7 @@
 
   RelativeTime.prototype.formatTime = function() {
     if ('Intl' in window) {
-      var formatter = window.Intl.DateTimeFormat(undefined, {hour: 'numeric', minute: '2-digit'});
+      var formatter = new window.Intl.DateTimeFormat(undefined, {hour: 'numeric', minute: '2-digit'});
       return formatter.format(this.date);
     } else {
       return strftime(this.date, '%l:%M%P');
