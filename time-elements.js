@@ -417,14 +417,22 @@
     }
   };
 
-
-  // weekday - Possible values are "narrow", "short", "long".
-  // year    - Possible values are "numeric", "2-digit".
-  // month   - Possible values are "numeric", "2-digit", "narrow", "short", "long".
-  // day     - Possible values are "numeric", "2-digit".
-  // hour    - Possible values are "numeric", "2-digit".
-  // minute  - Possible values are "numeric", "2-digit".
-  // second  - Possible values are "numeric", "2-digit".
+  // Formats the element's date, in the user's current locale, according to
+  // the formatting attribute values. Values are not passed straight through to
+  // an Intl.DateTimeFormat instance so that weekday and month names are always
+  // displayed in English, for now.
+  //
+  // Supported attributes are:
+  //
+  //   weekday - Possible values are "short", "long".
+  //   year    - Possible values are "numeric", "2-digit".
+  //   month   - Possible values are "short", "long".
+  //   day     - Possible values are "numeric", "2-digit".
+  //   hour    - Possible values are "numeric", "2-digit".
+  //   minute  - Possible values are "numeric", "2-digit".
+  //   second  - Possible values are "numeric", "2-digit".
+  //
+  // Returns a formatted time String.
   LocalTimePrototype.getFormattedDate = function() {
     if (!this._date) {
       return;
@@ -434,18 +442,73 @@
       return;
     }
 
-    var options = {};
-    var props = ['weekday', 'year', 'month', 'day', 'hour', 'minute', 'second'];
-    var prop, i, len;
-    for (i = 0, len = props.length; i < len; i++) {
-      prop = props[i];
-      if (this.hasAttribute(prop)) {
-        options[prop] = this.getAttribute(prop);
+    var format = '';
+
+    // numeric: `8`, 2-digit: `08`
+    var day = this.getAttribute('day');
+    if (day) {
+      format = (day === 'numeric') ? '%e' : '%d';
+    }
+
+    // short: `Dec`, long: `December`
+    var month = this.getAttribute('month');
+    if (month) {
+      var monthf = (month === 'short') ? '%b' : '%B';
+      if (day) {
+        if (isDayFirst()) {
+          format += ' ' + monthf;
+        } else {
+          format = monthf + ' ' + format
+        }
+      } else {
+        format = monthf;
       }
     }
 
-    var formatter = window.Intl.DateTimeFormat(undefined, options);
-    return formatter.format(this._date);
+    // numeric: `2014`, 2-digit: `14`
+    var year = this.getAttribute('year');
+    if (year) {
+      var yearf = (year === 'numeric') ? '%Y' : '%y';
+      if (day || month) {
+        if (isYearSeparator()) {
+          yearf = ', ' + yearf;
+        } else {
+          yearf = ' ' + yearf;
+        }
+      } else {
+        format = yearf;
+      }
+    }
+
+    // short: `Wed`, long: `Wednesday`
+    var weekday = this.getAttribute('weekday');
+    if (weekday) {
+      var weekdayf = (weekday === 'short') ? '%a' : '%A';
+      format = weekdayf + ' ' + format;
+    }
+
+    // format 12 or 24 hour time
+    var options = {};
+    if (this.hasAttribute('hour')) {
+      options.hour = this.getAttribute('hour');
+    }
+    if (this.hasAttribute('minute')) {
+      options.minute = this.getAttribute('minute');
+    }
+    if (this.hasAttribute('second')) {
+      options.second = this.getAttribute('second');
+    }
+    if (Object.keys(options).length > 0) {
+      var formatter = new window.Intl.DateTimeFormat(undefined, options);
+      var time = formatter.format(this._date);
+    }
+
+    // fully formatted date and time
+    var date = strftime(this._date, format.trim());
+    if (time) {
+      date += ' ' + time;
+    }
+    return date.trim();
   };
 
 
