@@ -7,7 +7,21 @@
 </head>
 <body>
   <p>
+    Local date:
+    <time is="local-time" datetime="1970-01-01T00:00:00.000Z" weekday="short" year="numeric" month="short" day="numeric">
+      Jan 1 1970
+    </time>
+  </p>
+
+  <p>
     Local time:
+    <time is="local-time" datetime="1970-01-01T00:00:00.000Z" hour="numeric" minute="2-digit" second="2-digit">
+      Jan 1 1970
+    </time>
+  </p>
+
+  <p>
+    Local date and time:
     <time is="local-time" datetime="1970-01-01T00:00:00.000Z" weekday="short" year="numeric" month="short" day="numeric" hour="numeric" minute="2-digit" second="2-digit">
       Jan 1 1970
     </time>
