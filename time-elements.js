@@ -442,73 +442,52 @@
       return;
     }
 
-    var format = '';
+    var props = {
+      weekday: {
+        'short': '%a',
+        'long': '%A'
+      },
+      day: {
+        'numeric': '%e',
+        '2-digit': '%d'
+      },
+      month: {
+        'short': '%b',
+        'long': '%B'
+      },
+      year: {
+        'numeric': '%Y',
+        '2-digit': '%y'
+      }
+    };
 
-    // numeric: `8`, 2-digit: `08`
-    var day = this.getAttribute('day');
-    if (day) {
-      format = (day === 'numeric') ? '%e' : '%d';
+    var format = isDayFirst() ? 'weekday day month year' : 'weekday month day, year';
+    for (var prop in props) {
+      var value = props[prop][this.getAttribute(prop)];
+      format = format.replace(prop, value || '');
+    }
+    format = format.replace(/(\s,)|(,\s$)/, '');
+
+    var options = {
+      hour: this.getAttribute('hour'),
+      minute: this.getAttribute('minute'),
+      second: this.getAttribute('second')
     }
 
-    // short: `Dec`, long: `December`
-    var month = this.getAttribute('month');
-    if (month) {
-      var monthf = (month === 'short') ? '%b' : '%B';
-      if (day) {
-        if (isDayFirst()) {
-          format += ' ' + monthf;
-        } else {
-          format = monthf + ' ' + format
-        }
-      } else {
-        format = monthf;
+    for (var opt in options) {
+      if (!options[opt]) {
+        delete options[opt];
       }
     }
 
-    // numeric: `2014`, 2-digit: `14`
-    var year = this.getAttribute('year');
-    if (year) {
-      var yearf = (year === 'numeric') ? '%Y' : '%y';
-      if (day || month) {
-        if (isYearSeparator()) {
-          yearf = ', ' + yearf;
-        } else {
-          yearf = ' ' + yearf;
-        }
-      } else {
-        format = yearf;
-      }
-    }
-
-    // short: `Wed`, long: `Wednesday`
-    var weekday = this.getAttribute('weekday');
-    if (weekday) {
-      var weekdayf = (weekday === 'short') ? '%a' : '%A';
-      format = weekdayf + ' ' + format;
-    }
-
-    // format 12 or 24 hour time
-    var options = {};
-    if (this.hasAttribute('hour')) {
-      options.hour = this.getAttribute('hour');
-    }
-    if (this.hasAttribute('minute')) {
-      options.minute = this.getAttribute('minute');
-    }
-    if (this.hasAttribute('second')) {
-      options.second = this.getAttribute('second');
-    }
+    var time = '';
     if (Object.keys(options).length > 0) {
       var formatter = new window.Intl.DateTimeFormat(undefined, options);
-      var time = formatter.format(this._date);
+      time = formatter.format(this._date);
     }
 
-    // fully formatted date and time
-    var date = strftime(this._date, format.trim());
-    if (time) {
-      date += ' ' + time;
-    }
-    return date.trim();
+    var date = strftime(this._date, format) + ' ' + time;
+    return date.replace(/\s+/, ' ').trim();
   };
 
 
