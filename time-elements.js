@@ -404,7 +404,6 @@
   };
 
 
-
   var LocalTimePrototype = Object.create(ExtendedTimePrototype);
 
   LocalTimePrototype.createdCallback = function() {
@@ -424,13 +423,13 @@
   //
   // Supported attributes are:
   //
-  //   weekday - Possible values are "short", "long".
-  //   year    - Possible values are "numeric", "2-digit".
-  //   month   - Possible values are "short", "long".
-  //   day     - Possible values are "numeric", "2-digit".
-  //   hour    - Possible values are "numeric", "2-digit".
-  //   minute  - Possible values are "numeric", "2-digit".
-  //   second  - Possible values are "numeric", "2-digit".
+  //   weekday - "short", "long"
+  //   year    - "numeric", "2-digit"
+  //   month   - "short", "long"
+  //   day     - "numeric", "2-digit"
+  //   hour    - "numeric", "2-digit"
+  //   minute  - "numeric", "2-digit"
+  //   second  - "numeric", "2-digit"
   //
   // Returns a formatted time String.
   LocalTimePrototype.getFormattedDate = function() {
