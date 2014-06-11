@@ -438,10 +438,23 @@
       return;
     }
 
-    if (!('Intl' in window)) {
-      return;
-    }
+    var date = formatDate(this) || '';
+    var time = formatTime(this) || '';
+    return (date + ' ' + time).trim();
+  };
 
+  // Private: Format a date according to the `weekday`, `day`, `month`,
+  // and `year` attribute values.
+  //
+  // This doesn't use Intl.DateTimeFormat to avoid creating text in the user's
+  // language when the majority of the surrounding text is in English. There's
+  // currently no way to separate the language from the format in Intl.
+  //
+  // el - The local-time element to format.
+  //
+  // Returns a date String or null if no date formats are provided.
+  function formatDate(el) {
+    // map attribute values to strftime
     var props = {
       weekday: {
         'short': '%a',
@@ -461,35 +474,56 @@
       }
     };
 
+    // build a strftime format string
     var format = isDayFirst() ? 'weekday day month year' : 'weekday month day, year';
     for (var prop in props) {
-      var value = props[prop][this.getAttribute(prop)];
+      var value = props[prop][el.getAttribute(prop)];
       format = format.replace(prop, value || '');
     }
+
+    // clean up year separator comma
     format = format.replace(/(\s,)|(,\s$)/, '');
 
+    // squeeze spaces from final string
+    return strftime(el._date, format).replace(/\s+/, ' ').trim();
+  }
+
+  // Private: Format a time according to the `hour`, `minute`, and `second`
+  // attribute values.
+  //
+  // el - The local-time element to format.
+  //
+  // Returns a time String or null if no time formats are provided.
+  function formatTime(el) {
+    // retrieve format settings from attributes
     var options = {
-      hour: this.getAttribute('hour'),
-      minute: this.getAttribute('minute'),
-      second: this.getAttribute('second')
+      hour: el.getAttribute('hour'),
+      minute: el.getAttribute('minute'),
+      second: el.getAttribute('second')
     };
 
+    // remove unset format attributes
     for (var opt in options) {
       if (!options[opt]) {
         delete options[opt];
       }
     }
 
-    var time = '';
-    if (Object.keys(options).length > 0) {
-      var formatter = new window.Intl.DateTimeFormat(undefined, options);
-      time = formatter.format(this._date);
+    // no time format attributes provided
+    if (Object.keys(options).length === 0) {
+      return;
     }
 
-    var date = strftime(this._date, format) + ' ' + time;
-    return date.replace(/\s+/, ' ').trim();
-  };
+    // locale-aware formatting of 24 or 12 hour times
+    if ('Intl' in window) {
+      var formatter = new window.Intl.DateTimeFormat(undefined, options);
+      return formatter.format(el._date);
+    }
 
+    // fall back to strftime for non-Intl browsers
+    var timef = options.second ? '%H:%M:%S' : '%H:%M';
+    return strftime(el._date, timef);
+  }
 
   // Public: RelativeTimeElement constructor.
   //
