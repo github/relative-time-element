@@ -40,7 +40,10 @@ test('getFormattedDate with only time attributes', function() {
   time.setAttribute('datetime', '1970-01-01T00:00:00.000Z');
   time.setAttribute('hour', 'numeric');
   time.setAttribute('minute', '2-digit');
-  ok(time.getFormattedDate().match(/^\d\d:\d\d$/)[0]);
+
+  var browser = time.getFormattedDate().match(/^\d{1,2}:\d\d [AP]M$/);
+  var phantom = time.getFormattedDate().match(/^\d\d:\d\d$/);
+  ok(browser || phantom);
 });
 
 test('ignores contents if datetime attribute is missing', function() {
