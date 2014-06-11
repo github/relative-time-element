@@ -472,7 +472,7 @@
       hour: this.getAttribute('hour'),
       minute: this.getAttribute('minute'),
       second: this.getAttribute('second')
-    }
+    };
 
     for (var opt in options) {
       if (!options[opt]) {
