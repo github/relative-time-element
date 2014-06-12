@@ -135,7 +135,7 @@
   }
 
   RelativeTime.prototype.toString = function() {
-    var ago, day;
+    var ago;
     if (ago = this.timeElapsed()) {
       return ago;
     } else {
@@ -158,7 +158,6 @@
     var min = Math.round(sec / 60);
     var hr = Math.round(min / 60);
     var day = Math.round(hr / 24);
-    var month = Math.round(day / 30);
     if (ms < 0) {
       return 'just now';
     } else if (sec < 10) {
