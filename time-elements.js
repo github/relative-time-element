@@ -135,11 +135,9 @@
   }
 
   RelativeTime.prototype.toString = function() {
-    var ago, day;
+    var ago;
     if (ago = this.timeElapsed()) {
       return ago;
-    } else if (day = this.relativeWeekday()) {
-      return day + ' at ' + this.formatTime();
     } else {
       return 'on ' + this.formatDate();
     }
@@ -154,10 +152,12 @@
   };
 
   RelativeTime.prototype.timeElapsed = function() {
+    var weekday;
     var ms = new Date().getTime() - this.date.getTime();
     var sec = Math.round(ms / 1000);
     var min = Math.round(sec / 60);
     var hr = Math.round(min / 60);
+    var day = Math.round(hr / 24);
     if (ms < 0) {
       return 'just now';
     } else if (sec < 10) {
@@ -172,6 +172,10 @@
       return 'an hour ago';
     } else if (hr < 24) {
       return hr + ' hours ago';
+    } else if (weekday = this.relativeWeekday()) {
+      return weekday + ' at ' + this.formatTime();
+    } else if (day < 30) {
+      return day + ' days ago';
     } else {
       return null;
     }
@@ -216,14 +220,12 @@
 
   RelativeTime.prototype.relativeWeekday = function() {
     var daysPassed = this.calendarDate.daysPassed();
-    if (daysPassed > 6) {
-      return null;
-    } else if (daysPassed === 0) {
+    if (daysPassed === 0) {
       return 'today';
     } else if (daysPassed === 1) {
       return 'yesterday';
     } else {
-      return strftime(this.date, '%A');
+      return null;
     }
   };
 
