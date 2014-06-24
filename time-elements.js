@@ -95,7 +95,7 @@
   }
 
   CalendarDate.fromDate = function(date) {
-    return new this(date.getFullYear(), date.getMonth() + 1, date.getDate());
+    return new this(date.getUTCFullYear(), date.getUTCMonth() + 1, date.getUTCDate());
   };
 
   CalendarDate.today = function() {
