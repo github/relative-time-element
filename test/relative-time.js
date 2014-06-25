@@ -21,11 +21,11 @@ test('displays future times as just now', function() {
   equal(time.textContent, 'just now');
 });
 
-test('displays yesterday with time', function() {
+test('displays a day ago', function() {
   var now = new Date(Date.now() - 60 * 60 * 24 * 1000).toISOString();
   var time = document.createElement('time', 'relative-time');
   time.setAttribute('datetime', now);
-  ok(time.textContent.match(/yesterday at \d{1,2}:\d\d/));
+  equal(time.textContent, 'a day ago');
 });
 
 test('displays 2 days ago', function() {

@@ -152,7 +152,6 @@
   };
 
   RelativeTime.prototype.timeElapsed = function() {
-    var weekday;
     var ms = new Date().getTime() - this.date.getTime();
     var sec = Math.round(ms / 1000);
     var min = Math.round(sec / 60);
@@ -172,8 +171,8 @@
       return 'an hour ago';
     } else if (hr < 24) {
       return hr + ' hours ago';
-    } else if (weekday = this.relativeWeekday()) {
-      return weekday + ' at ' + this.formatTime();
+    } else if (hr < 36) {
+      return 'a day ago';
     } else if (day < 30) {
       return day + ' days ago';
     } else {
@@ -215,17 +214,6 @@
         return 'a year ago';
     } else {
       return year + ' years ago';
-    }
-  };
-
-  RelativeTime.prototype.relativeWeekday = function() {
-    var daysPassed = this.calendarDate.daysPassed();
-    if (daysPassed === 0) {
-      return 'today';
-    } else if (daysPassed === 1) {
-      return 'yesterday';
-    } else {
-      return null;
     }
   };
 
