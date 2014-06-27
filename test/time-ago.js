@@ -37,3 +37,35 @@ test('sets relative contents when parsed element is upgraded', function() {
   }
   equal(root.children[0].textContent, 'just now');
 });
+
+test('micro formats years', function() {
+  var now = new Date(Date.now() - 10 * 365 * 24 * 60 * 60 * 1000).toISOString();
+  var time = document.createElement('time', 'time-ago');
+  time.setAttribute('datetime', now);
+  time.setAttribute('format', 'micro');
+  equal(time.textContent, '10y');
+});
+
+test('micro formats future times', function() {
+  var now = new Date(Date.now() + 3 * 1000).toISOString();
+  var time = document.createElement('time', 'time-ago');
+  time.setAttribute('datetime', now);
+  time.setAttribute('format', 'micro');
+  equal(time.textContent, '1m');
+});
+
+test('micro formats hours', function() {
+  var now = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+  var time = document.createElement('time', 'time-ago');
+  time.setAttribute('datetime', now);
+  time.setAttribute('format', 'micro');
+  equal(time.textContent, '1h');
+});
+
+test('micro formats days', function() {
+  var now = new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString();
+  var time = document.createElement('time', 'time-ago');
+  time.setAttribute('datetime', now);
+  time.setAttribute('format', 'micro');
+  equal(time.textContent, '1d');
+});
