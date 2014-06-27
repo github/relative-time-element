@@ -131,7 +131,6 @@
 
   function RelativeTime(date) {
     this.date = date;
-    this.calendarDate = CalendarDate.fromDate(this.date);
   }
 
   RelativeTime.prototype.toString = function() {
@@ -140,14 +139,6 @@
       return ago;
     } else {
       return 'on ' + this.formatDate();
-    }
-  };
-
-  RelativeTime.prototype.toTimeOrDateString = function() {
-    if (this.calendarDate.isToday()) {
-      return this.formatTime();
-    } else {
-      return this.formatDate();
     }
   };
 
