@@ -89,8 +89,8 @@
   }
 
   RelativeTime.prototype.toString = function() {
-    var ago;
-    if (ago = this.timeElapsed()) {
+    var ago = this.timeElapsed();
+    if (ago) {
       return ago;
     } else {
       return 'on ' + this.formatDate();
