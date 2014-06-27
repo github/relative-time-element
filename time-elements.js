@@ -84,51 +84,6 @@
     });
   }
 
-
-  function CalendarDate(year, month, day) {
-    this.date = new Date(Date.UTC(year, month - 1));
-    this.date.setUTCDate(day);
-    this.year = this.date.getUTCFullYear();
-    this.month = this.date.getUTCMonth() + 1;
-    this.day = this.date.getUTCDate();
-    this.value = this.date.getTime();
-  }
-
-  CalendarDate.fromDate = function(date) {
-    return new this(date.getUTCFullYear(), date.getUTCMonth() + 1, date.getUTCDate());
-  };
-
-  CalendarDate.today = function() {
-    return this.fromDate(new Date());
-  };
-
-  CalendarDate.prototype.equals = function(calendarDate) {
-    return (calendarDate != null ? calendarDate.value : void 0) === this.value;
-  };
-
-  CalendarDate.prototype.isToday = function() {
-    return this.equals(CalendarDate.today());
-  };
-
-  CalendarDate.prototype.occursOnSameYearAs = function(date) {
-    return this.year === (date != null ? date.year : void 0);
-  };
-
-  CalendarDate.prototype.occursThisYear = function() {
-    return this.occursOnSameYearAs(CalendarDate.today());
-  };
-
-  CalendarDate.prototype.daysSince = function(date) {
-    if (date) {
-      return (this.date - date.date) / (1000 * 60 * 60 * 24);
-    }
-  };
-
-  CalendarDate.prototype.daysPassed = function() {
-    return CalendarDate.today().daysSince(this);
-  };
-
-
   function RelativeTime(date) {
     this.date = date;
   }
