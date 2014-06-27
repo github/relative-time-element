@@ -262,9 +262,19 @@
   }
   var yearSeparator = null;
 
+  // Private: Determine if the date occurs in the same year as today's date.
+  //
+  // date - The Date to test.
+  //
+  // Returns true if it's this year.
+  function isThisYear(date) {
+    var now = new Date();
+    return now.getUTCFullYear() === date.getUTCFullYear();
+  }
+
   RelativeTime.prototype.formatDate = function() {
     var format = isDayFirst() ? '%e %b' : '%b %e';
-    if (!this.calendarDate.occursThisYear()) {
+    if (!isThisYear(this.date)) {
       format += isYearSeparator() ? ', %Y': ' %Y';
     }
     return strftime(this.date, format);
