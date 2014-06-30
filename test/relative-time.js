@@ -55,6 +55,19 @@ test('ignores blank dates', function() {
   time.setAttribute('datetime', '');
   equal(time.textContent, 'Jun 30');
 });
+
+test('ignores removed dates', function() {
+  var time = document.createElement('time', 'relative-time');
+  var now = new Date().toISOString();
+  time.textContent = 'Jun 30';
+
+  time.setAttribute('datetime', now);
+  equal(time.textContent, 'just now');
+
+  time.removeAttribute('datetime');
+  equal(time.textContent, 'just now');
+});
+
 test('sets relative contents when parsed element is upgraded', function() {
   var now = new Date().toISOString();
   var root = document.createElement('div');
