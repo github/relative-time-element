@@ -49,6 +49,12 @@ test('ignores malformed dates', function() {
   equal(time.textContent, 'Jun 30');
 });
 
+test('ignores blank dates', function() {
+  var time = document.createElement('time', 'relative-time');
+  time.textContent = 'Jun 30';
+  time.setAttribute('datetime', '');
+  equal(time.textContent, 'Jun 30');
+});
 test('sets relative contents when parsed element is upgraded', function() {
   var now = new Date().toISOString();
   var root = document.createElement('div');
