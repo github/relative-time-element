@@ -163,6 +163,27 @@
     }
   };
 
+  RelativeTime.prototype.microTimeAgo = function() {
+    var ms = new Date().getTime() - this.date.getTime();
+    var sec = ms / 1000;
+    var min = sec / 60;
+    var hr = min / 60;
+    var day = hr / 24;
+    var month = day / 30;
+    var year = month / 12;
+    if (min < 1) {
+      return '1m';
+    } else if (min < 60) {
+      return Math.round(min) + 'm';
+    } else if (hr < 24) {
+      return Math.round(hr) + 'h';
+    } else if (day < 365) {
+      return Math.round(day) + 'd';
+    } else {
+      return Math.round(year) + 'y';
+    }
+  };
+
   // Private: Determine if the day should be formatted before the month name in
   // the user's current locale. For example, `9 Jun` for en-GB and `Jun 9`
   // for en-US.
@@ -346,7 +367,12 @@
   var TimeAgoPrototype = Object.create(RelativeTimePrototype);
   TimeAgoPrototype.getFormattedDate = function() {
     if (this._date) {
-      return new RelativeTime(this._date).timeAgo();
+      var format = this.getAttribute('format');
+      if (format === 'micro') {
+        return new RelativeTime(this._date).microTimeAgo();
+      } else {
+        return new RelativeTime(this._date).timeAgo();
+      }
     }
   };
 
