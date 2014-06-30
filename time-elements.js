@@ -266,7 +266,8 @@
   // Returns nothing.
   ExtendedTimePrototype.attributeChangedCallback = function(attrName, oldValue, newValue) {
     if (attrName === 'datetime') {
-      this._date = new Date(Date.parse(newValue));
+      var millis = Date.parse(newValue);
+      this._date = isNaN(millis) ? null : new Date(millis);
     }
 
     var title = this.getFormattedTitle();
