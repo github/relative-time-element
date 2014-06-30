@@ -84,70 +84,16 @@
     });
   }
 
-
-  function CalendarDate(year, month, day) {
-    this.date = new Date(Date.UTC(year, month - 1));
-    this.date.setUTCDate(day);
-    this.year = this.date.getUTCFullYear();
-    this.month = this.date.getUTCMonth() + 1;
-    this.day = this.date.getUTCDate();
-    this.value = this.date.getTime();
-  }
-
-  CalendarDate.fromDate = function(date) {
-    return new this(date.getUTCFullYear(), date.getUTCMonth() + 1, date.getUTCDate());
-  };
-
-  CalendarDate.today = function() {
-    return this.fromDate(new Date());
-  };
-
-  CalendarDate.prototype.equals = function(calendarDate) {
-    return (calendarDate != null ? calendarDate.value : void 0) === this.value;
-  };
-
-  CalendarDate.prototype.isToday = function() {
-    return this.equals(CalendarDate.today());
-  };
-
-  CalendarDate.prototype.occursOnSameYearAs = function(date) {
-    return this.year === (date != null ? date.year : void 0);
-  };
-
-  CalendarDate.prototype.occursThisYear = function() {
-    return this.occursOnSameYearAs(CalendarDate.today());
-  };
-
-  CalendarDate.prototype.daysSince = function(date) {
-    if (date) {
-      return (this.date - date.date) / (1000 * 60 * 60 * 24);
-    }
-  };
-
-  CalendarDate.prototype.daysPassed = function() {
-    return CalendarDate.today().daysSince(this);
-  };
-
-
   function RelativeTime(date) {
     this.date = date;
-    this.calendarDate = CalendarDate.fromDate(this.date);
   }
 
   RelativeTime.prototype.toString = function() {
-    var ago;
-    if (ago = this.timeElapsed()) {
+    var ago = this.timeElapsed();
+    if (ago) {
       return ago;
     } else {
       return 'on ' + this.formatDate();
-    }
-  };
-
-  RelativeTime.prototype.toTimeOrDateString = function() {
-    if (this.calendarDate.isToday()) {
-      return this.formatTime();
-    } else {
-      return this.formatDate();
     }
   };
 
@@ -283,9 +229,19 @@
   }
   var yearSeparator = null;
 
+  // Private: Determine if the date occurs in the same year as today's date.
+  //
+  // date - The Date to test.
+  //
+  // Returns true if it's this year.
+  function isThisYear(date) {
+    var now = new Date();
+    return now.getUTCFullYear() === date.getUTCFullYear();
+  }
+
   RelativeTime.prototype.formatDate = function() {
     var format = isDayFirst() ? '%e %b' : '%b %e';
-    if (!this.calendarDate.occursThisYear()) {
+    if (!isThisYear(this.date)) {
       format += isYearSeparator() ? ', %Y': ' %Y';
     }
     return strftime(this.date, format);
@@ -331,7 +287,8 @@
   // Returns nothing.
   ExtendedTimePrototype.attributeChangedCallback = function(attrName, oldValue, newValue) {
     if (attrName === 'datetime') {
-      this._date = new Date(Date.parse(newValue));
+      var millis = Date.parse(newValue);
+      this._date = isNaN(millis) ? null : new Date(millis);
     }
 
     var title = this.getFormattedTitle();
