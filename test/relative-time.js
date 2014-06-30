@@ -42,6 +42,13 @@ test('switches to dates after 30 days', function() {
   ok(time.textContent.match(/on \w\w\w \d{1,2}/));
 });
 
+test('ignores malformed dates', function() {
+  var time = document.createElement('time', 'relative-time');
+  time.textContent = 'Jun 30';
+  time.setAttribute('datetime', 'bogus');
+  equal(time.textContent, 'Jun 30');
+});
+
 test('sets relative contents when parsed element is upgraded', function() {
   var now = new Date().toISOString();
   var root = document.createElement('div');
