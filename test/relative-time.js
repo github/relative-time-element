@@ -59,7 +59,6 @@ test('ignores blank dates', function() {
 test('ignores removed dates', function() {
   var time = document.createElement('time', 'relative-time');
   var now = new Date().toISOString();
-  time.textContent = 'Jun 30';
 
   time.setAttribute('datetime', now);
   equal(time.textContent, 'just now');
