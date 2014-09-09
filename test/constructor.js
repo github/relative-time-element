@@ -24,6 +24,41 @@ test('create relative-time from constructor', function() {
   equal('relative-time', time.getAttribute('is'));
 });
 
+test('create relative-time-to-go from document.createElement', function() {
+  var time = document.createElement('time', 'relative-time-to-go');
+  equal('TIME', time.nodeName);
+  equal('relative-time-to-go', time.getAttribute('is'));
+});
+
+test('create relative-time-to-go from constructor', function() {
+  var time = new window.RelativeTimeToGoElement();
+  equal('TIME', time.nodeName);
+  equal('relative-time-to-go', time.getAttribute('is'));
+});
+
+test('create time-ago from document.createElement', function() {
+  var time = document.createElement('time', 'time-ago');
+  equal('TIME', time.nodeName);
+  equal('time-ago', time.getAttribute('is'));
+});
+
+test('create time-ago from constructor', function() {
+  var time = new window.TimeAgoElement();
+  equal('TIME', time.nodeName);
+  equal('time-ago', time.getAttribute('is'));
+});
+
+test('create time-to-go from document.createElement', function() {
+  var time = document.createElement('time', 'time-to-go');
+  equal('TIME', time.nodeName);
+  equal('time-to-go', time.getAttribute('is'));
+});
+
+test('create time-to-go from constructor', function() {
+  var time = new window.TimeToGoElement();
+  equal('TIME', time.nodeName);
+  equal('time-to-go', time.getAttribute('is'));
+});
 test('ignores elements without a datetime attr', function() {
   var time = document.createElement('time', 'local-time');
   equal(time.textContent, '');

@@ -100,7 +100,7 @@
     } else {
       return new Date().getTime() - this.date.getTime();
     }
-  }
+  };
 
   RelativeTime.prototype.toString = function() {
     var ago = this.timeElapsed();
@@ -157,7 +157,7 @@
     } else if (sec < 90) {
       return this.prefix + 'a minute' + this.postfix;
     } else if (min < 45) {
-      return min + ' minutes' + this.postfix;
+      return this.prefix + min + ' minutes' + this.postfix;
     } else if (min < 90) {
       return this.prefix + 'an hour' + this.postfix;
     } else if (hr < 24) {
@@ -553,7 +553,7 @@
   //   var time = new RelativeTimeToGoElement()
   //   # => <time is='relative-time-to-go'></time>
   //
-  window.RelativeTimeElement = document.registerElement('relative-time-to-go', {
+  window.RelativeTimeToGoElement = document.registerElement('relative-time-to-go', {
     prototype: RelativeTimeToGoPrototype,
     'extends': 'time'
   });
