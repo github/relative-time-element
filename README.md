@@ -84,7 +84,7 @@ For example, if this markup is viewed two years in the future, the element's tex
 
 The optional `format="micro"` attribute shortens the descriptions to 1m, 1h, 1d, 1y.
 
-```
+``` html
 <time is="time-ago" datetime="2012-04-01T16:30:00-08:00" format="micro">
   April 1, 2014
 </time>
