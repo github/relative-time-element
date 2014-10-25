@@ -90,13 +90,15 @@
 
   RelativeTime.prototype.toString = function() {
     var ago = this.timeElapsed();
-    var ahead = this.timeAhead();
     if (ago) {
       return ago;
-    } else if (ahead) {
-      return ahead;
     } else {
-      return 'on ' + this.formatDate();
+      var ahead = this.timeAhead();
+      if (ahead) {
+        return ahead;
+      } else {
+        return 'on ' + this.formatDate();
+      }
     }
   };
 
