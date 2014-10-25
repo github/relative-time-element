@@ -6,6 +6,7 @@
   <script src="../time-elements.js"></script>
 </head>
 <body>
+  <h2>Past Date</h2>
   <p>
     Local date:
     <time is="local-time" datetime="1970-01-01T00:00:00.000Z" weekday="short" year="numeric" month="short" day="numeric">
@@ -44,6 +45,49 @@
   <p>
     Time ago (micro format):
     <time is="time-ago" format="micro" datetime="1970-01-01T00:00:00.000Z">
+      Oops! This browser doesn't support Web Components.
+    </time>
+  </p>
+
+  <h2>Future Date</h2>
+  <p>
+    Local date:
+    <time is="local-time" datetime="2017-01-01T00:00:00.000Z" weekday="short" year="numeric" month="short" day="numeric">
+      Jan 1 2017
+    </time>
+  </p>
+
+  <p>
+    Local time:
+    <time is="local-time" datetime="2017-01-01T00:00:00.000Z" hour="numeric" minute="2-digit" second="2-digit">
+      Jan 1 2017
+    </time>
+  </p>
+
+  <p>
+    Local date and time:
+    <time is="local-time" datetime="2017-01-01T00:00:00.000Z" weekday="short" year="numeric" month="short" day="numeric" hour="numeric" minute="2-digit" second="2-digit">
+      Jan 1 2017
+    </time>
+  </p>
+
+  <p>
+    Relative time:
+    <time is="relative-time" datetime="2017-01-01T00:00:00.000Z">
+      Oops! This browser doesn't support Web Components.
+    </time>
+  </p>
+
+  <p>
+    Time until:
+    <time is="time-until" datetime="2017-01-01T00:00:00.000Z">
+      Oops! This browser doesn't support Web Components.
+    </time>
+  </p>
+
+  <p>
+    Time until (micro format):
+    <time is="time-until" format="micro" datetime="2017-01-01T00:00:00.000Z">
       Oops! This browser doesn't support Web Components.
     </time>
   </p>
