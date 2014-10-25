@@ -202,30 +202,28 @@
     var day = Math.round(hr / 24);
     var month = Math.round(day / 30);
     var year = Math.round(month / 12);
-    if (month > 18) {
+    if (month >= 18) {
       return year + ' years from now';
-    } else if (month > 12) {
+    } else if (month >= 12) {
       return 'a year from now';
-    } else if (month > 2) {
+    } else if (day >= 45) {
       return month + ' months from now';
-    } else if (day > 45) {
+    } else if (day >= 30) {
       return 'a month from now';
-    } else if (day > 1) {
+    } else if (hr >= 36) {
       return day + ' days from now';
-    } else if (hr > 23) {
+    } else if (hr >= 24) {
       return 'a day from now';
-    } else if (hr > 2) {
+    } else if (min >= 90) {
       return hr + ' hours from now';
-    } else if (min > 45) {
+    } else if (min >= 45) {
       return 'an hour from now';
-    } else if (min > 2) {
+    } else if (sec >= 90) {
       return min + ' minutes from now';
-    } else if (sec > 90) {
+    } else if (sec >= 45) {
       return 'a minute from now';
-    } else if (sec > 45) {
+    } else if (sec >= 10) {
       return sec + ' seconds from now';
-    } else if (sec > 10) {
-      return 'just now';
     } else {
       return 'just now';
     } 
@@ -239,11 +237,11 @@
     var day = hr / 24;
     var month = day / 30;
     var year = month / 12;
-    if (day > 365) {
+    if (day >= 365) {
       return Math.round(year) + 'y';
-    } else if (hr > 24) {
+    } else if (hr >= 24) {
       return Math.round(day) + 'd';
-    } else if (min > 60) {
+    } else if (min >= 60) {
       return Math.round(hr) + 'h';
     } else if (min > 1) {
       return Math.round(min) + 'm';
