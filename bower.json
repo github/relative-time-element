@@ -9,6 +9,9 @@
     "qunit": "1.14.0",
     "WeakMap": "0.2.1"
   },
+  "keywords": [
+    "web-components"  
+  ],
   "ignore": [
     ".*",
     "*.md",
