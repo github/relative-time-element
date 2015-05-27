@@ -14,7 +14,7 @@ Every user is served the same markup from the server's cache. When it reaches th
 
 ```html
 <time is="local-time" datetime="2014-04-01T16:30:00-08:00">
-  1 Apr 2014 14:30
+  1 Apr 2014 16:30
 </time>
 ```
 
