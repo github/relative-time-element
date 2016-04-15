@@ -275,12 +275,7 @@
   }
 
 
-  var ExtendedTimePrototype;
-  if ('HTMLTimeElement' in window) {
-    ExtendedTimePrototype = Object.create(window.HTMLTimeElement.prototype);
-  } else {
-    ExtendedTimePrototype = Object.create(window.HTMLElement.prototype);
-  }
+  var ExtendedTimePrototype = Object.create(window.HTMLElement.prototype);
 
   // Internal: Refresh the time element's formatted date when an attribute changes.
   //
@@ -500,26 +495,23 @@
   // Public: RelativeTimeElement constructor.
   //
   //   var time = new RelativeTimeElement()
-  //   # => <time is='relative-time'></time>
+  //   # => <relative-time></relative-time>
   //
   window.RelativeTimeElement = document.registerElement('relative-time', {
-    prototype: RelativeTimePrototype,
-    'extends': 'time'
+    prototype: RelativeTimePrototype
   });
 
   window.TimeAgoElement = document.registerElement('time-ago', {
-    prototype: TimeAgoPrototype,
-    'extends': 'time'
+    prototype: TimeAgoPrototype
   });
 
   // Public: LocalTimeElement constructor.
   //
   //   var time = new LocalTimeElement()
-  //   # => <time is='local-time'></time>
+  //   # => <local-time></local-time>
   //
   window.LocalTimeElement = document.registerElement('local-time', {
-    prototype: LocalTimePrototype,
-    'extends': 'time'
+    prototype: LocalTimePrototype
   });
 
 })();
