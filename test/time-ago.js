@@ -38,6 +38,16 @@ test('sets relative contents when parsed element is upgraded', function() {
   equal(root.children[0].textContent, 'just now');
 });
 
+test('sets custom relative contents when parsed element is upgraded', function() {
+  var now = new Date().toISOString();
+  var root = document.createElement('div');
+  root.innerHTML = '<time is="time-ago" just-now="expired" datetime="'+now+'"></time>';
+  if ('CustomElements' in window) {
+    window.CustomElements.upgradeSubtree(root);
+  }
+  equal(root.children[0].textContent, 'expired');
+});
+
 test('micro formats years', function() {
   var now = new Date(Date.now() - 10 * 365 * 24 * 60 * 60 * 1000).toISOString();
   var time = document.createElement('time-ago');

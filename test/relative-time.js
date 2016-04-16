@@ -76,3 +76,13 @@ test('sets relative contents when parsed element is upgraded', function() {
   }
   equal(root.children[0].textContent, 'just now');
 });
+
+test('sets custom relative contents when parsed element is upgraded', function() {
+  var now = new Date().toISOString();
+  var root = document.createElement('div');
+  root.innerHTML = '<time is="relative-time" just-now="expired" datetime="'+now+'"></time>';
+  if ('CustomElements' in window) {
+    window.CustomElements.upgradeSubtree(root);
+  }
+  equal(root.children[0].textContent, 'expired');
+});

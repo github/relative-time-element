@@ -84,9 +84,23 @@
     });
   }
 
-  function RelativeTime(date) {
+  function RelativeTime(date, reversed, justNow) {
     this.date = date;
+    this.reversed = reversed;
+
+    this.prefix = (reversed) ? 'in ' : '';
+    this.postfix = (reversed) ? '' : ' ago';
+
+    this.justNow = (justNow) ? justNow : 'just now';
   }
+
+  RelativeTime.prototype.getMs = function() {
+    if (this.reversed) {
+      return this.date.getTime() - new Date().getTime();
+    } else {
+      return new Date().getTime() - this.date.getTime();
+    }
+  };
 
   RelativeTime.prototype.toString = function() {
     var ago = this.timeElapsed();
@@ -98,36 +112,36 @@
   };
 
   RelativeTime.prototype.timeElapsed = function() {
-    var ms = new Date().getTime() - this.date.getTime();
+    var ms = this.getMs();
     var sec = Math.round(ms / 1000);
     var min = Math.round(sec / 60);
     var hr = Math.round(min / 60);
     var day = Math.round(hr / 24);
     if (ms < 0) {
-      return 'just now';
+      return this.justNow;
     } else if (sec < 10) {
-      return 'just now';
+      return this.justNow;
     } else if (sec < 45) {
-      return sec + ' seconds ago';
+      return this.prefix + sec + ' seconds' + this.postfix;
     } else if (sec < 90) {
-      return 'a minute ago';
+      return this.prefix + 'a minute' + this.postfix;
     } else if (min < 45) {
-      return min + ' minutes ago';
+      return this.prefix + min + ' minutes' + this.postfix;
     } else if (min < 90) {
-      return 'an hour ago';
+      return this.prefix + 'an hour' + this.postfix;
     } else if (hr < 24) {
-      return hr + ' hours ago';
+      return this.prefix + hr + ' hours' + this.postfix;
     } else if (hr < 36) {
-      return 'a day ago';
+      return this.prefix + 'a day' + this.postfix;
     } else if (day < 30) {
-      return day + ' days ago';
+      return this.prefix + day + ' days' + this.postfix;
     } else {
       return null;
     }
   };
 
   RelativeTime.prototype.timeAgo = function() {
-    var ms = new Date().getTime() - this.date.getTime();
+    var ms = this.getMs();
     var sec = Math.round(ms / 1000);
     var min = Math.round(sec / 60);
     var hr = Math.round(min / 60);
@@ -135,36 +149,36 @@
     var month = Math.round(day / 30);
     var year = Math.round(month / 12);
     if (ms < 0) {
-      return 'just now';
+      return this.justNow;
     } else if (sec < 10) {
-      return 'just now';
+      return this.justNow;
     } else if (sec < 45) {
-      return sec + ' seconds ago';
+      return this.prefix + sec + ' seconds' + this.postfix;
     } else if (sec < 90) {
-      return 'a minute ago';
+      return this.prefix + 'a minute' + this.postfix;
     } else if (min < 45) {
-      return min + ' minutes ago';
+      return this.prefix + min + ' minutes' + this.postfix;
     } else if (min < 90) {
-      return 'an hour ago';
+      return this.prefix + 'an hour' + this.postfix;
     } else if (hr < 24) {
-      return hr + ' hours ago';
+      return this.prefix + hr + ' hours' + this.postfix;
     } else if (hr < 36) {
-      return 'a day ago';
+      return this.prefix + 'a day' + this.postfix;
     } else if (day < 30) {
-      return day + ' days ago';
+      return this.prefix + day + ' days' + this.postfix;
     } else if (day < 45) {
-      return 'a month ago';
+      return this.prefix + 'a month' + this.postfix;
     } else if (month < 12) {
-      return month + ' months ago';
+      return this.prefix + month + ' months' + this.postfix;
     } else if (month < 18) {
-        return 'a year ago';
+        return this.prefix + 'a year' + this.postfix;
     } else {
-      return year + ' years ago';
+      return this.prefix + year + ' years' + this.postfix;
     }
   };
 
   RelativeTime.prototype.microTimeAgo = function() {
-    var ms = new Date().getTime() - this.date.getTime();
+    var ms = this.getMs();
     var sec = ms / 1000;
     var min = sec / 60;
     var hr = min / 60;
@@ -323,7 +337,11 @@
 
   var RelativeTimePrototype = Object.create(ExtendedTimePrototype);
 
+  RelativeTimePrototype.defaultJustNow = 'just now';
+
   RelativeTimePrototype.createdCallback = function() {
+    this.justNow = (this.hasAttribute('just-now')) ?  this.getAttribute('just-now') : this.defaultJustNow;
+    
     var value = this.getAttribute('datetime');
     if (value) {
       this.attributeChangedCallback('datetime', null, value);
@@ -332,7 +350,7 @@
 
   RelativeTimePrototype.getFormattedDate = function() {
     if (this._date) {
-      return new RelativeTime(this._date).toString();
+      return new RelativeTime(this._date, false, this.justNow).toString();
     }
   };
 
@@ -359,18 +377,41 @@
     }
   };
 
+  var RelativeTimeToGoPrototype = Object.create(RelativeTimePrototype);
+
+  RelativeTimeToGoPrototype.defaultJustNow = 'before now';
+
+  RelativeTimeToGoPrototype.getFormattedDate = function() {
+    if (this._date) {
+      return new RelativeTime(this._date, true, this.justNow).toString();
+    }
+  };
+
   var TimeAgoPrototype = Object.create(RelativeTimePrototype);
+
   TimeAgoPrototype.getFormattedDate = function() {
     if (this._date) {
       var format = this.getAttribute('format');
       if (format === 'micro') {
-        return new RelativeTime(this._date).microTimeAgo();
+        return new RelativeTime(this._date, false, this.justNow).microTimeAgo();
       } else {
-        return new RelativeTime(this._date).timeAgo();
+        return new RelativeTime(this._date, false, this.justNow).timeAgo();
       }
     }
   };
 
+  var TimeToGoPrototype = Object.create(RelativeTimeToGoPrototype);
+
+  TimeToGoPrototype.getFormattedDate = function() {
+    if (this._date) {
+      var format = this.getAttribute('format');
+      if (format === 'micro') {
+        return new RelativeTime(this._date, true, this.justNow).microTimeAgo();
+      } else {
+        return new RelativeTime(this._date, true, this.justNow).timeAgo();
+      }
+    }
+  };
 
   var LocalTimePrototype = Object.create(ExtendedTimePrototype);
 
@@ -501,8 +542,23 @@
     prototype: RelativeTimePrototype
   });
 
+  // Public: RelativeTimeToGoElement constructor.
+  //
+  //   var time = new RelativeTimeToGoElement()
+  //   # => <time is='relative-time-to-go'></time>
+  //
+  window.RelativeTimeToGoElement = document.registerElement('relative-time-to-go', {
+    prototype: RelativeTimeToGoPrototype,
+    'extends': 'time'
+  });
+
   window.TimeAgoElement = document.registerElement('time-ago', {
     prototype: TimeAgoPrototype
+  });
+
+  window.TimeToGoElement = document.registerElement('time-to-go', {
+    prototype: TimeToGoPrototype,
+    'extends': 'time'
   });
 
   // Public: LocalTimeElement constructor.
