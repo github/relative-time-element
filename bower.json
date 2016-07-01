@@ -1,6 +1,6 @@
 {
   "name": "time-elements",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "main": "time-elements.js",
   "devDependencies": {
     "CustomElements": "0.2.3",
