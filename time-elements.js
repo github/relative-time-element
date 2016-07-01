@@ -109,8 +109,8 @@
     var hr = Math.round(min / 60);
     var day = Math.round(hr / 24);
     if (ms >= 0 && day < 30) {
-      return this.timeAgoFromMs(ms);  
-    } 
+      return this.timeAgoFromMs(ms);
+    }
     else {
       return null;
     }
@@ -123,8 +123,8 @@
     var hr = Math.round(min / 60);
     var day = Math.round(hr / 24);
     if (ms >= 0 && day < 30) {
-      return this.timeUntil();  
-    } 
+      return this.timeUntil();
+    }
     else {
       return null;
     }
@@ -228,7 +228,7 @@
       return sec + ' seconds from now';
     } else {
       return 'just now';
-    } 
+    }
   };
 
   RelativeTime.prototype.microTimeUntil = function() {
@@ -250,7 +250,7 @@
     } else {
       return '1m';
     }
-  };  
+  };
 
   // Private: Determine if the day should be formatted before the month name in
   // the user's current locale. For example, `9 Jun` for en-GB and `Jun 9`
@@ -586,8 +586,7 @@
   });
 
   window.TimeUntilElement = document.registerElement('time-until', {
-    prototype: TimeUntilPrototype,
-    'extends': 'time'
+    prototype: TimeUntilPrototype
   });
 
   // Public: LocalTimeElement constructor.

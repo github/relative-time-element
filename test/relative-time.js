@@ -9,7 +9,7 @@ test('rewrites from now past datetime to minutes ago', function() {
 
 test('rewrites from now future datetime to minutes from now', function() {
   var now = new Date(Date.now() + 3 * 60 * 1000).toISOString();
-  var time = document.createElement('time', 'relative-time');
+  var time = document.createElement('relative-time');
   time.setAttribute('datetime', now);
   equal(time.textContent, '3 minutes from now');
 });
@@ -23,7 +23,7 @@ test('rewrites a few seconds ago to just now', function() {
 
 test('rewrites a few seconds from now to just now', function() {
   var now = new Date().toISOString();
-  var time = document.createElement('time', 'relative-time');
+  var time = document.createElement('relative-time');
   time.setAttribute('datetime', now);
   equal(time.textContent, 'just now');
 });
@@ -44,7 +44,7 @@ test('displays a day ago', function() {
 
 test('displays a day from now', function() {
   var now = new Date(Date.now() + 60 * 60 * 24 * 1000).toISOString();
-  var time = document.createElement('time', 'relative-time');
+  var time = document.createElement('relative-time');
   time.setAttribute('datetime', now);
   equal(time.textContent, 'a day from now');
 });
@@ -58,7 +58,7 @@ test('displays 2 days ago', function() {
 
 test('displays 2 days from now', function() {
   var now = new Date(Date.now() + 2 * 60 * 60 * 24 * 1000).toISOString();
-  var time = document.createElement('time', 'relative-time');
+  var time = document.createElement('relative-time');
   time.setAttribute('datetime', now);
   equal(time.textContent, '2 days from now');
 });
@@ -72,7 +72,7 @@ test('switches to dates after 30 past days', function() {
 
 test('switches to dates after 30 future days', function() {
   var now = new Date(Date.now() + 30 * 60 * 60 * 24 * 1000).toISOString();
-  var time = document.createElement('time', 'relative-time');
+  var time = document.createElement('relative-time');
   time.setAttribute('datetime', now);
   ok(time.textContent.match(/on \w\w\w \d{1,2}/));
 });
