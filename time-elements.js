@@ -173,22 +173,22 @@
 
   RelativeTime.prototype.microTimeAgo = function() {
     var ms = new Date().getTime() - this.date.getTime();
-    var sec = ms / 1000;
-    var min = sec / 60;
-    var hr = min / 60;
-    var day = hr / 24;
-    var month = day / 30;
-    var year = month / 12;
+    var sec = Math.round(ms / 1000);
+    var min = Math.round(sec / 60);
+    var hr = Math.round(min / 60);
+    var day = Math.round(hr / 24);
+    var month = Math.round(day / 30);
+    var year = Math.round(month / 12);
     if (min < 1) {
       return '1m';
     } else if (min < 60) {
-      return Math.round(min) + 'm';
+      return min + 'm';
     } else if (hr < 24) {
-      return Math.round(hr) + 'h';
+      return hr + 'h';
     } else if (day < 365) {
-      return Math.round(day) + 'd';
+      return day + 'd';
     } else {
-      return Math.round(year) + 'y';
+      return year + 'y';
     }
   };
 
@@ -233,20 +233,20 @@
 
   RelativeTime.prototype.microTimeUntil = function() {
     var ms = this.date.getTime() - (new Date().getTime());
-    var sec = ms / 1000;
-    var min = sec / 60;
-    var hr = min / 60;
-    var day = hr / 24;
-    var month = day / 30;
-    var year = month / 12;
+    var sec = Math.round(ms / 1000);
+    var min = Math.round(sec / 60);
+    var hr = Math.round(min / 60);
+    var day = Math.round(hr / 24);
+    var month = Math.round(day / 30);
+    var year = Math.round(month / 12);
     if (day >= 365) {
-      return Math.round(year) + 'y';
+      return year + 'y';
     } else if (hr >= 24) {
-      return Math.round(day) + 'd';
+      return day + 'd';
     } else if (min >= 60) {
-      return Math.round(hr) + 'h';
+      return hr + 'h';
     } else if (min > 1) {
-      return Math.round(min) + 'm';
+      return min + 'm';
     } else {
       return '1m';
     }
