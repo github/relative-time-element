@@ -56,6 +56,10 @@ Add a `<relative-time>` element to your markup. Provide a default formatted date
 
 Depending on how far in the future this is being viewed, the element's text will be replaced with one of the following formats:
 
+- 6 years from now
+- 20 days from now
+- 4 hours from now
+- 7 minutes from now
 - just now
 - 30 seconds ago
 - a minute ago
@@ -67,6 +71,25 @@ Depending on how far in the future this is being viewed, the element's text will
 - on Apr 1, 2014
 
 So, a relative date phrase is used for up to a month and then the actual date is shown.
+
+### time-until
+
+You can use `time-until` to always display a relative date that's in the future. It operates much like `<relative-time>`, except in the reverse, with past events shown as `just now` and future events always showing as relative:
+
+- 10 years from now
+- 20 days from now
+- 6 hours from now
+- 20 minutes from now
+- 30 seconds from now
+- just now
+
+Add a `<time-until>` element to your markup. Provide a default formatted date as the element's text content (e.g. April 1, 2024).
+
+``` html
+<time-until datetime="2024-04-01T16:30:00-08:00">
+  April 1, 2024
+</time-until>
+```
 
 ### time-ago
 
