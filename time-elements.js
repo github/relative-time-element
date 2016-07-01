@@ -93,7 +93,12 @@
     if (ago) {
       return ago;
     } else {
-      return 'on ' + this.formatDate();
+      var ahead = this.timeAhead();
+      if (ahead) {
+        return ahead;
+      } else {
+        return 'on ' + this.formatDate();
+      }
     }
   };
 
@@ -103,31 +108,34 @@
     var min = Math.round(sec / 60);
     var hr = Math.round(min / 60);
     var day = Math.round(hr / 24);
-    if (ms < 0) {
-      return 'just now';
-    } else if (sec < 10) {
-      return 'just now';
-    } else if (sec < 45) {
-      return sec + ' seconds ago';
-    } else if (sec < 90) {
-      return 'a minute ago';
-    } else if (min < 45) {
-      return min + ' minutes ago';
-    } else if (min < 90) {
-      return 'an hour ago';
-    } else if (hr < 24) {
-      return hr + ' hours ago';
-    } else if (hr < 36) {
-      return 'a day ago';
-    } else if (day < 30) {
-      return day + ' days ago';
-    } else {
+    if (ms >= 0 && day < 30) {
+      return this.timeAgoFromMs(ms);  
+    } 
+    else {
+      return null;
+    }
+  };
+
+  RelativeTime.prototype.timeAhead = function() {
+    var ms = this.date.getTime() - (new Date().getTime());
+    var sec = Math.round(ms / 1000);
+    var min = Math.round(sec / 60);
+    var hr = Math.round(min / 60);
+    var day = Math.round(hr / 24);
+    if (ms >= 0 && day < 30) {
+      return this.timeUntil();  
+    } 
+    else {
       return null;
     }
   };
 
   RelativeTime.prototype.timeAgo = function() {
     var ms = new Date().getTime() - this.date.getTime();
+    return this.timeAgoFromMs(ms);
+  };
+
+  RelativeTime.prototype.timeAgoFromMs = function(ms) {
     var sec = Math.round(ms / 1000);
     var min = Math.round(sec / 60);
     var hr = Math.round(min / 60);
@@ -183,6 +191,66 @@
       return Math.round(year) + 'y';
     }
   };
+
+  RelativeTime.prototype.timeUntil = function() {
+    var ms = this.date.getTime() - (new Date().getTime());
+    return this.timeUntilFromMs(ms);
+  };
+
+  RelativeTime.prototype.timeUntilFromMs = function(ms) {
+    var sec = Math.round(ms / 1000);
+    var min = Math.round(sec / 60);
+    var hr = Math.round(min / 60);
+    var day = Math.round(hr / 24);
+    var month = Math.round(day / 30);
+    var year = Math.round(month / 12);
+    if (month >= 18) {
+      return year + ' years from now';
+    } else if (month >= 12) {
+      return 'a year from now';
+    } else if (day >= 45) {
+      return month + ' months from now';
+    } else if (day >= 30) {
+      return 'a month from now';
+    } else if (hr >= 36) {
+      return day + ' days from now';
+    } else if (hr >= 24) {
+      return 'a day from now';
+    } else if (min >= 90) {
+      return hr + ' hours from now';
+    } else if (min >= 45) {
+      return 'an hour from now';
+    } else if (sec >= 90) {
+      return min + ' minutes from now';
+    } else if (sec >= 45) {
+      return 'a minute from now';
+    } else if (sec >= 10) {
+      return sec + ' seconds from now';
+    } else {
+      return 'just now';
+    } 
+  };
+
+  RelativeTime.prototype.microTimeUntil = function() {
+    var ms = this.date.getTime() - (new Date().getTime());
+    var sec = ms / 1000;
+    var min = sec / 60;
+    var hr = min / 60;
+    var day = hr / 24;
+    var month = day / 30;
+    var year = month / 12;
+    if (day >= 365) {
+      return Math.round(year) + 'y';
+    } else if (hr >= 24) {
+      return Math.round(day) + 'd';
+    } else if (min >= 60) {
+      return Math.round(hr) + 'h';
+    } else if (min > 1) {
+      return Math.round(min) + 'm';
+    } else {
+      return '1m';
+    }
+  };  
 
   // Private: Determine if the day should be formatted before the month name in
   // the user's current locale. For example, `9 Jun` for en-GB and `Jun 9`
@@ -371,6 +439,18 @@
     }
   };
 
+  var TimeUntilPrototype = Object.create(RelativeTimePrototype);
+  TimeUntilPrototype.getFormattedDate = function() {
+    if (this._date) {
+      var format = this.getAttribute('format');
+      if (format === 'micro') {
+        return new RelativeTime(this._date).microTimeUntil();
+      } else {
+        return new RelativeTime(this._date).timeUntil();
+      }
+    }
+  };
+
 
   var LocalTimePrototype = Object.create(ExtendedTimePrototype);
 
@@ -503,6 +583,11 @@
 
   window.TimeAgoElement = document.registerElement('time-ago', {
     prototype: TimeAgoPrototype
+  });
+
+  window.TimeUntilElement = document.registerElement('time-until', {
+    prototype: TimeUntilPrototype,
+    'extends': 'time'
   });
 
   // Public: LocalTimeElement constructor.
