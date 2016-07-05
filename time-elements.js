@@ -9,6 +9,18 @@
     return ('0' + num).slice(-2);
   }
 
+  function makeFormatter(options) {
+    if ('Intl' in window) {
+      try {
+        return new window.Intl.DateTimeFormat(undefined, options);
+      } catch (e) {
+        if (!(e instanceof RangeError)) {
+          throw e;
+        }
+      }
+    }
+  }
+
   function strftime(time, formatString) {
     var day = time.getDay();
     var date = time.getDate();
@@ -262,16 +274,14 @@
       return dayFirst;
     }
 
-    if (!('Intl' in window)) {
+    var formatter = makeFormatter({day: 'numeric', month: 'short'});
+    if (formatter) {
+      var output = formatter.format(new Date(0));
+      dayFirst = !!output.match(/^\d/);
+      return dayFirst;
+    } else {
       return false;
     }
-
-    var options = {day: 'numeric', month: 'short'};
-    var formatter = new window.Intl.DateTimeFormat(undefined, options);
-    var output = formatter.format(new Date(0));
-
-    dayFirst = !!output.match(/^\d/);
-    return dayFirst;
   }
   var dayFirst = null;
 
@@ -284,16 +294,14 @@
       return yearSeparator;
     }
 
-    if (!('Intl' in window)) {
+    var formatter = makeFormatter({day: 'numeric', month: 'short', year: 'numeric'});
+    if (formatter) {
+      var output = formatter.format(new Date(0));
+      yearSeparator = !!output.match(/\d,/);
+      return yearSeparator;
+    } else {
       return true;
     }
-
-    var options = {day: 'numeric', month: 'short', year: 'numeric'};
-    var formatter = new window.Intl.DateTimeFormat(undefined, options);
-    var output = formatter.format(new Date(0));
-
-    yearSeparator = !!output.match(/\d,/);
-    return yearSeparator;
   }
   var yearSeparator = null;
 
@@ -316,8 +324,8 @@
   };
 
   RelativeTime.prototype.formatTime = function() {
-    if ('Intl' in window) {
-      var formatter = new window.Intl.DateTimeFormat(undefined, {hour: 'numeric', minute: '2-digit'});
+    var formatter = makeFormatter({hour: 'numeric', minute: '2-digit'});
+    if (formatter) {
       return formatter.format(this.date);
     } else {
       return strftime(this.date, '%l:%M%P');
@@ -379,13 +387,20 @@
       return this.getAttribute('title');
     }
 
-    if ('Intl' in window) {
-      var options = {day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short'};
-      var formatter = new window.Intl.DateTimeFormat(undefined, options);
+    var formatter = makeFormatter({day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short'});
+    if (formatter) {
       return formatter.format(this._date);
+    } else {
+      try {
+        return this._date.toLocaleString();
+      } catch(e) {
+        if (e instanceof RangeError) {
+          return this._date.toString();
+        } else {
+          throw e;
+        }
+      }
     }
-
-    return this._date.toLocaleString();
   };
 
 
@@ -561,15 +576,15 @@
       return;
     }
 
-    // locale-aware formatting of 24 or 12 hour times
-    if ('Intl' in window) {
-      var formatter = new window.Intl.DateTimeFormat(undefined, options);
+    var formatter = makeFormatter(options);
+    if (formatter) {
+      // locale-aware formatting of 24 or 12 hour times
       return formatter.format(el._date);
+    } else {
+      // fall back to strftime for non-Intl browsers
+      var timef = options.second ? '%H:%M:%S' : '%H:%M';
+      return strftime(el._date, timef);
     }
-
-    // fall back to strftime for non-Intl browsers
-    var timef = options.second ? '%H:%M:%S' : '%H:%M';
-    return strftime(el._date, timef);
   }
 
   // Public: RelativeTimeElement constructor.
