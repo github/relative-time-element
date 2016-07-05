@@ -391,7 +391,15 @@
     if (formatter) {
       return formatter.format(this._date);
     } else {
-      return this._date.toLocaleString();
+      try {
+        return this._date.toLocaleString();
+      } catch(e) {
+        if (e instanceof RangeError) {
+          return this._date.toString();
+        } else {
+          throw e;
+        }
+      }
     }
   };
 
