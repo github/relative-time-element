@@ -486,13 +486,14 @@
   //
   // Supported attributes are:
   //
-  //   weekday - "short", "long"
-  //   year    - "numeric", "2-digit"
-  //   month   - "short", "long"
-  //   day     - "numeric", "2-digit"
-  //   hour    - "numeric", "2-digit"
-  //   minute  - "numeric", "2-digit"
-  //   second  - "numeric", "2-digit"
+  //   weekday  - "short", "long"
+  //   year     - "numeric", "2-digit"
+  //   month    - "short", "long"
+  //   day      - "numeric", "2-digit"
+  //   hour     - "numeric", "2-digit"
+  //   minute   - "numeric", "2-digit"
+  //   second   - "numeric", "2-digit"
+  //   timezone - "short"
   //
   // Returns a formatted time String.
   LocalTimePrototype.getFormattedDate = function() {
@@ -502,7 +503,8 @@
 
     var date = formatDate(this) || '';
     var time = formatTime(this) || '';
-    return (date + ' ' + time).trim();
+    var tz = formatTimezone(this) || '';
+    return (date + ' ' + time + ' ' + tz).trim();
   };
 
   // Private: Format a date according to the `weekday`, `day`, `month`,
@@ -585,6 +587,33 @@
       var timef = options.second ? '%H:%M:%S' : '%H:%M';
       return strftime(el._date, timef);
     }
+  }
+
+  // Private: Format a time according to the `timezone` attribute values.
+  //
+  // el - The local-time element to format.
+  //
+  // Returns a timezone String or null if no timezone formats are provided.
+  function formatTimezone(el) {
+    // retrieve format settings from attributes
+    var options = {
+      timezone: el.getAttribute('timezone')
+    };
+
+    // remove unset format attributes
+    for (var opt in options) {
+      if (!options[opt]) {
+        delete options[opt];
+      }
+    }
+
+    // no timezone format attributes provided
+    if (Object.keys(options).length === 0) {
+      return;
+    }
+
+    var match = el._date.toString().match(/\(([^)]+)\)/);
+    return match ? match[1] : '';
   }
 
   // Public: RelativeTimeElement constructor.
