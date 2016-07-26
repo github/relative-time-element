@@ -1,3 +1,7 @@
 language: node_js
+before_install:
+  - date
+  - export TZ=UTC
+  - date
 before_script: make build
 script: make test
