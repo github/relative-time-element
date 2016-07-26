@@ -10,11 +10,11 @@ This allows the server to cache HTML fragments containing dates and lets the bro
 </local-time>
 ```
 
-Every user is served the same markup from the server's cache. When it reaches the browser, the custom `local-time` JavaScript localizes the element's text to:
+Every visitor is served the same markup from the server's cache. When it reaches the browser, the custom `local-time` JavaScript localizes the element's text into the local timezone and formatting.
 
 ```html
 <local-time datetime="2014-04-01T16:30:00-08:00">
-  1 Apr 2014 14:30
+  1 Apr 2014 21:30
 </local-time>
 ```
 
