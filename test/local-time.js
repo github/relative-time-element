@@ -52,7 +52,7 @@ test('getFormattedDate with only timezone attributes', function() {
   time.setAttribute('timezone', 'short');
 
   var value = time.getFormattedDate();
-  var acceptable = ['CEST', 'CET', 'PDT', 'PST', 'GMT', 'UTC'];
+  var acceptable = ['CEST', 'CET', 'PDT', 'PST'];
   ok(acceptable.indexOf(value) !== -1);
 });
 
