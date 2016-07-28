@@ -46,16 +46,6 @@ test('getFormattedDate with only time attributes', function() {
   ok(browser || phantom);
 });
 
-test('getFormattedDate with only timezone attributes', function() {
-  var time = document.createElement('local-time');
-  time.setAttribute('datetime', '1970-01-01T00:00:00.000Z');
-  time.setAttribute('timezone', 'short');
-
-  var value = time.getFormattedDate();
-  var acceptable = ['CEST', 'CET', 'PDT', 'PST'];
-  ok(acceptable.indexOf(value) !== -1);
-});
-
 test('ignores contents if datetime attribute is missing', function() {
   var time = document.createElement('local-time');
   time.setAttribute('year', 'numeric');
