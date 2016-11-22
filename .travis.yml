@@ -1,5 +1,2 @@
 language: node_js
 node_js: 6.9.1 # latest LTS
-cache:
-  directories:
-    - phantomjs
