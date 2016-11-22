@@ -1,6 +1,9 @@
 {
   "env": {
-    "qunit": true
+    "mocha": true
+  },
+  "globals": {
+    "assert": true
   },
   "extends": "../.eslintrc.json"
 }

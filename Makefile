@@ -7,7 +7,7 @@ test: node_modules/ build lint
 		./test/test.html $(REPORTER) '{"useColors":true}'
 
 lint: node_modules/
-	./node_modules/.bin/eslint *.js test/*.js
+	./node_modules/.bin/eslint .
 
 node_modules/:
 	npm install
