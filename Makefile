@@ -1,7 +1,10 @@
+REPORTER = $(if $(CI),spec,dot)
+
 build: node_modules/
 
 test: node_modules/ build lint
-	node ./node_modules/.bin/node-qunit-phantomjs ./test/test.html
+	phantomjs ./node_modules/mocha-phantomjs-core/mocha-phantomjs-core.js \
+		./test/test.html $(REPORTER) '{"useColors":true}'
 
 lint: node_modules/
 	./node_modules/.bin/jshint *.js test/*.js
