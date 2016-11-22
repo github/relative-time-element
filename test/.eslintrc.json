@@ -1,0 +1,9 @@
+{
+  "globals": {
+    "equal": false,
+    "module": false,
+    "ok": false,
+    "test": false
+  },
+  "extends": "../.eslintrc.json"
+}
