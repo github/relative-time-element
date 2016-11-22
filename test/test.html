@@ -3,19 +3,14 @@
 <head>
   <meta charset="utf-8">
   <title>Test Suite</title>
-  <link rel="stylesheet" href="../bower_components/qunit/qunit/qunit.css">
+  <link rel="stylesheet" href="../node_modules/qunitjs/qunit/qunit.css">
 </head>
 <body>
   <div id="qunit"></div>
 
-  <script src="../bower_components/es5-basic-shim/src/shim.js"></script>
-  <script src="../bower_components/WeakMap/WeakMap.js"></script>
-  <script src="../bower_components/MutationObserver/MutationObserver.js"></script>
-  <script src="../bower_components/CustomElements/src/custom-elements.js"></script>
-
+  <script src="../node_modules/webcomponents.js/webcomponents.js"></script>
   <script src="../time-elements.js"></script>
-
-  <script src="../bower_components/qunit/qunit/qunit.js"></script>
+  <script src="../node_modules/qunitjs/qunit/qunit.js"></script>
   <script>
     var epochLocalYear = new Date(0).getFullYear().toString();
 

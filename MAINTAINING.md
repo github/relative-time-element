@@ -9,14 +9,14 @@ minor version "1.x.x" bump is in order.
 ### Make a release commit
 
 To prepare the release commit, edit the
-[bower.json](https://github.com/github/time-elements/blob/master/bower.json)
+[package.json](https://github.com/github/time-elements/blob/master/package.json)
 `version` value. Then make a single commit with the description as
 "Time Elements 1.x.x". Finally, tag the commit with `v1.x.x`.
 
 ```
 $ git pull
-$ vim bower.json
-$ git add bower.json
+$ vim package.json
+$ git add package.json
 $ git ci -m "Time Elements 1.x.x"
 $ git tag v1.x.x
 $ git push
