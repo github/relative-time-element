@@ -5,8 +5,9 @@
   "devDependencies": {
     "eslint": "3.10.2",
     "eslint-plugin-github": "0.6.1",
-    "node-qunit-phantomjs": "0.2.2",
-    "qunitjs": "1.14.0",
+    "chai": "^3.5.0",
+    "mocha": "^3.1.2",
+    "mocha-phantomjs-core": "^2.1.0",
     "webcomponents.js": "0.7.23"
   }
 }

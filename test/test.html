@@ -3,15 +3,27 @@
 <head>
   <meta charset="utf-8">
   <title>Test Suite</title>
-  <link rel="stylesheet" href="../node_modules/qunitjs/qunit/qunit.css">
+  <link rel="stylesheet" href="../node_modules/mocha/mocha.css">
 </head>
 <body>
-  <div id="qunit"></div>
+  <div id="mocha"></div>
 
   <script src="../node_modules/webcomponents.js/webcomponents.js"></script>
   <script src="../time-elements.js"></script>
-  <script src="../node_modules/qunitjs/qunit/qunit.js"></script>
+  <script src="../node_modules/chai/chai.js"></script>
+  <script src="../node_modules/mocha/mocha.js"></script>
   <script>
+    mocha.setup('qunit')
+    self.assert = chai.assert
+    self.module = suite
+
+    function equal(expected, value, msg) {
+      chai.assert.equal(value, expected, msg)
+    }
+    function ok(value, msg) {
+      chai.assert(value, msg)
+    }
+
     var epochLocalYear = new Date(0).getFullYear().toString();
 
     if (epochLocalYear === '1969') {
@@ -28,5 +40,8 @@
   <script src="./time-ago.js"></script>
   <script src="./time-until.js"></script>
   <script src="./title-format.js"></script>
+  <script>
+    mocha.run()
+  </script>
 </body>
 </html>
