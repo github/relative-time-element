@@ -486,13 +486,15 @@
   //
   // Supported attributes are:
   //
-  //   weekday - "short", "long"
-  //   year    - "numeric", "2-digit"
-  //   month   - "short", "long"
-  //   day     - "numeric", "2-digit"
-  //   hour    - "numeric", "2-digit"
-  //   minute  - "numeric", "2-digit"
-  //   second  - "numeric", "2-digit"
+  //   weekday      - "short", "long"
+  //   year         - "numeric", "2-digit"
+  //   month        - "short", "long"
+  //   day          - "numeric", "2-digit"
+  //   hour         - "numeric", "2-digit"
+  //   minute       - "numeric", "2-digit"
+  //   second       - "numeric", "2-digit"
+  //   timeZone     - e.g. "UTC"
+  //   timeZoneName - "short", "long"
   //
   // Returns a formatted time String.
   LocalTimePrototype.getFormattedDate = function() {
@@ -561,7 +563,9 @@
     var options = {
       hour: el.getAttribute('hour'),
       minute: el.getAttribute('minute'),
-      second: el.getAttribute('second')
+      second: el.getAttribute('second'),
+      timeZone: el.getAttribute('timeZone'),
+      timeZoneName: el.getAttribute('timeZoneName')
     };
 
     // remove unset format attributes

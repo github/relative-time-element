@@ -46,6 +46,36 @@ test('getFormattedDate with only time attributes', function() {
   ok(browser || phantom);
 });
 
+test('getFormattedDate with short timezone attributes', function() {
+  var time = document.createElement('local-time');
+  time.setAttribute('datetime', '1970-01-01T00:00:00.000-07:00');
+  time.setAttribute('day', 'numeric');
+  time.setAttribute('month', 'short');
+  time.setAttribute('hour', 'numeric');
+  time.setAttribute('minute', 'numeric');
+  time.setAttribute('timeZone', 'PDT');
+  time.setAttribute('timeZoneName', 'long');
+
+  var browser = time.getFormattedDate().match(/^[A-Za-z]{3} [\d]{1,2} \d\d:\d\d$/);
+  var phantom = time.getFormattedDate().match(/^[A-Za-z]{3} [\d]{1,2} \d\d:\d\d$/);
+  ok(browser || phantom);
+});
+
+test('getFormattedDate with long timezone attributes', function() {
+  var time = document.createElement('local-time');
+  time.setAttribute('datetime', '1970-01-01T00:00:00.000-07:00');
+  time.setAttribute('day', 'numeric');
+  time.setAttribute('month', 'short');
+  time.setAttribute('hour', 'numeric');
+  time.setAttribute('minute', 'numeric');
+  time.setAttribute('timeZone', 'PDT');
+  time.setAttribute('timeZoneName', 'long');
+
+  var browser = time.getFormattedDate().match(/^[A-Za-z]{3} [\d]{1,2} \d\d:\d\d$/);
+  var phantom = time.getFormattedDate().match(/^[A-Za-z]{3} [\d]{1,2} \d\d:\d\d$/);
+  ok(browser || phantom);
+});
+
 test('ignores contents if datetime attribute is missing', function() {
   var time = document.createElement('local-time');
   time.setAttribute('year', 'numeric');
