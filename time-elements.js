@@ -12,7 +12,7 @@
   function makeFormatter(options) {
     if ('Intl' in window) {
       try {
-        return new window.Intl.DateTimeFormat(undefined, options)
+        return new Intl.DateTimeFormat(undefined, options)
       } catch (e) {
         if (!(e instanceof RangeError)) {
           throw e

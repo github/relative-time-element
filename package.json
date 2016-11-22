@@ -11,6 +11,7 @@
     "eslint-plugin-github": "^0.6.1",
     "mocha": "^3.1.2",
     "mocha-phantomjs-core": "^2.1.0",
-    "webcomponents.js": "0.7.23"
+    "phantomjs-prebuilt": "^2.1.13",
+    "webcomponents.js": "^0.7.23"
   }
 }
