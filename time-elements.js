@@ -12,7 +12,7 @@
   function makeFormatter(options) {
     if ('Intl' in window) {
       try {
-        return new window.Intl.DateTimeFormat(undefined, options)
+        return new Intl.DateTimeFormat(undefined, options)
       } catch (e) {
         if (!(e instanceof RangeError)) {
           throw e
@@ -346,7 +346,7 @@
   }
 
 
-  var ExtendedTimePrototype = Object.create(window.HTMLElement.prototype)
+  var ExtendedTimePrototype = Object.create(HTMLElement.prototype)
 
   // Internal: Refresh the time element's formatted date when an attribute changes.
   //
