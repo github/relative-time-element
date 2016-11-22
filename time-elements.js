@@ -505,7 +505,7 @@
     }
   };
 
-  RelativeTimeElement.prototype.attachedCallback = function () {
+  RelativeTimeElement.prototype.connectedCallback = function () {
     var value = this.getAttribute('datetime');
     if (value) {
       this.attributeChangedCallback('datetime', null, value);
@@ -519,7 +519,7 @@
     }
   };
 
-  RelativeTimeElement.prototype.detachedCallback = function () {
+  RelativeTimeElement.prototype.disconnectedCallback = function () {
     var ix = nowElements.indexOf(this);
     if (ix !== -1) {
       nowElements.splice(ix, 1);
@@ -588,7 +588,7 @@
 
   LocalTimeElement.prototype.constructor = LocalTimeElement;
 
-  LocalTimeElement.prototype.createdCallback = function () {
+  LocalTimeElement.prototype.connectedCallback = function () {
     var value;
     if (value = this.getAttribute('datetime')) {
       this.attributeChangedCallback('datetime', null, value);
