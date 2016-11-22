@@ -1,5 +1,5 @@
 (function() {
-  'use strict';
+  'use strict'
 
   // Shout out to https://github.com/basecamp/local_time/blob/master/app/assets/javascripts/local_time.js.coffee
   var weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
@@ -59,7 +59,6 @@
           } else {
             return (hour + 12) % 12
           }
-          break
         case 'm':
           return pad(month + 1)
         case 'M':
@@ -70,14 +69,12 @@
           } else {
             return 'AM'
           }
-          break
         case 'P':
           if (hour > 11) {
             return 'pm'
           } else {
             return 'am'
           }
-          break
         case 'S':
           return pad(second)
         case 'w':
@@ -123,22 +120,20 @@
     var day = Math.round(hr / 24)
     if (ms >= 0 && day < 30) {
       return this.timeAgoFromMs(ms)
-    }
-    else {
+    } else {
       return null
     }
   }
 
   RelativeTime.prototype.timeAhead = function() {
-    var ms = this.date.getTime() - (new Date().getTime())
+    var ms = this.date.getTime() - new Date().getTime()
     var sec = Math.round(ms / 1000)
     var min = Math.round(sec / 60)
     var hr = Math.round(min / 60)
     var day = Math.round(hr / 24)
     if (ms >= 0 && day < 30) {
       return this.timeUntil()
-    }
-    else {
+    } else {
       return null
     }
   }
@@ -178,7 +173,7 @@
     } else if (month < 12) {
       return month + ' months ago'
     } else if (month < 18) {
-        return 'a year ago'
+      return 'a year ago'
     } else {
       return year + ' years ago'
     }
@@ -206,7 +201,7 @@
   }
 
   RelativeTime.prototype.timeUntil = function() {
-    var ms = this.date.getTime() - (new Date().getTime())
+    var ms = this.date.getTime() - new Date().getTime()
     return this.timeUntilFromMs(ms)
   }
 
@@ -245,7 +240,7 @@
   }
 
   RelativeTime.prototype.microTimeUntil = function() {
-    var ms = this.date.getTime() - (new Date().getTime())
+    var ms = this.date.getTime() - new Date().getTime()
     var sec = Math.round(ms / 1000)
     var min = Math.round(sec / 60)
     var hr = Math.round(min / 60)
@@ -345,7 +340,7 @@
   // minute.
   function updateNowElements() {
     var time, i, len
-    for (i = 0, len = nowElements.length i < len i++) {
+    for (i = 0, len = nowElements.length; i < len; i++) {
       time = nowElements[i]
       time.textContent = time.getFormattedDate()
     }
@@ -407,7 +402,7 @@
     } else {
       try {
         return this._date.toLocaleString()
-      } catch(e) {
+      } catch (e) {
         if (e instanceof RangeError) {
           return this._date.toString()
         } else {
