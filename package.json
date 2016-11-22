@@ -3,7 +3,8 @@
   "version": "0.6.1",
   "main": "time-elements.js",
   "devDependencies": {
-    "jshint": "2.5.2",
+    "eslint": "3.10.2",
+    "eslint-plugin-github": "0.6.1",
     "node-qunit-phantomjs": "0.2.2",
     "qunitjs": "1.14.0",
     "webcomponents.js": "0.7.23"
