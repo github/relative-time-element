@@ -13,16 +13,8 @@
   <script src="../node_modules/chai/chai.js"></script>
   <script src="../node_modules/mocha/mocha.js"></script>
   <script>
-    mocha.setup('qunit')
+    mocha.setup('tdd')
     self.assert = chai.assert
-    self.module = suite
-
-    function equal(expected, value, msg) {
-      chai.assert.equal(value, expected, msg)
-    }
-    function ok(value, msg) {
-      chai.assert(value, msg)
-    }
 
     var epochLocalYear = new Date(0).getFullYear().toString();
 
