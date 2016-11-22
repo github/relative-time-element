@@ -96,6 +96,7 @@
     });
   }
 
+
   function RelativeTime(date) {
     this.date = date;
   }
@@ -351,7 +352,20 @@
   }
 
 
-  var ExtendedTimePrototype = Object.create(window.HTMLElement.prototype);
+  var ExtendedTimePrototype = Object.create(HTMLElement.prototype);
+
+  var observedAttributes = [
+    'datetime',
+    'day',
+    'format',
+    'hour',
+    'minute',
+    'month',
+    'second',
+    'title',
+    'weekday',
+    'year'
+  ];
 
   // Internal: Refresh the time element's formatted date when an attribute changes.
   //
@@ -363,7 +377,7 @@
     }
 
     var title = this.getFormattedTitle();
-    if (title) {
+    if (title && this.getAttribute('title') !== title) {
       this.setAttribute('title', title);
     }
 
@@ -404,22 +418,22 @@
   };
 
 
-  var RelativeTimePrototype = Object.create(ExtendedTimePrototype);
+  function RelativeTimeElement() {
+    var self = Reflect.construct(HTMLElement, [], RelativeTimeElement);
+    return self;
+  }
 
-  RelativeTimePrototype.createdCallback = function() {
-    var value = this.getAttribute('datetime');
-    if (value) {
-      this.attributeChangedCallback('datetime', null, value);
-    }
-  };
+  RelativeTimeElement.observedAttributes = observedAttributes;
 
-  RelativeTimePrototype.getFormattedDate = function() {
+  RelativeTimeElement.prototype = Object.create(ExtendedTimePrototype);
+
+  RelativeTimeElement.prototype.getFormattedDate = function() {
     if (this._date) {
       return new RelativeTime(this._date).toString();
     }
   };
 
-  RelativeTimePrototype.attachedCallback = function() {
+  RelativeTimeElement.prototype.attachedCallback = function() {
     nowElements.push(this);
 
     if (!updateNowElementsId) {
@@ -428,7 +442,7 @@
     }
   };
 
-  RelativeTimePrototype.detachedCallback = function() {
+  RelativeTimeElement.prototype.detachedCallback = function() {
     var ix = nowElements.indexOf(this);
     if (ix !== -1) {
       nowElements.splice(ix, 1);
@@ -442,8 +456,18 @@
     }
   };
 
-  var TimeAgoPrototype = Object.create(RelativeTimePrototype);
-  TimeAgoPrototype.getFormattedDate = function() {
+
+  function TimeAgoElement() {
+    var self = Reflect.construct(HTMLElement, [], TimeAgoElement);
+
+    return self;
+  }
+
+  TimeAgoElement.observedAttributes = observedAttributes;
+
+  TimeAgoElement.prototype = Object.create(RelativeTimeElement.prototype);
+
+  TimeAgoElement.prototype.getFormattedDate = function() {
     if (this._date) {
       var format = this.getAttribute('format');
       if (format === 'micro') {
@@ -454,8 +478,18 @@
     }
   };
 
-  var TimeUntilPrototype = Object.create(RelativeTimePrototype);
-  TimeUntilPrototype.getFormattedDate = function() {
+
+  function TimeUntilElement() {
+    var self = Reflect.construct(HTMLElement, [], TimeUntilElement);
+
+    return self;
+  }
+
+  TimeUntilElement.observedAttributes = observedAttributes;
+
+  TimeUntilElement.prototype = Object.create(RelativeTimeElement.prototype);
+
+  TimeUntilElement.prototype.getFormattedDate = function() {
     if (this._date) {
       var format = this.getAttribute('format');
       if (format === 'micro') {
@@ -467,17 +501,14 @@
   };
 
 
-  var LocalTimePrototype = Object.create(ExtendedTimePrototype);
+  function LocalTimeElement() {
+    var self = Reflect.construct(HTMLElement, [], LocalTimeElement);
+    return self;
+  }
 
-  LocalTimePrototype.createdCallback = function() {
-    var value;
-    if (value = this.getAttribute('datetime')) {
-      this.attributeChangedCallback('datetime', null, value);
-    }
-    if (value = this.getAttribute('format')) {
-      this.attributeChangedCallback('format', null, value);
-    }
-  };
+  LocalTimeElement.observedAttributes = observedAttributes;
+
+  LocalTimeElement.prototype = Object.create(ExtendedTimePrototype);
 
   // Formats the element's date, in the user's current locale, according to
   // the formatting attribute values. Values are not passed straight through to
@@ -495,7 +526,7 @@
   //   second  - "numeric", "2-digit"
   //
   // Returns a formatted time String.
-  LocalTimePrototype.getFormattedDate = function() {
+  LocalTimeElement.prototype.getFormattedDate = function() {
     if (!this._date) {
       return;
     }
@@ -592,25 +623,20 @@
   //   var time = new RelativeTimeElement()
   //   # => <relative-time></relative-time>
   //
-  window.RelativeTimeElement = document.registerElement('relative-time', {
-    prototype: RelativeTimePrototype
-  });
+  window.RelativeTimeElement = RelativeTimeElement;
+  window.customElements.define('relative-time', RelativeTimeElement);
 
-  window.TimeAgoElement = document.registerElement('time-ago', {
-    prototype: TimeAgoPrototype
-  });
+  window.TimeAgoElement = TimeAgoElement;
+  window.customElements.define('time-ago', TimeAgoElement);
 
-  window.TimeUntilElement = document.registerElement('time-until', {
-    prototype: TimeUntilPrototype
-  });
+  window.TimeUntilElement = TimeUntilElement;
+  window.customElements.define('time-until', TimeUntilElement);
 
   // Public: LocalTimeElement constructor.
   //
   //   var time = new LocalTimeElement()
   //   # => <local-time></local-time>
   //
-  window.LocalTimeElement = document.registerElement('local-time', {
-    prototype: LocalTimePrototype
-  });
-
+  window.LocalTimeElement = LocalTimeElement;
+  window.customElements.define('local-time', LocalTimeElement);
 })();
