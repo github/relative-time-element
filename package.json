@@ -2,6 +2,9 @@
   "name": "time-elements",
   "version": "0.6.1",
   "main": "time-elements.js",
+  "scripts": {
+    "test": "make test"
+  },
   "devDependencies": {
     "chai": "^3.5.0",
     "eslint": "^3.10.2",
