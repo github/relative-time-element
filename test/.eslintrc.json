@@ -1,9 +1,6 @@
 {
-  "globals": {
-    "equal": false,
-    "module": false,
-    "ok": false,
-    "test": false
+  "env": {
+    "qunit": true
   },
   "extends": "../.eslintrc.json"
 }
