@@ -24,10 +24,10 @@ If the browser's JavaScript is disabled, the default text served in the cached m
 
 ## Installation
 
-Available on [Bower](http://bower.io) as **time-elements**.
+Available on [npm](https://www.npmjs.com/) as [**time-elements**](https://www.npmjs.com/package/time-elements).
 
 ```
-$ bower install time-elements
+$ npm install time-elements
 ```
 
 This component is built on the upcoming [Web Component](http://webcomponents.org/) stack. Specifically, it requires a feature called [Custom Elements](http://www.html5rocks.com/en/tutorials/webcomponents/customelements/).
