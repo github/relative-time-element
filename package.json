@@ -3,9 +3,9 @@
   "version": "0.6.1",
   "main": "time-elements.js",
   "devDependencies": {
-    "eslint": "3.10.2",
-    "eslint-plugin-github": "0.6.1",
     "chai": "^3.5.0",
+    "eslint": "^3.10.2",
+    "eslint-plugin-github": "^0.6.1",
     "mocha": "^3.1.2",
     "mocha-phantomjs-core": "^2.1.0",
     "webcomponents.js": "0.7.23"
