@@ -66,4 +66,12 @@ suite('local-time', function() {
     }
     assert.include(['1969', '1970'], root.children[0].textContent)
   })
+
+  ;('Intl' in window ? test : test.skip)('displays time zone name', function() {
+    var time = document.createElement('local-time')
+    time.setAttribute('datetime', '1970-01-01T00:00:00.000Z')
+    time.setAttribute('minute', '2-digit')
+    time.setAttribute('timeZoneName', 'short')
+    assert.match(time.textContent, /^\d{1,2} (UTC|GMT([+-]\d+)?)$/)
+  })
 })
