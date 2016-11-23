@@ -66,14 +66,14 @@ suite('relative-time', function() {
     var now = new Date(Date.now() - 30 * 60 * 60 * 24 * 1000).toISOString()
     var time = document.createElement('relative-time')
     time.setAttribute('datetime', now)
-    assert(time.textContent.match(/on \w\w\w \d{1,2}/))
+    assert.match(time.textContent, /on [A-Z][a-z]{2} \d{1,2}/)
   })
 
   test('switches to dates after 30 future days', function() {
     var now = new Date(Date.now() + 30 * 60 * 60 * 24 * 1000).toISOString()
     var time = document.createElement('relative-time')
     time.setAttribute('datetime', now)
-    assert(time.textContent.match(/on \w\w\w \d{1,2}/))
+    assert.match(time.textContent, /on [A-Z][a-z]{2} \d{1,2}/)
   })
 
   test('ignores malformed dates', function() {

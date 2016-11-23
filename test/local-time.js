@@ -2,7 +2,7 @@ suite('local-time', function() {
   test('null getFormattedDate when datetime missing', function() {
     var time = document.createElement('local-time')
     time.setAttribute('format', '%Y-%m-%dT%H:%M:%SZ')
-    assert.equal(time.getFormattedDate(), null)
+    assert.isUndefined(time.getFormattedDate())
   })
 
   test('getFormattedDate returns empty string when format missing', function() {
@@ -19,8 +19,7 @@ suite('local-time', function() {
     time.setAttribute('year', 'numeric')
 
     var value = time.getFormattedDate()
-    var acceptable = ['Dec 31, 1969', '31 Dec 1969', 'Jan 1, 1970', '1 Jan 1970']
-    assert(acceptable.indexOf(value) !== -1)
+    assert.include(['Dec 31, 1969', '31 Dec 1969', 'Jan 1, 1970', '1 Jan 1970'], value)
   })
 
   test('getFormattedDate without year attribute', function() {
@@ -30,8 +29,7 @@ suite('local-time', function() {
     time.setAttribute('month', 'short')
 
     var value = time.getFormattedDate()
-    var acceptable = ['Dec 31', '31 Dec', 'Jan 1', '1 Jan']
-    assert(acceptable.indexOf(value !== -1))
+    assert.include(['Dec 31', '31 Dec', 'Jan 1', '1 Jan'], value)
   })
 
   test('getFormattedDate with only time attributes', function() {
@@ -40,9 +38,11 @@ suite('local-time', function() {
     time.setAttribute('hour', 'numeric')
     time.setAttribute('minute', '2-digit')
 
-    var browser = time.getFormattedDate().match(/^\d{1,2}:\d\d [AP]M$/)
-    var phantom = time.getFormattedDate().match(/^\d\d:\d\d$/)
-    assert(browser || phantom)
+    if ('Intl' in window) {
+      assert.match(time.getFormattedDate(), /^\d{1,2}:\d\d (AM|PM)$/)
+    } else {
+      assert.match(time.getFormattedDate(), /^\d{2}:\d{2}$/)
+    }
   })
 
   test('ignores contents if datetime attribute is missing', function() {
@@ -55,7 +55,7 @@ suite('local-time', function() {
     var time = document.createElement('local-time')
     time.setAttribute('datetime', '1970-01-01T00:00:00.000Z')
     time.setAttribute('year', 'numeric')
-    assert(time.textContent === '1969' || time.textContent === '1970')
+    assert.include(['1969', '1970'], time.textContent)
   })
 
   test('sets formatted contents when parsed element is upgraded', function() {
@@ -64,7 +64,6 @@ suite('local-time', function() {
     if ('CustomElements' in window) {
       window.CustomElements.upgradeSubtree(root)
     }
-    var text = root.children[0].textContent
-    assert(text === '1969' || text === '1970')
+    assert.include(['1969', '1970'], root.children[0].textContent)
   })
 })
