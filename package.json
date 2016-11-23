@@ -8,6 +8,7 @@
   "devDependencies": {
     "babel-cli": "^6.18.0",
     "babel-plugin-transform-custom-element-classes": "^0.1.0",
+    "babel-plugin-transform-es2015-block-scoping": "^6.18.0",
     "babel-plugin-transform-es2015-classes": "^6.18.0",
     "chai": "^3.5.0",
     "eslint": "^3.10.2",
