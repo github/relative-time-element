@@ -142,6 +142,7 @@ Attribute      | Options                        | Description
 `hour`         | 2-digit, numeric               | Format hour as `01` or `1`
 `minute`       | 2-digit, numeric               | Format minute as `05` or `5`
 `second`       | 2-digit, numeric               | Format second as `07` or `7`
+`timeZoneName` | short, long                    | Display time zone as `GMT+1` or by its full name
 
 ## Browser Support
 
