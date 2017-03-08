@@ -1,8 +1,10 @@
 import {strftime, makeFormatter, isDayFirst, isThisYear, isYearSeparator} from './utils'
+import Internationalization from './internationalization'
 
 export default class RelativeTime {
   constructor(date) {
     this.date = date
+    this.translator = new Internationalization()
   }
 
   toString() {
@@ -58,31 +60,31 @@ export default class RelativeTime {
     const month = Math.round(day / 30)
     const year = Math.round(month / 12)
     if (ms < 0) {
-      return 'just now'
+      return this.translator.t('just_now')
     } else if (sec < 10) {
-      return 'just now'
+      return this.translator.t('just_now')
     } else if (sec < 45) {
-      return sec + ' seconds ago'
+      return this.translator.t('seconds_ago', {count: sec})
     } else if (sec < 90) {
-      return 'a minute ago'
+      return this.translator.t('minute_ago')
     } else if (min < 45) {
-      return min + ' minutes ago'
+      return this.translator.t('minute_ago', {count: min})
     } else if (min < 90) {
-      return 'an hour ago'
+      return this.translator.t('hour_ago')
     } else if (hr < 24) {
-      return hr + ' hours ago'
+      return this.translator.t('hour_ago', {count: hr})
     } else if (hr < 36) {
-      return 'a day ago'
+      return this.translator.t('day_ago')
     } else if (day < 30) {
-      return day + ' days ago'
+      return this.translator.t('day_ago', {count: day})
     } else if (day < 45) {
-      return 'a month ago'
+      return this.translator.t('month_ago')
     } else if (month < 12) {
-      return month + ' months ago'
+      return this.translator.t('month_ago', {count: month})
     } else if (month < 18) {
-      return 'a year ago'
+      return this.translator.t('year_ago')
     } else {
-      return year + ' years ago'
+      return this.translator.t('year_ago', {count: year})
     }
   }
 
@@ -120,29 +122,29 @@ export default class RelativeTime {
     const month = Math.round(day / 30)
     const year = Math.round(month / 12)
     if (month >= 18) {
-      return year + ' years from now'
+      return this.translator.t('year_from_now', {count: year})
     } else if (month >= 12) {
-      return 'a year from now'
+      return this.translator.t('year_from_now')
     } else if (day >= 45) {
-      return month + ' months from now'
+      return this.translator.t('month_from_now', {count: year})
     } else if (day >= 30) {
-      return 'a month from now'
+      return this.translator.t('month_from_now')
     } else if (hr >= 36) {
-      return day + ' days from now'
+      return this.translator.t('day_from_now', {count: day})
     } else if (hr >= 24) {
-      return 'a day from now'
+      return this.translator.t('day_from_now')
     } else if (min >= 90) {
-      return hr + ' hours from now'
+      return this.translator.t('hour_from_now', {count: hr})
     } else if (min >= 45) {
-      return 'an hour from now'
+      return this.translator.t('hour_from_now')
     } else if (sec >= 90) {
-      return min + ' minutes from now'
+      return this.translator.t('minute_from_now', {count: min})
     } else if (sec >= 45) {
-      return 'a minute from now'
+      return this.translator.t('minute_from_now')
     } else if (sec >= 10) {
-      return sec + ' seconds from now'
+      return this.translator.t('second_from_now', {count: sec})
     } else {
-      return 'just now'
+      return this.translator.t('just_now')
     }
   }
 

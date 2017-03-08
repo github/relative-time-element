@@ -4,7 +4,8 @@
   "main": "dist/time-elements-legacy.js",
   "jsnext:main": "dist/time-elements.js",
   "scripts": {
-    "test": "make test"
+    "test": "make test",
+    "bundle-dependencies": "bundle-dependencies"
   },
   "devDependencies": {
     "babel-plugin-transform-custom-element-classes": "^0.1.0",
@@ -19,5 +20,11 @@
     "rollup": "^0.36.4",
     "rollup-plugin-babel": "^2.6.1",
     "webcomponents.js": "^0.7.23"
-  }
+  },
+  "dependencies": {
+    "i18next": "^7.1.1"
+  },
+  "bundledDependencies": [
+    "i18next"
+  ]
 }
