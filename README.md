@@ -156,3 +156,5 @@ Attribute      | Options                        | Description
 Most of this implementation is based on Basecamp's [local_time](https://github.com/basecamp/local_time) component. Thanks to @javan for open sourcing that work and allowing for others to build on top of it.
 
 @rmm5t's [jquery-timeago](https://github.com/rmm5t/jquery-timeago) is one of the old time-ago-in-words JS plugins.
+
+a similar library in over 10 different languages is [disTime.js](https://github.com/SimonWaldherr/disTime.js) by @simonwaldherr.
