@@ -30,7 +30,7 @@ suite('time-until', function() {
   test('sets relative contents when parsed element is upgraded', function() {
     var now = new Date().toISOString()
     var root = document.createElement('div')
-    root.innerHTML = '<time-until datetime="'+now+'"></time-until>'
+    root.innerHTML = '<time-until datetime="' + now + '"></time-until>'
     if ('CustomElements' in window) {
       window.CustomElements.upgradeSubtree(root)
     }

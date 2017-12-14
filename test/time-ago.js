@@ -30,7 +30,7 @@ suite('time-ago', function() {
   test('sets relative contents when parsed element is upgraded', function() {
     var now = new Date().toISOString()
     var root = document.createElement('div')
-    root.innerHTML = '<time-ago datetime="'+now+'"></time-ago>'
+    root.innerHTML = '<time-ago datetime="' + now + '"></time-ago>'
     if ('CustomElements' in window) {
       window.CustomElements.upgradeSubtree(root)
     }
