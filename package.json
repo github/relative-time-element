@@ -4,6 +4,10 @@
   "main": "dist/time-elements-legacy.js",
   "jsnext:main": "dist/time-elements.js",
   "scripts": {
+    "clean": "rm -rf ./dist ./node_modules",
+    "lint": "eslint src/ test/",
+    "build": "rollup -c && rollup -c rollup.legacy-config.js",
+    "pretest": "npm run lint && npm run build",
     "test": "karma start ./test/karma.config.js"
   },
   "devDependencies": {
