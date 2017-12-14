@@ -15,7 +15,7 @@
     "babel-plugin-transform-es2015-block-scoping": "^6.18.0",
     "babel-plugin-transform-es2015-classes": "^6.18.0",
     "chai": "^3.5.0",
-    "eslint": "^3.10.2",
+    "eslint": "^4.13.1",
     "eslint-plugin-github": "^0.20.0",
     "karma": "^1.7.1",
     "karma-chai": "^0.1.0",
