@@ -4,7 +4,7 @@
   "main": "dist/time-elements-legacy.js",
   "jsnext:main": "dist/time-elements.js",
   "scripts": {
-    "test": "make test"
+    "test": "karma start ./test/karma.config.js"
   },
   "devDependencies": {
     "babel-plugin-transform-custom-element-classes": "^0.1.0",
@@ -13,7 +13,11 @@
     "chai": "^3.5.0",
     "eslint": "^3.10.2",
     "eslint-plugin-github": "^0.6.1",
-    "mocha": "^3.1.2",
+    "karma": "^1.7.1",
+    "karma-chai": "^0.1.0",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-mocha": "^1.3.0",
+    "mocha": "^3.5.3",
     "mocha-phantomjs-core": "^2.1.0",
     "phantomjs-prebuilt": "^2.1.13",
     "rollup": "^0.36.4",
