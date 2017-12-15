@@ -1,2 +1,6 @@
 language: node_js
-node_js: 6.9.1 # latest LTS
+node_js:
+  - "node"
+cache:
+  directories:
+    - "node_modules"
