@@ -10,7 +10,7 @@ module.exports = function(config) {
       'time-until.js',
       'title-format.js'
     ],
-    reporters: ['progress'],
+    reporters: ['mocha'],
     port: 9876,
     client: {mocha: {ui: 'tdd'}},
     colors: true,
