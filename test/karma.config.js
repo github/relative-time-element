@@ -2,7 +2,7 @@ module.exports = function(config) {
   config.set({
     frameworks: ['mocha', 'chai'],
     files: [
-      '../dist/time-elements.js',
+      '../dist/time-elements-legacy.js',
       'constructor.js',
       'local-time.js',
       'relative-time.js',
