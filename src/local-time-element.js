@@ -40,7 +40,7 @@ LocalTimePrototype.getFormattedDate = function() {
 
   const date = formatDate(this) || ''
   const time = formatTime(this) || ''
-  return (date + ' ' + time).trim()
+  return `${date} ${time}`.trim()
 }
 
 // Private: Format a date according to the `weekday`, `day`, `month`,
@@ -57,19 +57,19 @@ function formatDate(el) {
   // map attribute values to strftime
   const props = {
     weekday: {
-      'short': '%a',
-      'long': '%A'
+      short: '%a',
+      long: '%A'
     },
     day: {
-      'numeric': '%e',
+      numeric: '%e',
       '2-digit': '%d'
     },
     month: {
-      'short': '%b',
-      'long': '%B'
+      short: '%b',
+      long: '%B'
     },
     year: {
-      'numeric': '%Y',
+      numeric: '%Y',
       '2-digit': '%y'
     }
   }
@@ -85,7 +85,9 @@ function formatDate(el) {
   format = format.replace(/(\s,)|(,\s$)/, '')
 
   // squeeze spaces from final string
-  return strftime(el._date, format).replace(/\s+/, ' ').trim()
+  return strftime(el._date, format)
+    .replace(/\s+/, ' ')
+    .trim()
 }
 
 // Private: Format a time according to the `hour`, `minute`, and `second`
