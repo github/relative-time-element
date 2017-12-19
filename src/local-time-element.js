@@ -25,7 +25,7 @@ export default class LocalTimeElement extends ExtendedTimeElement {
 
     const date = formatDate(this) || ''
     const time = formatTime(this) || ''
-    return (date + ' ' + time).trim()
+    return `${date} ${time}`.trim()
   }
 }
 
