@@ -104,7 +104,7 @@ suite('relative-time', function() {
   test('sets relative contents when parsed element is upgraded', function() {
     var now = new Date().toISOString()
     var root = document.createElement('div')
-    root.innerHTML = '<relative-time datetime="'+now+'"></relative-time>'
+    root.innerHTML = '<relative-time datetime="' + now + '"></relative-time>'
     if ('CustomElements' in window) {
       window.CustomElements.upgradeSubtree(root)
     }
