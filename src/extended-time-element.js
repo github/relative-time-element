@@ -2,18 +2,7 @@ import {makeFormatter} from './utils'
 
 export default class ExtendedTimeElement extends HTMLElement {
   static get observedAttributes() {
-    return [
-      'datetime',
-      'day',
-      'format',
-      'hour',
-      'minute',
-      'month',
-      'second',
-      'title',
-      'weekday',
-      'year'
-    ]
+    return ['datetime', 'day', 'format', 'hour', 'minute', 'month', 'second', 'title', 'weekday', 'year']
   }
 
   // Internal: Refresh the time element's formatted date when an attribute changes.
