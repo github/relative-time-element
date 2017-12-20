@@ -15,7 +15,7 @@ export default class ExtendedTimeElement extends HTMLElement {
     }
 
     const title = this.getFormattedTitle()
-    if (title) {
+    if (title && !this.hasAttribute('title')) {
       this.setAttribute('title', title)
     }
 
@@ -33,10 +33,6 @@ export default class ExtendedTimeElement extends HTMLElement {
   getFormattedTitle() {
     if (!this._date) {
       return
-    }
-
-    if (this.hasAttribute('title')) {
-      return this.getAttribute('title')
     }
 
     const formatter = makeFormatter({
