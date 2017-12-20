@@ -8,7 +8,7 @@ export default class RelativeTimeElement extends ExtendedTimeElement {
     }
   }
 
-  attachedCallback() {
+  connectedCallback() {
     nowElements.push(this)
 
     if (!updateNowElementsId) {
@@ -17,7 +17,7 @@ export default class RelativeTimeElement extends ExtendedTimeElement {
     }
   }
 
-  detachedCallback() {
+  disconnectedCallback() {
     const ix = nowElements.indexOf(this)
     if (ix !== -1) {
       nowElements.splice(ix, 1)
