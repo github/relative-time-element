@@ -1,46 +1,32 @@
 import {strftime, makeFormatter, isDayFirst} from './utils'
-import ExtendedTimePrototype from './extended-time-element'
+import ExtendedTimeElement from './extended-time-element'
 
-const LocalTimePrototype = Object.create(ExtendedTimePrototype)
+export default class LocalTimeElement extends ExtendedTimeElement {
+  // Formats the element's date, in the user's current locale, according to
+  // the formatting attribute values. Values are not passed straight through to
+  // an Intl.DateTimeFormat instance so that weekday and month names are always
+  // displayed in English, for now.
+  //
+  // Supported attributes are:
+  //
+  //   weekday - "short", "long"
+  //   year    - "numeric", "2-digit"
+  //   month   - "short", "long"
+  //   day     - "numeric", "2-digit"
+  //   hour    - "numeric", "2-digit"
+  //   minute  - "numeric", "2-digit"
+  //   second  - "numeric", "2-digit"
+  //
+  // Returns a formatted time String.
+  getFormattedDate() {
+    if (!this._date) {
+      return
+    }
 
-LocalTimePrototype.createdCallback = function() {
-  let value
-
-  value = this.getAttribute('datetime')
-  if (value) {
-    this.attributeChangedCallback('datetime', null, value)
+    const date = formatDate(this) || ''
+    const time = formatTime(this) || ''
+    return `${date} ${time}`.trim()
   }
-
-  value = this.getAttribute('format')
-  if (value) {
-    this.attributeChangedCallback('format', null, value)
-  }
-}
-
-// Formats the element's date, in the user's current locale, according to
-// the formatting attribute values. Values are not passed straight through to
-// an Intl.DateTimeFormat instance so that weekday and month names are always
-// displayed in English, for now.
-//
-// Supported attributes are:
-//
-//   weekday - "short", "long"
-//   year    - "numeric", "2-digit"
-//   month   - "short", "long"
-//   day     - "numeric", "2-digit"
-//   hour    - "numeric", "2-digit"
-//   minute  - "numeric", "2-digit"
-//   second  - "numeric", "2-digit"
-//
-// Returns a formatted time String.
-LocalTimePrototype.getFormattedDate = function() {
-  if (!this._date) {
-    return
-  }
-
-  const date = formatDate(this) || ''
-  const time = formatTime(this) || ''
-  return `${date} ${time}`.trim()
 }
 
 // Private: Format a date according to the `weekday`, `day`, `month`,
@@ -132,6 +118,5 @@ function formatTime(el) {
 //   var time = new LocalTimeElement()
 //   # => <local-time></local-time>
 //
-window.LocalTimeElement = document.registerElement('local-time', {
-  prototype: LocalTimePrototype
-})
+window.LocalTimeElement = LocalTimeElement
+window.customElements.define('local-time', LocalTimeElement)
