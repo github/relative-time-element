@@ -147,8 +147,8 @@ Attribute      | Options                        | Description
 
 - Chrome
 - Firefox
-- Safari 6.1+
-- Internet Explorer 9+
+- Safari 9.1+
+- Internet Explorer 11+
 - Microsoft Edge
 
 ## See Also
