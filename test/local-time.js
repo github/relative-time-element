@@ -71,7 +71,7 @@ suite('local-time', function() {
     var time = document.createElement('local-time')
     time.setAttribute('datetime', '1970-01-01T00:00:00.000Z')
     time.setAttribute('minute', '2-digit')
-    time.setAttribute('timeZoneName', 'short')
+    time.setAttribute('time-zone-name', 'short')
     assert.match(time.textContent, /^\d{1,2} (UTC|GMT([+-]\d+)?)$/)
   })
 })
