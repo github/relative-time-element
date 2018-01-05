@@ -7,6 +7,7 @@ export default {
   plugins: [
     babel({
       plugins: [
+        'transform-es2015-template-literals',
         'transform-custom-element-classes',
         'transform-es2015-block-scoping',
         'transform-es2015-classes'

@@ -1,40 +1,33 @@
 import RelativeTime from './relative-time'
-import ExtendedTimePrototype from './extended-time-element'
+import ExtendedTimeElement from './extended-time-element'
 
-const RelativeTimePrototype = Object.create(ExtendedTimePrototype)
-
-RelativeTimePrototype.createdCallback = function() {
-  const value = this.getAttribute('datetime')
-  if (value) {
-    this.attributeChangedCallback('datetime', null, value)
-  }
-}
-
-RelativeTimePrototype.getFormattedDate = function() {
-  if (this._date) {
-    return new RelativeTime(this._date).toString()
-  }
-}
-
-RelativeTimePrototype.attachedCallback = function() {
-  nowElements.push(this)
-
-  if (!updateNowElementsId) {
-    updateNowElements()
-    updateNowElementsId = setInterval(updateNowElements, 60 * 1000)
-  }
-}
-
-RelativeTimePrototype.detachedCallback = function() {
-  const ix = nowElements.indexOf(this)
-  if (ix !== -1) {
-    nowElements.splice(ix, 1)
+export default class RelativeTimeElement extends ExtendedTimeElement {
+  getFormattedDate() {
+    if (this._date) {
+      return new RelativeTime(this._date).toString()
+    }
   }
 
-  if (!nowElements.length) {
-    if (updateNowElementsId) {
-      clearInterval(updateNowElementsId)
-      updateNowElementsId = null
+  connectedCallback() {
+    nowElements.push(this)
+
+    if (!updateNowElementsId) {
+      updateNowElements()
+      updateNowElementsId = setInterval(updateNowElements, 60 * 1000)
+    }
+  }
+
+  disconnectedCallback() {
+    const ix = nowElements.indexOf(this)
+    if (ix !== -1) {
+      nowElements.splice(ix, 1)
+    }
+
+    if (!nowElements.length) {
+      if (updateNowElementsId) {
+        clearInterval(updateNowElementsId)
+        updateNowElementsId = null
+      }
     }
   }
 }
@@ -61,8 +54,5 @@ function updateNowElements() {
 //   var time = new RelativeTimeElement()
 //   # => <relative-time></relative-time>
 //
-window.RelativeTimeElement = document.registerElement('relative-time', {
-  prototype: RelativeTimePrototype
-})
-
-export default RelativeTimePrototype
+window.RelativeTimeElement = RelativeTimeElement
+window.customElements.define('relative-time', RelativeTimeElement)
