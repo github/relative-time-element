@@ -132,16 +132,17 @@ When this markup is viewed in a CDT timezone, it will show `Apr 1, 2014 6:30PM`.
 
 ### Options
 
-Attribute      | Options                        | Description
----            | ---                            | ---
-`datetime`     | ISO 8601 date                  | Required date of element `2014-06-01T13:05:07Z`
-`year`         | 2-digit, numeric               | Format year as `14` or `2014`
-`month`        | short, long                    | Format month as `Jun` or `June`
-`day`          | 2-digit, numeric               | Format day as `01` or `1`
-`weekday`      | short, long                    | Format weekday as `Sun` or `Sunday`
-`hour`         | 2-digit, numeric               | Format hour as `01` or `1`
-`minute`       | 2-digit, numeric               | Format minute as `05` or `5`
-`second`       | 2-digit, numeric               | Format second as `07` or `7`
+Attribute        | Options                      | Description
+---              | ---                          | ---
+`datetime`       | ISO 8601 date                | Required date of element `2014-06-01T13:05:07Z`
+`year`           | 2-digit, numeric             | Format year as `14` or `2014`
+`month`          | short, long                  | Format month as `Jun` or `June`
+`day`            | 2-digit, numeric             | Format day as `01` or `1`
+`weekday`        | short, long                  | Format weekday as `Sun` or `Sunday`
+`hour`           | 2-digit, numeric             | Format hour as `01` or `1`
+`minute`         | 2-digit, numeric             | Format minute as `05` or `5`
+`second`         | 2-digit, numeric             | Format second as `07` or `7`
+`time-zone-name` | short, long                  | Display time zone as `GMT+1` or by its full name
 
 ## Browser Support
 

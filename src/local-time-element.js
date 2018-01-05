@@ -87,7 +87,8 @@ function formatTime(el) {
   const options = {
     hour: el.getAttribute('hour'),
     minute: el.getAttribute('minute'),
-    second: el.getAttribute('second')
+    second: el.getAttribute('second'),
+    timeZoneName: el.getAttribute('time-zone-name')
   }
 
   // remove unset format attributes
