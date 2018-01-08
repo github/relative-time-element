@@ -34,8 +34,10 @@ This component is built on the upcoming [Web Component](http://webcomponents.org
 
 You'll need to use a polyfill to get this feature today. Either the [Polymer](http://www.polymer-project.org/) or [X-Tag](http://www.x-tags.org/) frameworks supply a polyfill, or you can install the standalone [CustomElements](https://github.com/webcomponents/webcomponentsjs) polyfill.
 
+Legacy browsers require other generic polyfills. See `examples/polymer.html` for details.
+
 ``` html
-<script src="https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/0.5.4/CustomElements.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/1.0.22/webcomponents-hi-ce.js"></script>
 ```
 
 ## Usage
