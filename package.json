@@ -1,6 +1,6 @@
 {
   "name": "time-elements",
-  "version": "0.6.1",
+  "version": "1.0.0",
   "main": "dist/time-elements-legacy.js",
   "jsnext:main": "dist/time-elements.js",
   "license": "MIT",
