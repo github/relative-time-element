@@ -14,5 +14,7 @@ export default class TimeUntilElement extends RelativeTimeElement {
   }
 }
 
-window.TimeUntilElement = TimeUntilElement
-window.customElements.define('time-until', TimeUntilElement)
+if (!window.customElements.get('time-until')) {
+  window.TimeUntilElement = TimeUntilElement
+  window.customElements.define('time-until', TimeUntilElement)
+}

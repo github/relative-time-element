@@ -14,5 +14,7 @@ export default class TimeAgoElement extends RelativeTimeElement {
   }
 }
 
-window.TimeAgoElement = TimeAgoElement
-window.customElements.define('time-ago', TimeAgoElement)
+if (!window.customElements.get('time-ago')) {
+  window.TimeAgoElement = TimeAgoElement
+  window.customElements.define('time-ago', TimeAgoElement)
+}

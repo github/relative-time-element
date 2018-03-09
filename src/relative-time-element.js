@@ -54,5 +54,7 @@ function updateNowElements() {
 //   var time = new RelativeTimeElement()
 //   # => <relative-time></relative-time>
 //
-window.RelativeTimeElement = RelativeTimeElement
-window.customElements.define('relative-time', RelativeTimeElement)
+if (!window.customElements.get('relative-time')) {
+  window.RelativeTimeElement = RelativeTimeElement
+  window.customElements.define('relative-time', RelativeTimeElement)
+}
