@@ -8,6 +8,7 @@
     "clean": "rm -rf ./dist ./node_modules",
     "lint": "eslint src/ test/",
     "build": "rollup -c && rollup -c rollup.legacy-config.js",
+    "prepublishOnly": "npm run pretest",
     "pretest": "npm run lint && npm run build",
     "test": "karma start ./test/karma.config.js"
   },
