@@ -119,5 +119,7 @@ function formatTime(el) {
 //   var time = new LocalTimeElement()
 //   # => <local-time></local-time>
 //
-window.LocalTimeElement = LocalTimeElement
-window.customElements.define('local-time', LocalTimeElement)
+if (!window.customElements.get('local-time')) {
+  window.LocalTimeElement = LocalTimeElement
+  window.customElements.define('local-time', LocalTimeElement)
+}
