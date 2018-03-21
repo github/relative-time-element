@@ -15,7 +15,7 @@ export default class ExtendedTimeElement extends HTMLElement {
     }
 
     const title = this.getFormattedTitle()
-    if (title && !this.hasAttribute('title')) {
+    if (title && (attrName === 'datetime' || !this.hasAttribute('title'))) {
       this.setAttribute('title', title)
     }
 
