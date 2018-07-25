@@ -3,7 +3,6 @@
   "version": "1.1.0",
   "main": "dist/time-elements-legacy.js",
   "module": "dist/time-elements.js",
-  "jsnext:main": "dist/time-elements.js",
   "license": "MIT",
   "scripts": {
     "clean": "rm -rf ./dist ./node_modules",
