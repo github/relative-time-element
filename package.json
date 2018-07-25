@@ -12,10 +12,7 @@
     "pretest": "npm run lint && npm run build",
     "test": "karma start ./test/karma.config.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/github/time-elements.git"
-  },
+  "repository": "github/time-elements",
   "devDependencies": {
     "babel-plugin-transform-custom-element-classes": "^0.1.0",
     "babel-plugin-transform-es2015-block-scoping": "^6.18.0",
