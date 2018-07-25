@@ -1,7 +1,16 @@
 import {strftime, makeFormatter, isDayFirst} from './utils'
 import ExtendedTimeElement from './extended-time-element'
 
+const formatters = new WeakMap()
+
 export default class LocalTimeElement extends ExtendedTimeElement {
+  attributeChangedCallback(attrName, oldValue, newValue) {
+    if (attrName === 'hour' || attrName === 'minute' || attrName === 'second' || attrName === 'time-zone-name') {
+      formatters.delete(this)
+    }
+    super.attributeChangedCallback(attrName, oldValue, newValue)
+  }
+
   // Formats the element's date, in the user's current locale, according to
   // the formatting attribute values. Values are not passed straight through to
   // an Intl.DateTimeFormat instance so that weekday and month names are always
@@ -91,19 +100,25 @@ function formatTime(el) {
     timeZoneName: el.getAttribute('time-zone-name')
   }
 
-  // remove unset format attributes
+  // Remove unset format attributes.
   for (const opt in options) {
     if (!options[opt]) {
       delete options[opt]
     }
   }
 
-  // no time format attributes provided
+  // No time format attributes provided.
   if (Object.keys(options).length === 0) {
     return
   }
 
-  const formatter = makeFormatter(options)
+  let factory = formatters.get(el)
+  if (!factory) {
+    factory = makeFormatter(options)
+    formatters.set(el, factory)
+  }
+
+  const formatter = factory()
   if (formatter) {
     // locale-aware formatting of 24 or 12 hour times
     return formatter.format(el._date)
