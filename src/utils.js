@@ -91,18 +91,24 @@ export function strftime(time, formatString) {
 }
 
 export function makeFormatter(options) {
-  if ('Intl' in window) {
-    try {
-      return new Intl.DateTimeFormat(undefined, options)
-    } catch (e) {
-      if (!(e instanceof RangeError)) {
-        throw e
+  let format
+  return function() {
+    if (format) return format
+    if ('Intl' in window) {
+      try {
+        format = new Intl.DateTimeFormat(undefined, options)
+        return format
+      } catch (e) {
+        if (!(e instanceof RangeError)) {
+          throw e
+        }
       }
     }
   }
 }
 
 let dayFirst = null
+const dayFirstFormatter = makeFormatter({day: 'numeric', month: 'short'})
 
 // Private: Determine if the day should be formatted before the month name in
 // the user's current locale. For example, `9 Jun` for en-GB and `Jun 9`
@@ -114,7 +120,7 @@ export function isDayFirst() {
     return dayFirst
   }
 
-  const formatter = makeFormatter({day: 'numeric', month: 'short'})
+  const formatter = dayFirstFormatter()
   if (formatter) {
     const output = formatter.format(new Date(0))
     dayFirst = !!output.match(/^\d/)
@@ -125,6 +131,7 @@ export function isDayFirst() {
 }
 
 let yearSeparator = null
+const yearFormatter = makeFormatter({day: 'numeric', month: 'short', year: 'numeric'})
 
 // Private: Determine if the year should be separated from the month and day
 // with a comma. For example, `9 Jun 2014` in en-GB and `Jun 9, 2014` in en-US.
@@ -135,7 +142,7 @@ export function isYearSeparator() {
     return yearSeparator
   }
 
-  const formatter = makeFormatter({day: 'numeric', month: 'short', year: 'numeric'})
+  const formatter = yearFormatter()
   if (formatter) {
     const output = formatter.format(new Date(0))
     yearSeparator = !!output.match(/\d,/)

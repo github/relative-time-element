@@ -58,6 +58,17 @@ suite('local-time', function() {
     assert.include(['1969', '1970'], time.textContent)
   })
 
+  test('updates format when attributes change', function() {
+    var time = document.createElement('local-time')
+    time.setAttribute('datetime', '1970-01-01T00:00:00.000Z')
+
+    time.setAttribute('year', 'numeric')
+    assert.include(['1969', '1970'], time.textContent)
+
+    time.setAttribute('year', '2-digit')
+    assert.include(['69', '70'], time.textContent)
+  })
+
   test('sets formatted contents when parsed element is upgraded', function() {
     var root = document.createElement('div')
     root.innerHTML = '<local-time datetime="1970-01-01T00:00:00.000Z" year="numeric"></local-time>'

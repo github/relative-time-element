@@ -35,15 +35,7 @@ export default class ExtendedTimeElement extends HTMLElement {
       return
     }
 
-    const formatter = makeFormatter({
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-      timeZoneName: 'short'
-    })
-
+    const formatter = titleFormatter()
     if (formatter) {
       return formatter.format(this._date)
     } else {
@@ -59,3 +51,12 @@ export default class ExtendedTimeElement extends HTMLElement {
     }
   }
 }
+
+const titleFormatter = makeFormatter({
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+  hour: 'numeric',
+  minute: '2-digit',
+  timeZoneName: 'short'
+})

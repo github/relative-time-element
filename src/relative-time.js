@@ -176,7 +176,7 @@ export default class RelativeTime {
   }
 
   formatTime() {
-    const formatter = makeFormatter({hour: 'numeric', minute: '2-digit'})
+    const formatter = timeFormatter()
     if (formatter) {
       return formatter.format(this.date)
     } else {
@@ -184,3 +184,5 @@ export default class RelativeTime {
     }
   }
 }
+
+const timeFormatter = makeFormatter({hour: 'numeric', minute: '2-digit'})
