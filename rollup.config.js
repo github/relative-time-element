@@ -7,12 +7,8 @@ export default [
     input: 'src/index.js',
     plugins: [
       babel({
-        plugins: [
-          'transform-es2015-template-literals',
-          'transform-custom-element-classes',
-          'transform-es2015-block-scoping',
-          'transform-es2015-classes'
-        ]
+        plugins: ['transform-custom-element-classes'],
+        presets: ['es2015-rollup']
       })
     ],
     output: {
@@ -24,12 +20,8 @@ export default [
     input: 'src/index.js',
     plugins: [
       babel({
-        plugins: [
-          'transform-es2015-template-literals',
-          'transform-custom-element-classes',
-          'transform-es2015-block-scoping',
-          'transform-es2015-classes'
-        ]
+        plugins: ['transform-custom-element-classes'],
+        presets: ['es2015-rollup']
       })
     ],
     output: {
