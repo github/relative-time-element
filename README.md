@@ -30,16 +30,6 @@ Available on [npm](https://www.npmjs.com/) as [**time-elements**](https://www.np
 $ npm install time-elements
 ```
 
-This component is built on the upcoming [Web Component](http://webcomponents.org/) stack. Specifically, it requires a feature called [Custom Elements](http://www.html5rocks.com/en/tutorials/webcomponents/customelements/).
-
-You'll need to use a polyfill to get this feature today. Either the [Polymer](http://www.polymer-project.org/) or [X-Tag](http://www.x-tags.org/) frameworks supply a polyfill, or you can install the standalone [CustomElements](https://github.com/webcomponents/webcomponentsjs) polyfill.
-
-Legacy browsers require other generic polyfills. See `examples/polymer.html` for details.
-
-``` html
-<script src="https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/1.0.22/webcomponents-hi-ce.js"></script>
-```
-
 ## Usage
 
 This component provides three custom subtypes of the standard HTML `<time>` element. All custom time elements MUST have a `datetime` attribute set to an ISO 8601 formatted timestamp.
@@ -148,11 +138,16 @@ Attribute        | Options                      | Description
 
 ## Browser Support
 
+Browsers without native [custom element support][support] require a [polyfill][].
+
 - Chrome
 - Firefox
-- Safari 9.1+
-- Internet Explorer 11+
+- Safari
+- Internet Explorer 11
 - Microsoft Edge
+
+[support]: https://caniuse.com/#feat=custom-elementsv1
+[polyfill]: https://github.com/webcomponents/custom-elements
 
 ## See Also
 
