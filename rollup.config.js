@@ -8,7 +8,7 @@ export default [
     plugins: [
       babel({
         plugins: ['transform-custom-element-classes'],
-        presets: ['es2015-rollup']
+        presets: ['@babel/env']
       })
     ],
     output: {
@@ -21,7 +21,7 @@ export default [
     plugins: [
       babel({
         plugins: ['transform-custom-element-classes'],
-        presets: ['es2015-rollup']
+        presets: ['@babel/env']
       })
     ],
     output: {
