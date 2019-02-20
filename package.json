@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "clean": "rm -rf ./dist ./node_modules",
-    "lint": "eslint src/ test/",
+    "lint": "eslint .",
     "build": "rollup -c",
     "prepublishOnly": "npm run pretest",
     "pretest": "npm run lint && npm run build",
@@ -29,5 +29,6 @@
     "rollup": "^1.0.2",
     "rollup-plugin-babel": "^4.2.0",
     "webcomponents.js": "^0.7.23"
-  }
+  },
+  "eslintIgnore": ["dist/"]
 }
