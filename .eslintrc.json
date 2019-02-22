@@ -12,6 +12,16 @@
         "flowtype/require-valid-file-annotation": "off",
         "github/unescaped-html-literal": "off"
       }
+    },
+    {
+      "files": "test/**/*.js",
+      "excludedFiles": "test/karma.config.js",
+      "env": {
+        "mocha": true
+      },
+      "globals": {
+        "assert": true
+      }
     }
   ]
 }
