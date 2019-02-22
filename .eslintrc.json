@@ -1,0 +1,15 @@
+{
+  "extends": [
+    "plugin:github/browser",
+    "plugin:github/es6"
+  ],
+  "parser": "babel-eslint",
+  "overrides": [
+    {
+      "files": "test/**/*.js",
+      "rules": {
+        "github/unescaped-html-literal": "off"
+      }
+    }
+  ]
+}

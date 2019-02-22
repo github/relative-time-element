@@ -143,7 +143,6 @@ Browsers without native [custom element support][support] require a [polyfill][]
 - Chrome
 - Firefox
 - Safari
-- Internet Explorer 11
 - Microsoft Edge
 
 [support]: https://caniuse.com/#feat=custom-elementsv1

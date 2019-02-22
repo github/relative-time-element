@@ -7,21 +7,22 @@ export default [
     input: 'src/index.js',
     plugins: [
       babel({
-        plugins: ['transform-custom-element-classes'],
-        presets: ['@babel/env']
+        presets: ['github'],
+        plugins: ['@babel/plugin-proposal-export-default-from']
       })
     ],
     output: {
       file: pkg['main'],
-      format: 'umd'
+      format: 'umd',
+      name: 'TimeElements'
     }
   },
   {
     input: 'src/index.js',
     plugins: [
       babel({
-        plugins: ['transform-custom-element-classes'],
-        presets: ['@babel/env']
+        presets: ['github'],
+        plugins: ['@babel/plugin-proposal-export-default-from']
       })
     ],
     output: {

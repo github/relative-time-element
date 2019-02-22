@@ -1,4 +1,4 @@
-import './local-time-element'
-import './relative-time-element'
-import './time-ago-element'
-import './time-until-element'
+export LocalTimeElement from './local-time-element'
+export RelativeTimeElement from './relative-time-element'
+export TimeAgoElement from './time-ago-element'
+export TimeUntilElement from './time-until-element'
