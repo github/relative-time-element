@@ -1,7 +1,11 @@
+/* @flow strict */
+
 import {strftime, makeFormatter, isDayFirst, isThisYear, isYearSeparator} from './utils'
 
 export default class RelativeTime {
-  constructor(date) {
+  date: Date
+
+  constructor(date: Date) {
     this.date = date
   }
 
@@ -50,7 +54,7 @@ export default class RelativeTime {
     return this.timeAgoFromMs(ms)
   }
 
-  timeAgoFromMs(ms) {
+  timeAgoFromMs(ms: number) {
     const sec = Math.round(ms / 1000)
     const min = Math.round(sec / 60)
     const hr = Math.round(min / 60)
@@ -112,7 +116,7 @@ export default class RelativeTime {
     return this.timeUntilFromMs(ms)
   }
 
-  timeUntilFromMs(ms) {
+  timeUntilFromMs(ms: number) {
     const sec = Math.round(ms / 1000)
     const min = Math.round(sec / 60)
     const hr = Math.round(min / 60)

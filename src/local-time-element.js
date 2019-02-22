@@ -1,10 +1,12 @@
+/* @flow strict */
+
 import {strftime, makeFormatter, isDayFirst} from './utils'
 import ExtendedTimeElement from './extended-time-element'
 
 const formatters = new WeakMap()
 
 export default class LocalTimeElement extends ExtendedTimeElement {
-  attributeChangedCallback(attrName, oldValue, newValue) {
+  attributeChangedCallback(attrName: string, oldValue: string, newValue: string) {
     if (attrName === 'hour' || attrName === 'minute' || attrName === 'second' || attrName === 'time-zone-name') {
       formatters.delete(this)
     }
@@ -27,13 +29,12 @@ export default class LocalTimeElement extends ExtendedTimeElement {
   //   second  - "numeric", "2-digit"
   //
   // Returns a formatted time String.
-  getFormattedDate() {
-    if (!this._date) {
-      return
-    }
+  getFormattedDate(): ?string {
+    const d = this._date
+    if (!d) return
 
-    const date = formatDate(this) || ''
-    const time = formatTime(this) || ''
+    const date = formatDate(this, d) || ''
+    const time = formatTime(this, d) || ''
     return `${date} ${time}`.trim()
   }
 }
@@ -48,7 +49,7 @@ export default class LocalTimeElement extends ExtendedTimeElement {
 // el - The local-time element to format.
 //
 // Returns a date String or null if no date formats are provided.
-function formatDate(el) {
+function formatDate(el: Element, date: Date) {
   // map attribute values to strftime
   const props = {
     weekday: {
@@ -80,7 +81,7 @@ function formatDate(el) {
   format = format.replace(/(\s,)|(,\s$)/, '')
 
   // squeeze spaces from final string
-  return strftime(el._date, format)
+  return strftime(date, format)
     .replace(/\s+/, ' ')
     .trim()
 }
@@ -91,21 +92,18 @@ function formatDate(el) {
 // el - The local-time element to format.
 //
 // Returns a time String or null if no time formats are provided.
-function formatTime(el) {
-  // retrieve format settings from attributes
-  const options = {
-    hour: el.getAttribute('hour'),
-    minute: el.getAttribute('minute'),
-    second: el.getAttribute('second'),
-    timeZoneName: el.getAttribute('time-zone-name')
-  }
+function formatTime(el: Element, date: Date) {
+  const options: Intl$DateTimeFormatOptions = {}
 
-  // Remove unset format attributes.
-  for (const opt in options) {
-    if (!options[opt]) {
-      delete options[opt]
-    }
-  }
+  // retrieve format settings from attributes
+  const hour = el.getAttribute('hour')
+  if (hour === 'numeric' || hour === '2-digit') options.hour = hour
+  const minute = el.getAttribute('minute')
+  if (minute === 'numeric' || minute === '2-digit') options.minute = minute
+  const second = el.getAttribute('second')
+  if (second === 'numeric' || second === '2-digit') options.second = second
+  const tz = el.getAttribute('time-zone-name')
+  if (tz === 'short' || tz === 'long') options.timeZoneName = tz
 
   // No time format attributes provided.
   if (Object.keys(options).length === 0) {
@@ -121,11 +119,11 @@ function formatTime(el) {
   const formatter = factory()
   if (formatter) {
     // locale-aware formatting of 24 or 12 hour times
-    return formatter.format(el._date)
+    return formatter.format(date)
   } else {
     // fall back to strftime for non-Intl browsers
     const timef = options.second ? '%H:%M:%S' : '%H:%M'
-    return strftime(el._date, timef)
+    return strftime(date, timef)
   }
 }
 
