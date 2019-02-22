@@ -1,3 +1,5 @@
+/* @flow strict */
+
 import RelativeTime from './relative-time'
 import ExtendedTimeElement from './extended-time-element'
 
@@ -45,7 +47,7 @@ function updateNowElements() {
   let time, i, len
   for (i = 0, len = nowElements.length; i < len; i++) {
     time = nowElements[i]
-    time.textContent = time.getFormattedDate()
+    time.textContent = time.getFormattedDate() || ''
   }
 }
 

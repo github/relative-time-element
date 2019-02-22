@@ -1,4 +1,8 @@
-export LocalTimeElement from './local-time-element'
-export RelativeTimeElement from './relative-time-element'
-export TimeAgoElement from './time-ago-element'
-export TimeUntilElement from './time-until-element'
+/* @flow strict */
+
+import LocalTimeElement from './local-time-element'
+import RelativeTimeElement from './relative-time-element'
+import TimeAgoElement from './time-ago-element'
+import TimeUntilElement from './time-until-element'
+
+export {LocalTimeElement, RelativeTimeElement, TimeAgoElement, TimeUntilElement}

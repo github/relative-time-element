@@ -1,14 +1,26 @@
 {
   "extends": [
     "plugin:github/browser",
-    "plugin:github/es6"
+    "plugin:github/es6",
+    "plugin:github/flow"
   ],
   "parser": "babel-eslint",
   "overrides": [
     {
       "files": "test/**/*.js",
       "rules": {
+        "flowtype/require-valid-file-annotation": "off",
         "github/unescaped-html-literal": "off"
+      }
+    },
+    {
+      "files": "test/**/*.js",
+      "excludedFiles": "test/karma.config.js",
+      "env": {
+        "mocha": true
+      },
+      "globals": {
+        "assert": true
       }
     }
   ]

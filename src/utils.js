@@ -1,3 +1,5 @@
+/* @flow strict */
+
 const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 const months = [
   'January',
@@ -18,7 +20,7 @@ function pad(num) {
   return `0${num}`.slice(-2)
 }
 
-export function strftime(time, formatString) {
+export function strftime(time: Date, formatString: string): string {
   const day = time.getDay()
   const date = time.getDate()
   const month = time.getMonth()
@@ -45,16 +47,16 @@ export function strftime(time, formatString) {
       case 'd':
         return pad(date)
       case 'e':
-        return date
+        return String(date)
       case 'H':
         return pad(hour)
       case 'I':
         return pad(strftime(time, '%l'))
       case 'l':
         if (hour === 0 || hour === 12) {
-          return 12
+          return String(12)
         } else {
-          return (hour + 12) % 12
+          return String((hour + 12) % 12)
         }
       case 'm':
         return pad(month + 1)
@@ -75,11 +77,11 @@ export function strftime(time, formatString) {
       case 'S':
         return pad(second)
       case 'w':
-        return day
+        return String(day)
       case 'y':
         return pad(year % 100)
       case 'Y':
-        return year
+        return String(year)
       case 'Z':
         match = time.toString().match(/\((\w+)\)$/)
         return match ? match[1] : ''
@@ -87,10 +89,11 @@ export function strftime(time, formatString) {
         match = time.toString().match(/\w([+-]\d\d\d\d) /)
         return match ? match[1] : ''
     }
+    return ''
   })
 }
 
-export function makeFormatter(options) {
+export function makeFormatter(options: Intl$DateTimeFormatOptions): () => ?Intl$DateTimeFormat {
   let format
   return function() {
     if (format) return format
@@ -115,7 +118,7 @@ const dayFirstFormatter = makeFormatter({day: 'numeric', month: 'short'})
 // for en-US.
 //
 // Returns true if the day appears before the month.
-export function isDayFirst() {
+export function isDayFirst(): boolean {
   if (dayFirst !== null) {
     return dayFirst
   }
@@ -157,7 +160,7 @@ export function isYearSeparator() {
 // date - The Date to test.
 //
 // Returns true if it's this year.
-export function isThisYear(date) {
+export function isThisYear(date: Date) {
   const now = new Date()
   return now.getUTCFullYear() === date.getUTCFullYear()
 }

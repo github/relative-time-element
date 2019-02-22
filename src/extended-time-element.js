@@ -1,6 +1,10 @@
+/* @flow strict */
+
 import {makeFormatter} from './utils'
 
 export default class ExtendedTimeElement extends HTMLElement {
+  _date: ?Date
+
   static get observedAttributes() {
     return ['datetime', 'day', 'format', 'hour', 'minute', 'month', 'second', 'title', 'weekday', 'year']
   }
@@ -8,7 +12,7 @@ export default class ExtendedTimeElement extends HTMLElement {
   // Internal: Refresh the time element's formatted date when an attribute changes.
   //
   // Returns nothing.
-  attributeChangedCallback(attrName, oldValue, newValue) {
+  attributeChangedCallback(attrName: string, oldValue: string, newValue: string) {
     if (attrName === 'datetime') {
       const millis = Date.parse(newValue)
       this._date = isNaN(millis) ? null : new Date(millis)
@@ -30,26 +34,27 @@ export default class ExtendedTimeElement extends HTMLElement {
   // value takes precedence over this custom format.
   //
   // Returns a formatted time String.
-  getFormattedTitle() {
-    if (!this._date) {
-      return
-    }
+  getFormattedTitle(): ?string {
+    const date = this._date
+    if (!date) return
 
     const formatter = titleFormatter()
     if (formatter) {
-      return formatter.format(this._date)
+      return formatter.format(date)
     } else {
       try {
-        return this._date.toLocaleString()
+        return date.toLocaleString()
       } catch (e) {
         if (e instanceof RangeError) {
-          return this._date.toString()
+          return date.toString()
         } else {
           throw e
         }
       }
     }
   }
+
+  getFormattedDate(): ?string {}
 }
 
 const titleFormatter = makeFormatter({
