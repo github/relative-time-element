@@ -2,6 +2,8 @@
 
 import {strftime, makeFormatter, isDayFirst, isThisYear, isYearSeparator} from './utils'
 
+const rtf = new Intl.RelativeTimeFormat('en', {numeric: 'auto'})
+
 export default class RelativeTime {
   date: Date
 
@@ -62,31 +64,29 @@ export default class RelativeTime {
     const month = Math.round(day / 30)
     const year = Math.round(month / 12)
     if (ms < 0) {
-      return 'just now'
+      return rtf.format(0, 'second')
     } else if (sec < 10) {
-      return 'just now'
+      return rtf.format(0, 'second')
     } else if (sec < 45) {
-      return `${sec} seconds ago`
+      return rtf.format(-sec, 'second')
     } else if (sec < 90) {
-      return 'a minute ago'
+      return rtf.format(-min, 'minute')
     } else if (min < 45) {
-      return `${min} minutes ago`
+      return rtf.format(-min, 'minute')
     } else if (min < 90) {
-      return 'an hour ago'
+      return rtf.format(-hr, 'hour')
     } else if (hr < 24) {
-      return `${hr} hours ago`
+      return rtf.format(-hr, 'hour')
     } else if (hr < 36) {
-      return 'a day ago'
+      return rtf.format(-day, 'day')
     } else if (day < 30) {
-      return `${day} days ago`
+      return rtf.format(-day, 'day')
     } else if (day < 45) {
-      return 'a month ago'
-    } else if (month < 12) {
-      return `${month} months ago`
+      return rtf.format(-month, 'month')
     } else if (month < 18) {
-      return 'a year ago'
+      return rtf.format(-year, 'year')
     } else {
-      return `${year} years ago`
+      return rtf.format(-year, 'year')
     }
   }
 
@@ -124,29 +124,29 @@ export default class RelativeTime {
     const month = Math.round(day / 30)
     const year = Math.round(month / 12)
     if (month >= 18) {
-      return `${year} years from now`
+      return rtf.format(year, 'year')
     } else if (month >= 12) {
-      return 'a year from now'
+      return rtf.format(year, 'year')
     } else if (day >= 45) {
-      return `${month} months from now`
+      return rtf.format(month, 'month')
     } else if (day >= 30) {
-      return 'a month from now'
+      return rtf.format(month, 'month')
     } else if (hr >= 36) {
-      return `${day} days from now`
+      return rtf.format(day, 'day')
     } else if (hr >= 24) {
-      return 'a day from now'
+      return rtf.format(day, 'day')
     } else if (min >= 90) {
-      return `${hr} hours from now`
+      return rtf.format(hr, 'day')
     } else if (min >= 45) {
-      return 'an hour from now'
+      return rtf.format(hr, 'day')
     } else if (sec >= 90) {
-      return `${min} minutes from now`
+      return rtf.format(min, 'minute')
     } else if (sec >= 45) {
-      return 'a minute from now'
+      return rtf.format(min, 'minute')
     } else if (sec >= 10) {
-      return `${sec} seconds from now`
+      return rtf.format(sec, 'second')
     } else {
-      return 'just now'
+      return rtf.format(0, 'second')
     }
   }
 
