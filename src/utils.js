@@ -164,3 +164,23 @@ export function isThisYear(date: Date) {
   const now = new Date()
   return now.getUTCFullYear() === date.getUTCFullYear()
 }
+
+// eslint-disable-next-line flowtype/no-weak-types
+export function makeRelativeFormatter(options: any): () => ?any {
+  let format
+  return function() {
+    if (format) return format
+    if ('Intl' in window && 'RelativeTimeFormat' in window.Intl) {
+      try {
+        // eslint-disable-next-line flowtype/no-flow-fix-me-comments
+        // $FlowFixMe: missing RelativeTimeFormat type
+        format = new Intl.RelativeTimeFormat(undefined, options)
+        return format
+      } catch (e) {
+        if (!(e instanceof RangeError)) {
+          throw e
+        }
+      }
+    }
+  }
+}
