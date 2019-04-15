@@ -34,7 +34,7 @@ suite('relative-time', function() {
     assert.equal(time.textContent, '3 hours from now')
   })
 
-  test('rewrites from now past datetime to a hour ago', function() {
+  test('rewrites from now past datetime to an hour ago', function() {
     const now = new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString()
     const time = document.createElement('relative-time')
     time.setAttribute('datetime', now)
