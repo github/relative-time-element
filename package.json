@@ -1,6 +1,6 @@
 {
   "name": "time-elements",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "main": "dist/time-elements-legacy.js",
   "module": "dist/time-elements.js",
   "license": "MIT",
@@ -9,9 +9,8 @@
     "lint": "github-lint",
     "prebuild": "npm run clean && npm run lint && mkdir dist",
     "build": "rollup -c && cp src/index.js.flow dist/time-elements.js.flow && cp src/index.js.flow dist/time-elements-legacy.js.flow",
-    "prepublishOnly": "npm run pretest",
-    "pretest": "npm run build",
     "prepublishOnly": "npm run build",
+    "pretest": "npm run build",
     "test": "karma start ./test/karma.config.js"
   },
   "repository": "github/time-elements",
