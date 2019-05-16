@@ -2,6 +2,7 @@
 
 declare module 'time-elements' {
   declare class ExtendedTimeElement extends HTMLElement {
+    _date: ?Date;
     getFormattedTitle(): ?string;
     getFormattedDate(): ?string;
   }
