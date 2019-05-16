@@ -5,11 +5,13 @@
   "module": "dist/time-elements.js",
   "license": "MIT",
   "scripts": {
-    "clean": "rm -rf ./dist ./node_modules",
+    "clean": "rm -rf dist",
     "lint": "github-lint",
-    "build": "rollup -c",
+    "prebuild": "npm run clean && npm run lint && mkdir dist",
+    "build": "rollup -c && cp src/index.js.flow dist/time-elements.js.flow && cp src/index.js.flow dist/time-elements-legacy.js.flow",
     "prepublishOnly": "npm run pretest",
-    "pretest": "npm run lint && npm run build",
+    "pretest": "npm run build",
+    "prepublishOnly": "npm run build",
     "test": "karma start ./test/karma.config.js"
   },
   "repository": "github/time-elements",

@@ -4,7 +4,7 @@ import RelativeTime from './relative-time'
 import RelativeTimeElement from './relative-time-element'
 
 export default class TimeAgoElement extends RelativeTimeElement {
-  getFormattedDate() {
+  getFormattedDate(): ?string {
     const format = this.getAttribute('format')
     if (!this._date) return
     if (format === 'micro') {
