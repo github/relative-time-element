@@ -5,8 +5,8 @@ import ExtendedTimeElement from './extended-time-element'
 
 export default class RelativeTimeElement extends ExtendedTimeElement {
   getFormattedDate(): ?string {
-    if (this._date) {
-      return new RelativeTime(this._date).toString()
+    if (this.date) {
+      return new RelativeTime(this.date).toString()
     }
   }
 
