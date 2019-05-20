@@ -10,14 +10,14 @@ suite('relative-time', function() {
     const now = new Date(Date.now() + 3 * 60 * 60 * 24 * 1000).toISOString()
     const time = document.createElement('relative-time')
     time.setAttribute('datetime', now)
-    assert.equal(time.textContent, '3 days from now')
+    assert.equal(time.textContent, 'in 3 days')
   })
 
-  test('rewrites from now past datetime to a day ago', function() {
+  test('rewrites from now past datetime to yesterday', function() {
     const now = new Date(Date.now() - 1 * 60 * 60 * 24 * 1000).toISOString()
     const time = document.createElement('relative-time')
     time.setAttribute('datetime', now)
-    assert.equal(time.textContent, 'a day ago')
+    assert.equal(time.textContent, 'yesterday')
   })
 
   test('rewrites from now past datetime to hours ago', function() {
@@ -31,14 +31,14 @@ suite('relative-time', function() {
     const now = new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString()
     const time = document.createElement('relative-time')
     time.setAttribute('datetime', now)
-    assert.equal(time.textContent, '3 hours from now')
+    assert.equal(time.textContent, 'in 3 hours')
   })
 
   test('rewrites from now past datetime to an hour ago', function() {
     const now = new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString()
     const time = document.createElement('relative-time')
     time.setAttribute('datetime', now)
-    assert.equal(time.textContent, 'an hour ago')
+    assert.equal(time.textContent, '1 hour ago')
   })
 
   test('rewrites from now past datetime to minutes ago', function() {
@@ -52,49 +52,49 @@ suite('relative-time', function() {
     const now = new Date(Date.now() + 3 * 60 * 1000).toISOString()
     const time = document.createElement('relative-time')
     time.setAttribute('datetime', now)
-    assert.equal(time.textContent, '3 minutes from now')
+    assert.equal(time.textContent, 'in 3 minutes')
   })
 
   test('rewrites from now past datetime to a minute ago', function() {
     const now = new Date(Date.now() - 1 * 60 * 1000).toISOString()
     const time = document.createElement('relative-time')
     time.setAttribute('datetime', now)
-    assert.equal(time.textContent, 'a minute ago')
+    assert.equal(time.textContent, '1 minute ago')
   })
 
-  test('rewrites a few seconds ago to just now', function() {
+  test('rewrites a few seconds ago to now', function() {
     const now = new Date().toISOString()
     const time = document.createElement('relative-time')
     time.setAttribute('datetime', now)
-    assert.equal(time.textContent, 'just now')
+    assert.equal(time.textContent, 'now')
   })
 
-  test('rewrites a few seconds from now to just now', function() {
+  test('rewrites a few seconds from now to now', function() {
     const now = new Date().toISOString()
     const time = document.createElement('relative-time')
     time.setAttribute('datetime', now)
-    assert.equal(time.textContent, 'just now')
+    assert.equal(time.textContent, 'now')
   })
 
-  test('displays future times as just now', function() {
+  test('displays future times as now', function() {
     const now = new Date(Date.now() + 3 * 1000).toISOString()
     const time = document.createElement('relative-time')
     time.setAttribute('datetime', now)
-    assert.equal(time.textContent, 'just now')
+    assert.equal(time.textContent, 'now')
   })
 
-  test('displays a day ago', function() {
+  test('displays yesterday', function() {
     const now = new Date(Date.now() - 60 * 60 * 24 * 1000).toISOString()
     const time = document.createElement('relative-time')
     time.setAttribute('datetime', now)
-    assert.equal(time.textContent, 'a day ago')
+    assert.equal(time.textContent, 'yesterday')
   })
 
   test('displays a day from now', function() {
     const now = new Date(Date.now() + 60 * 60 * 24 * 1000).toISOString()
     const time = document.createElement('relative-time')
     time.setAttribute('datetime', now)
-    assert.equal(time.textContent, 'a day from now')
+    assert.equal(time.textContent, 'tomorrow')
   })
 
   test('displays 2 days ago', function() {
@@ -108,7 +108,7 @@ suite('relative-time', function() {
     const now = new Date(Date.now() + 2 * 60 * 60 * 24 * 1000).toISOString()
     const time = document.createElement('relative-time')
     time.setAttribute('datetime', now)
-    assert.equal(time.textContent, '2 days from now')
+    assert.equal(time.textContent, 'in 2 days')
   })
 
   test('switches to dates after 30 past days', function() {
@@ -144,10 +144,10 @@ suite('relative-time', function() {
     const now = new Date().toISOString()
 
     time.setAttribute('datetime', now)
-    assert.equal(time.textContent, 'just now')
+    assert.equal(time.textContent, 'now')
 
     time.removeAttribute('datetime')
-    assert.equal(time.textContent, 'just now')
+    assert.equal(time.textContent, 'now')
   })
 
   test('sets relative contents when parsed element is upgraded', function() {
@@ -157,6 +157,6 @@ suite('relative-time', function() {
     if ('CustomElements' in window) {
       window.CustomElements.upgradeSubtree(root)
     }
-    assert.equal(root.children[0].textContent, 'just now')
+    assert.equal(root.children[0].textContent, 'now')
   })
 })

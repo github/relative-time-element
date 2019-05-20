@@ -1,6 +1,6 @@
 /* @flow strict */
 
-import {strftime, makeFormatter, isDayFirst, isThisYear, isYearSeparator} from './utils'
+import {strftime, makeFormatter, makeRelativeFormatter, isDayFirst, isThisYear, isYearSeparator} from './utils'
 
 export default class RelativeTime {
   date: Date
@@ -62,31 +62,29 @@ export default class RelativeTime {
     const month = Math.round(day / 30)
     const year = Math.round(month / 12)
     if (ms < 0) {
-      return 'just now'
+      return formatRelativeTime(0, 'second')
     } else if (sec < 10) {
-      return 'just now'
+      return formatRelativeTime(0, 'second')
     } else if (sec < 45) {
-      return `${sec} seconds ago`
+      return formatRelativeTime(-sec, 'second')
     } else if (sec < 90) {
-      return 'a minute ago'
+      return formatRelativeTime(-min, 'minute')
     } else if (min < 45) {
-      return `${min} minutes ago`
+      return formatRelativeTime(-min, 'minute')
     } else if (min < 90) {
-      return 'an hour ago'
+      return formatRelativeTime(-hr, 'hour')
     } else if (hr < 24) {
-      return `${hr} hours ago`
+      return formatRelativeTime(-hr, 'hour')
     } else if (hr < 36) {
-      return 'a day ago'
+      return formatRelativeTime(-day, 'day')
     } else if (day < 30) {
-      return `${day} days ago`
+      return formatRelativeTime(-day, 'day')
     } else if (day < 45) {
-      return 'a month ago'
-    } else if (month < 12) {
-      return `${month} months ago`
+      return formatRelativeTime(-month, 'month')
     } else if (month < 18) {
-      return 'a year ago'
+      return formatRelativeTime(-year, 'year')
     } else {
-      return `${year} years ago`
+      return formatRelativeTime(-year, 'year')
     }
   }
 
@@ -124,29 +122,29 @@ export default class RelativeTime {
     const month = Math.round(day / 30)
     const year = Math.round(month / 12)
     if (month >= 18) {
-      return `${year} years from now`
+      return formatRelativeTime(year, 'year')
     } else if (month >= 12) {
-      return 'a year from now'
+      return formatRelativeTime(year, 'year')
     } else if (day >= 45) {
-      return `${month} months from now`
+      return formatRelativeTime(month, 'month')
     } else if (day >= 30) {
-      return 'a month from now'
+      return formatRelativeTime(month, 'month')
     } else if (hr >= 36) {
-      return `${day} days from now`
+      return formatRelativeTime(day, 'day')
     } else if (hr >= 24) {
-      return 'a day from now'
+      return formatRelativeTime(day, 'day')
     } else if (min >= 90) {
-      return `${hr} hours from now`
+      return formatRelativeTime(hr, 'hour')
     } else if (min >= 45) {
-      return 'an hour from now'
+      return formatRelativeTime(hr, 'hour')
     } else if (sec >= 90) {
-      return `${min} minutes from now`
+      return formatRelativeTime(min, 'minute')
     } else if (sec >= 45) {
-      return 'a minute from now'
+      return formatRelativeTime(min, 'minute')
     } else if (sec >= 10) {
-      return `${sec} seconds from now`
+      return formatRelativeTime(sec, 'second')
     } else {
-      return 'just now'
+      return formatRelativeTime(0, 'second')
     }
   }
 
@@ -189,4 +187,92 @@ export default class RelativeTime {
   }
 }
 
+function formatRelativeTime(value: number, unit: string): string {
+  const formatter = relativeFormatter()
+  if (formatter) {
+    return formatter.format(value, unit)
+  } else {
+    return formatEnRelativeTime(value, unit)
+  }
+}
+
+// Simplified "en" RelativeTimeFormat.format function
+//
+// Values should roughly match
+//   new Intl.RelativeTimeFormat('en', {numeric: 'auto'}).format(value, unit)
+//
+function formatEnRelativeTime(value: number, unit: string): string {
+  if (value === 0) {
+    switch (unit) {
+      case 'year':
+      case 'quarter':
+      case 'month':
+      case 'week':
+        return `this ${unit}`
+      case 'day':
+        return 'today'
+      case 'hour':
+      case 'minute':
+        return `in 0 ${unit}s`
+      case 'second':
+        return 'now'
+    }
+  } else if (value === 1) {
+    switch (unit) {
+      case 'year':
+      case 'quarter':
+      case 'month':
+      case 'week':
+        return `next ${unit}`
+      case 'day':
+        return 'tomorrow'
+      case 'hour':
+      case 'minute':
+      case 'second':
+        return `in 1 ${unit}`
+    }
+  } else if (value === -1) {
+    switch (unit) {
+      case 'year':
+      case 'quarter':
+      case 'month':
+      case 'week':
+        return `last ${unit}`
+      case 'day':
+        return 'yesterday'
+      case 'hour':
+      case 'minute':
+      case 'second':
+        return `1 ${unit} ago`
+    }
+  } else if (value > 1) {
+    switch (unit) {
+      case 'year':
+      case 'quarter':
+      case 'month':
+      case 'week':
+      case 'day':
+      case 'hour':
+      case 'minute':
+      case 'second':
+        return `in ${value} ${unit}s`
+    }
+  } else if (value < -1) {
+    switch (unit) {
+      case 'year':
+      case 'quarter':
+      case 'month':
+      case 'week':
+      case 'day':
+      case 'hour':
+      case 'minute':
+      case 'second':
+        return `${-value} ${unit}s ago`
+    }
+  }
+
+  throw new RangeError(`Invalid unit argument for format() '${unit}'`)
+}
+
 const timeFormatter = makeFormatter({hour: 'numeric', minute: '2-digit'})
+const relativeFormatter = makeRelativeFormatter({numeric: 'auto'})

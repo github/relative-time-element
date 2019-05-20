@@ -13,18 +13,18 @@ suite('time-ago', function() {
     assert.equal(time.textContent, '3 minutes ago')
   })
 
-  test('rewrites a few seconds ago to just now', function() {
+  test('rewrites a few seconds ago to now', function() {
     const now = new Date().toISOString()
     const time = document.createElement('time-ago')
     time.setAttribute('datetime', now)
-    assert.equal(time.textContent, 'just now')
+    assert.equal(time.textContent, 'now')
   })
 
-  test('displays future times as just now', function() {
+  test('displays future times as now', function() {
     const now = new Date(Date.now() + 3 * 1000).toISOString()
     const time = document.createElement('time-ago')
     time.setAttribute('datetime', now)
-    assert.equal(time.textContent, 'just now')
+    assert.equal(time.textContent, 'now')
   })
 
   test('sets relative contents when parsed element is upgraded', function() {
@@ -34,7 +34,7 @@ suite('time-ago', function() {
     if ('CustomElements' in window) {
       window.CustomElements.upgradeSubtree(root)
     }
-    assert.equal(root.children[0].textContent, 'just now')
+    assert.equal(root.children[0].textContent, 'now')
   })
 
   test('micro formats years', function() {
