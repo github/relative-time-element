@@ -184,3 +184,14 @@ export function makeRelativeFormatter(options: any): () => ?any {
     }
   }
 }
+
+// Private: Get preferred Intl locale for a target element.
+//
+// Traverses parents until it finds an explicit `lang` other returns "default".
+export function localeFromElement(el: HTMLElement): string {
+  const container = el.closest('[lang]')
+  if (container instanceof HTMLElement && container.lang) {
+    return container.lang
+  }
+  return 'default'
+}
