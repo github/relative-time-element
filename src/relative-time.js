@@ -4,9 +4,11 @@ import {strftime, makeFormatter, makeRelativeFormatter, isDayFirst, isThisYear, 
 
 export default class RelativeTime {
   date: Date
+  locale: string
 
-  constructor(date: Date) {
+  constructor(date: Date, locale: string) {
     this.date = date
+    this.locale = locale
   }
 
   toString() {

@@ -2,11 +2,12 @@
 
 import RelativeTime from './relative-time'
 import ExtendedTimeElement from './extended-time-element'
+import {localeFromElement} from './utils'
 
 export default class RelativeTimeElement extends ExtendedTimeElement {
   getFormattedDate(): ?string {
     if (this._date) {
-      return new RelativeTime(this._date).toString()
+      return new RelativeTime(this._date, localeFromElement(this)).toString()
     }
   }
 

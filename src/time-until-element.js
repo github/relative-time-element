@@ -2,15 +2,16 @@
 
 import RelativeTime from './relative-time'
 import RelativeTimeElement from './relative-time-element'
+import {localeFromElement} from './utils'
 
 export default class TimeUntilElement extends RelativeTimeElement {
   getFormattedDate(): ?string {
     const format = this.getAttribute('format')
     if (!this._date) return
     if (format === 'micro') {
-      return new RelativeTime(this._date).microTimeUntil()
+      return new RelativeTime(this._date, localeFromElement(this)).microTimeUntil()
     } else {
-      return new RelativeTime(this._date).timeUntil()
+      return new RelativeTime(this._date, localeFromElement(this)).timeUntil()
     }
   }
 }
