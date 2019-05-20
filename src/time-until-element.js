@@ -6,11 +6,12 @@ import RelativeTimeElement from './relative-time-element'
 export default class TimeUntilElement extends RelativeTimeElement {
   getFormattedDate(): ?string {
     const format = this.getAttribute('format')
-    if (!this.date) return
+    const date = this.date
+    if (!date) return
     if (format === 'micro') {
-      return new RelativeTime(this.date).microTimeUntil()
+      return new RelativeTime(date).microTimeUntil()
     } else {
-      return new RelativeTime(this.date).timeUntil()
+      return new RelativeTime(date).timeUntil()
     }
   }
 }
