@@ -2,14 +2,23 @@
 
 import {makeFormatter} from './utils'
 
+const datetimes = new WeakMap()
+
 export default class ExtendedTimeElement extends HTMLElement {
   static get observedAttributes() {
     return ['datetime', 'day', 'format', 'hour', 'minute', 'month', 'second', 'title', 'weekday', 'year']
   }
 
   // Internal: Refresh the time element's formatted date when an attribute changes.
-  // eslint-disable-next-line no-unused-vars
   attributeChangedCallback(attrName: string, oldValue: string, newValue: string) {
+    if (attrName === 'datetime') {
+      const millis = Date.parse(newValue)
+      if (isNaN(millis)) {
+        datetimes.delete(this)
+      } else {
+        datetimes.set(this, new Date(millis))
+      }
+    }
     const title = this.getFormattedTitle()
     if (title && !this.hasAttribute('title')) {
       this.setAttribute('title', title)
@@ -22,10 +31,7 @@ export default class ExtendedTimeElement extends HTMLElement {
   }
 
   get date(): ?Date {
-    const datetime = this.getAttribute('datetime')
-    if (!datetime) return
-    const millis = Date.parse(datetime)
-    return isNaN(millis) ? null : new Date(millis)
+    return datetimes.get(this)
   }
 
   // Internal: Format the ISO 8601 timestamp according to the user agent's
