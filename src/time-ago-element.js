@@ -6,11 +6,12 @@ import RelativeTimeElement from './relative-time-element'
 export default class TimeAgoElement extends RelativeTimeElement {
   getFormattedDate(): ?string {
     const format = this.getAttribute('format')
-    if (!this._date) return
+    const date = this.date
+    if (!date) return
     if (format === 'micro') {
-      return new RelativeTime(this._date).microTimeAgo()
+      return new RelativeTime(date).microTimeAgo()
     } else {
-      return new RelativeTime(this._date).timeAgo()
+      return new RelativeTime(date).timeAgo()
     }
   }
 }
