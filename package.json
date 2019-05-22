@@ -20,7 +20,7 @@
     "chai": "^4.2.0",
     "eslint": "^5.16.0",
     "eslint-plugin-github": "^2.0.0",
-    "flow-bin": "^0.93.0",
+    "flow-bin": "^0.98.1",
     "karma": "^3.1.4",
     "karma-chai": "^0.1.0",
     "karma-chrome-launcher": "^2.2.0",
