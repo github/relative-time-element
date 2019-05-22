@@ -160,21 +160,33 @@ suite('relative-time', function() {
     assert.equal(root.children[0].textContent, 'now')
   })
 
-  test('rewrites given lang attribute', function() {
-    const now = new Date(Date.now() - 3 * 60 * 60 * 24 * 1000).toISOString()
-    const time = document.createElement('relative-time')
-    time.setAttribute('datetime', now)
-    time.setAttribute('lang', 'es')
-    assert.equal(time.getFormattedDate(), 'hace 3 días')
-  })
+  const esLangSupport = (function() {
+    try {
+      // eslint-disable-next-line flowtype/no-flow-fix-me-comments
+      // $FlowFixMe: missing RelativeTimeFormat type
+      return new Intl.RelativeTimeFormat('es').format(1, 'minute') === 'dentro de 1 minuto'
+    } catch (e) {
+      return false
+    }
+  })()
 
-  test('rewrites given parent lang attribute', function() {
-    const container = document.createElement('span')
-    container.setAttribute('lang', 'es')
-    const now = new Date(Date.now() - 3 * 60 * 60 * 24 * 1000).toISOString()
-    const time = document.createElement('relative-time')
-    container.appendChild(time)
-    time.setAttribute('datetime', now)
-    assert.equal(time.getFormattedDate(), 'hace 3 días')
-  })
+  if (esLangSupport) {
+    test('rewrites given lang attribute', function() {
+      const now = new Date(Date.now() - 3 * 60 * 60 * 24 * 1000).toISOString()
+      const time = document.createElement('relative-time')
+      time.setAttribute('datetime', now)
+      time.setAttribute('lang', 'es')
+      assert.equal(time.getFormattedDate(), 'hace 3 días')
+    })
+
+    test('rewrites given parent lang attribute', function() {
+      const container = document.createElement('span')
+      container.setAttribute('lang', 'es')
+      const now = new Date(Date.now() - 3 * 60 * 60 * 24 * 1000).toISOString()
+      const time = document.createElement('relative-time')
+      container.appendChild(time)
+      time.setAttribute('datetime', now)
+      assert.equal(time.getFormattedDate(), 'hace 3 días')
+    })
+  }
 })
