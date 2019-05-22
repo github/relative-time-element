@@ -1,6 +1,6 @@
 /* @flow strict */
 
-import {strftime, makeFormatter, makeRelativeFormatter, isDayFirst, isThisYear, isYearSeparator} from './utils'
+import {strftime, makeFormatter, makeRelativeFormat, isDayFirst, isThisYear, isYearSeparator} from './utils'
 
 export default class RelativeTime {
   date: Date
@@ -190,7 +190,7 @@ export default class RelativeTime {
 }
 
 function formatRelativeTime(locale: string, value: number, unit: string): string {
-  const formatter = makeRelativeFormatter(locale, {numeric: 'auto'})()
+  const formatter = makeRelativeFormat(locale, {numeric: 'auto'})
   if (formatter) {
     return formatter.format(value, unit)
   } else {

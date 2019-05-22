@@ -166,20 +166,15 @@ export function isThisYear(date: Date) {
 }
 
 // eslint-disable-next-line flowtype/no-weak-types
-export function makeRelativeFormatter(locale: string, options: any): () => ?any {
-  let format
-  return function() {
-    if (format) return format
-    if ('Intl' in window && 'RelativeTimeFormat' in window.Intl) {
-      try {
-        // eslint-disable-next-line flowtype/no-flow-fix-me-comments
-        // $FlowFixMe: missing RelativeTimeFormat type
-        format = new Intl.RelativeTimeFormat(locale, options)
-        return format
-      } catch (e) {
-        if (!(e instanceof RangeError)) {
-          throw e
-        }
+export function makeRelativeFormat(locale: string, options: any): ?any {
+  if ('Intl' in window && 'RelativeTimeFormat' in window.Intl) {
+    try {
+      // eslint-disable-next-line flowtype/no-flow-fix-me-comments
+      // $FlowFixMe: missing RelativeTimeFormat type
+      return new Intl.RelativeTimeFormat(locale, options)
+    } catch (e) {
+      if (!(e instanceof RangeError)) {
+        throw e
       }
     }
   }
