@@ -165,8 +165,12 @@ export function isThisYear(date: Date) {
   return now.getUTCFullYear() === date.getUTCFullYear()
 }
 
-// eslint-disable-next-line flowtype/no-weak-types
-export function makeRelativeFormat(locale: string, options: any): ?any {
+type Intl$RelativeTimeFormatOptions = {numeric: string}
+type Intl$RelativeTimeFormat = {
+  format(value: number, unit: string): string
+}
+
+export function makeRelativeFormat(locale: string, options: Intl$RelativeTimeFormatOptions): ?Intl$RelativeTimeFormat {
   if ('Intl' in window && 'RelativeTimeFormat' in window.Intl) {
     try {
       // eslint-disable-next-line flowtype/no-flow-fix-me-comments
