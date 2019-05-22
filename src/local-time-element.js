@@ -30,7 +30,7 @@ export default class LocalTimeElement extends ExtendedTimeElement {
   //
   // Returns a formatted time String.
   getFormattedDate(): ?string {
-    const d = this._date
+    const d = this.date
     if (!d) return
 
     const date = formatDate(this, d) || ''

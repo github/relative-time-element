@@ -6,8 +6,9 @@ import {localeFromElement} from './utils'
 
 export default class RelativeTimeElement extends ExtendedTimeElement {
   getFormattedDate(): ?string {
-    if (this._date) {
-      return new RelativeTime(this._date, localeFromElement(this)).toString()
+    const date = this.date
+    if (date) {
+      return new RelativeTime(date, localeFromElement(this)).toString()
     }
   }
 

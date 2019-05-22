@@ -7,11 +7,12 @@ import {localeFromElement} from './utils'
 export default class TimeAgoElement extends RelativeTimeElement {
   getFormattedDate(): ?string {
     const format = this.getAttribute('format')
-    if (!this._date) return
+    const date = this.date
+    if (!date) return
     if (format === 'micro') {
-      return new RelativeTime(this._date, localeFromElement(this)).microTimeAgo()
+      return new RelativeTime(date, localeFromElement(this)).microTimeAgo()
     } else {
-      return new RelativeTime(this._date, localeFromElement(this)).timeAgo()
+      return new RelativeTime(date, localeFromElement(this)).timeAgo()
     }
   }
 }
