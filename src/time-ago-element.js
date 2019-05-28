@@ -2,6 +2,7 @@
 
 import RelativeTime from './relative-time'
 import RelativeTimeElement from './relative-time-element'
+import {localeFromElement} from './utils'
 
 export default class TimeAgoElement extends RelativeTimeElement {
   getFormattedDate(): ?string {
@@ -9,9 +10,9 @@ export default class TimeAgoElement extends RelativeTimeElement {
     const date = this.date
     if (!date) return
     if (format === 'micro') {
-      return new RelativeTime(date).microTimeAgo()
+      return new RelativeTime(date, localeFromElement(this)).microTimeAgo()
     } else {
-      return new RelativeTime(date).timeAgo()
+      return new RelativeTime(date, localeFromElement(this)).timeAgo()
     }
   }
 }

@@ -1,12 +1,14 @@
 /* @flow strict */
 
-import {strftime, makeFormatter, makeRelativeFormatter, isDayFirst, isThisYear, isYearSeparator} from './utils'
+import {strftime, makeFormatter, makeRelativeFormat, isDayFirst, isThisYear, isYearSeparator} from './utils'
 
 export default class RelativeTime {
   date: Date
+  locale: string
 
-  constructor(date: Date) {
+  constructor(date: Date, locale: string) {
     this.date = date
+    this.locale = locale
   }
 
   toString() {
@@ -62,29 +64,29 @@ export default class RelativeTime {
     const month = Math.round(day / 30)
     const year = Math.round(month / 12)
     if (ms < 0) {
-      return formatRelativeTime(0, 'second')
+      return formatRelativeTime(this.locale, 0, 'second')
     } else if (sec < 10) {
-      return formatRelativeTime(0, 'second')
+      return formatRelativeTime(this.locale, 0, 'second')
     } else if (sec < 45) {
-      return formatRelativeTime(-sec, 'second')
+      return formatRelativeTime(this.locale, -sec, 'second')
     } else if (sec < 90) {
-      return formatRelativeTime(-min, 'minute')
+      return formatRelativeTime(this.locale, -min, 'minute')
     } else if (min < 45) {
-      return formatRelativeTime(-min, 'minute')
+      return formatRelativeTime(this.locale, -min, 'minute')
     } else if (min < 90) {
-      return formatRelativeTime(-hr, 'hour')
+      return formatRelativeTime(this.locale, -hr, 'hour')
     } else if (hr < 24) {
-      return formatRelativeTime(-hr, 'hour')
+      return formatRelativeTime(this.locale, -hr, 'hour')
     } else if (hr < 36) {
-      return formatRelativeTime(-day, 'day')
+      return formatRelativeTime(this.locale, -day, 'day')
     } else if (day < 30) {
-      return formatRelativeTime(-day, 'day')
+      return formatRelativeTime(this.locale, -day, 'day')
     } else if (day < 45) {
-      return formatRelativeTime(-month, 'month')
+      return formatRelativeTime(this.locale, -month, 'month')
     } else if (month < 18) {
-      return formatRelativeTime(-year, 'year')
+      return formatRelativeTime(this.locale, -year, 'year')
     } else {
-      return formatRelativeTime(-year, 'year')
+      return formatRelativeTime(this.locale, -year, 'year')
     }
   }
 
@@ -122,29 +124,29 @@ export default class RelativeTime {
     const month = Math.round(day / 30)
     const year = Math.round(month / 12)
     if (month >= 18) {
-      return formatRelativeTime(year, 'year')
+      return formatRelativeTime(this.locale, year, 'year')
     } else if (month >= 12) {
-      return formatRelativeTime(year, 'year')
+      return formatRelativeTime(this.locale, year, 'year')
     } else if (day >= 45) {
-      return formatRelativeTime(month, 'month')
+      return formatRelativeTime(this.locale, month, 'month')
     } else if (day >= 30) {
-      return formatRelativeTime(month, 'month')
+      return formatRelativeTime(this.locale, month, 'month')
     } else if (hr >= 36) {
-      return formatRelativeTime(day, 'day')
+      return formatRelativeTime(this.locale, day, 'day')
     } else if (hr >= 24) {
-      return formatRelativeTime(day, 'day')
+      return formatRelativeTime(this.locale, day, 'day')
     } else if (min >= 90) {
-      return formatRelativeTime(hr, 'hour')
+      return formatRelativeTime(this.locale, hr, 'hour')
     } else if (min >= 45) {
-      return formatRelativeTime(hr, 'hour')
+      return formatRelativeTime(this.locale, hr, 'hour')
     } else if (sec >= 90) {
-      return formatRelativeTime(min, 'minute')
+      return formatRelativeTime(this.locale, min, 'minute')
     } else if (sec >= 45) {
-      return formatRelativeTime(min, 'minute')
+      return formatRelativeTime(this.locale, min, 'minute')
     } else if (sec >= 10) {
-      return formatRelativeTime(sec, 'second')
+      return formatRelativeTime(this.locale, sec, 'second')
     } else {
-      return formatRelativeTime(0, 'second')
+      return formatRelativeTime(this.locale, 0, 'second')
     }
   }
 
@@ -187,8 +189,8 @@ export default class RelativeTime {
   }
 }
 
-function formatRelativeTime(value: number, unit: string): string {
-  const formatter = relativeFormatter()
+function formatRelativeTime(locale: string, value: number, unit: string): string {
+  const formatter = makeRelativeFormat(locale, {numeric: 'auto'})
   if (formatter) {
     return formatter.format(value, unit)
   } else {
@@ -275,4 +277,3 @@ function formatEnRelativeTime(value: number, unit: string): string {
 }
 
 const timeFormatter = makeFormatter({hour: 'numeric', minute: '2-digit'})
-const relativeFormatter = makeRelativeFormatter({numeric: 'auto'})

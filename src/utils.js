@@ -165,22 +165,32 @@ export function isThisYear(date: Date) {
   return now.getUTCFullYear() === date.getUTCFullYear()
 }
 
-// eslint-disable-next-line flowtype/no-weak-types
-export function makeRelativeFormatter(options: any): () => ?any {
-  let format
-  return function() {
-    if (format) return format
-    if ('Intl' in window && 'RelativeTimeFormat' in window.Intl) {
-      try {
-        // eslint-disable-next-line flowtype/no-flow-fix-me-comments
-        // $FlowFixMe: missing RelativeTimeFormat type
-        format = new Intl.RelativeTimeFormat(undefined, options)
-        return format
-      } catch (e) {
-        if (!(e instanceof RangeError)) {
-          throw e
-        }
+type Intl$RelativeTimeFormatOptions = {numeric: string}
+type Intl$RelativeTimeFormat = {
+  format(value: number, unit: string): string
+}
+
+export function makeRelativeFormat(locale: string, options: Intl$RelativeTimeFormatOptions): ?Intl$RelativeTimeFormat {
+  if ('Intl' in window && 'RelativeTimeFormat' in window.Intl) {
+    try {
+      // eslint-disable-next-line flowtype/no-flow-fix-me-comments
+      // $FlowFixMe: missing RelativeTimeFormat type
+      return new Intl.RelativeTimeFormat(locale, options)
+    } catch (e) {
+      if (!(e instanceof RangeError)) {
+        throw e
       }
     }
   }
+}
+
+// Private: Get preferred Intl locale for a target element.
+//
+// Traverses parents until it finds an explicit `lang` other returns "default".
+export function localeFromElement(el: HTMLElement): string {
+  const container = el.closest('[lang]')
+  if (container instanceof HTMLElement && container.lang) {
+    return container.lang
+  }
+  return 'default'
 }
