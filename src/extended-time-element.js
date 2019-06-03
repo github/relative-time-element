@@ -9,6 +9,18 @@ export default class ExtendedTimeElement extends HTMLElement {
     return ['datetime', 'day', 'format', 'lang', 'hour', 'minute', 'month', 'second', 'title', 'weekday', 'year']
   }
 
+  connectedCallback() {
+    const title = this.getFormattedTitle()
+    if (title && !this.hasAttribute('title')) {
+      this.setAttribute('title', title)
+    }
+
+    const text = this.getFormattedDate()
+    if (text) {
+      this.textContent = text
+    }
+  }
+
   // Internal: Refresh the time element's formatted date when an attribute changes.
   attributeChangedCallback(attrName: string, oldValue: string, newValue: string) {
     if (attrName === 'datetime') {

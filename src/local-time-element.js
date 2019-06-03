@@ -6,6 +6,10 @@ import ExtendedTimeElement from './extended-time-element'
 const formatters = new WeakMap()
 
 export default class LocalTimeElement extends ExtendedTimeElement {
+  connectedCallback() {
+    super.connectedCallback()
+  }
+
   attributeChangedCallback(attrName: string, oldValue: string, newValue: string) {
     if (attrName === 'hour' || attrName === 'minute' || attrName === 'second' || attrName === 'time-zone-name') {
       formatters.delete(this)
