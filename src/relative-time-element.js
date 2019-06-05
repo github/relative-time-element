@@ -19,6 +19,7 @@ export default class RelativeTimeElement extends ExtendedTimeElement {
       updateNowElements()
       updateNowElementsId = setInterval(updateNowElements, 60 * 1000)
     }
+    super.connectedCallback()
   }
 
   disconnectedCallback() {
