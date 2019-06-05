@@ -81,7 +81,7 @@ export default class RelativeTime {
       return formatRelativeTime(this.locale, -day, 'day')
     } else if (day < 30) {
       return formatRelativeTime(this.locale, -day, 'day')
-    } else if (day < 45) {
+    } else if (month < 12) {
       return formatRelativeTime(this.locale, -month, 'month')
     } else if (month < 18) {
       return formatRelativeTime(this.locale, -year, 'year')
