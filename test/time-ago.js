@@ -37,6 +37,20 @@ suite('time-ago', function() {
     assert.equal(root.children[0].textContent, 'now')
   })
 
+  test('rewrites from now past datetime to months ago', function() {
+    const now = new Date(Date.now() - 3 * 30 * 24 * 60 * 60 * 1000).toISOString()
+    const time = document.createElement('time-ago')
+    time.setAttribute('datetime', now)
+    assert.equal(time.textContent, '3 months ago')
+  })
+
+  test('rewrites from now past datetime to years ago', function() {
+    const now = new Date(Date.now() - 12 * 30 * 24 * 60 * 60 * 1000).toISOString()
+    const time = document.createElement('time-ago')
+    time.setAttribute('datetime', now)
+    assert.equal(time.textContent, 'last year')
+  })
+
   test('micro formats years', function() {
     const now = new Date(Date.now() - 10 * 365 * 24 * 60 * 60 * 1000).toISOString()
     const time = document.createElement('time-ago')
