@@ -1,6 +1,6 @@
 {
   "name": "time-elements",
-  "version": "3.0.0-beta.1",
+  "version": "3.0.0-beta.2",
   "main": "dist/time-elements-legacy.js",
   "module": "dist/time-elements.js",
   "license": "MIT",
