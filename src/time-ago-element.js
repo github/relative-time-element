@@ -5,10 +5,6 @@ import RelativeTimeElement from './relative-time-element'
 import {localeFromElement} from './utils'
 
 export default class TimeAgoElement extends RelativeTimeElement {
-  connectedCallback() {
-    super.connectedCallback()
-  }
-
   getFormattedDate(): ?string {
     const format = this.getAttribute('format')
     const date = this.date
