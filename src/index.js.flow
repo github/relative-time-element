@@ -1,4 +1,4 @@
-/* flow strict */
+ /* @flow strict */
 
 declare module '@github/time-elements' {
   declare class ExtendedTimeElement extends HTMLElement {
