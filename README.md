@@ -24,10 +24,10 @@ If the browser's JavaScript is disabled, the default text served in the cached m
 
 ## Installation
 
-Available on [npm](https://www.npmjs.com/) as [**time-elements**](https://www.npmjs.com/package/time-elements).
+Available on [npm](https://www.npmjs.com/) as [**@github/time-elements**](https://www.npmjs.com/package/@github/time-elements).
 
 ```
-$ npm install time-elements
+$ npm install @github/time-elements
 ```
 
 ## Usage

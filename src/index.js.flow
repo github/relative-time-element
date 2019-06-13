@@ -1,6 +1,6 @@
-/* flow strict */
+/* @flow strict */
 
-declare module 'time-elements' {
+declare module '@github/time-elements' {
   declare class ExtendedTimeElement extends HTMLElement {
     get date(): ?Date;
     getFormattedTitle(): ?string;
