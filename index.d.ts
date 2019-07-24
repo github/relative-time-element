@@ -1,5 +1,5 @@
 declare class ExtendedTimeElement extends HTMLElement {
-  get date(): Date | undefined
+  readonly date: Date | undefined
   getFormattedTitle(): string | undefined
   getFormattedDate(): string | undefined
 }
