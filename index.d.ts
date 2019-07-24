@@ -1,4 +1,4 @@
-class ExtendedTimeElement extends HTMLElement {
+declare class ExtendedTimeElement extends HTMLElement {
   get date(): Date | undefined
   getFormattedTitle(): string | undefined
   getFormattedDate(): string | undefined
