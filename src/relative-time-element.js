@@ -15,10 +15,8 @@ export default class RelativeTimeElement extends ExtendedTimeElement {
   connectedCallback() {
     nowElements.push(this)
 
-    if (!updateNowElementsId) {
-      updateNowElements()
-      updateNowElementsId = setInterval(updateNowElements, 60 * 1000)
-    }
+    clearTimeout(updateNowElementsId)
+    updateNowElements()
     super.connectedCallback()
   }
 
@@ -30,7 +28,7 @@ export default class RelativeTimeElement extends ExtendedTimeElement {
 
     if (!nowElements.length) {
       if (updateNowElementsId) {
-        clearInterval(updateNowElementsId)
+        clearTimeout(updateNowElementsId)
         updateNowElementsId = null
       }
     }
@@ -38,19 +36,62 @@ export default class RelativeTimeElement extends ExtendedTimeElement {
 }
 
 // Internal: Array tracking all elements attached to the document that need
-// to be updated every minute.
+// to be updated continuously.
 const nowElements = []
 
 // Internal: Timer ID for `updateNowElements` interval.
 let updateNowElementsId
 
-// Internal: Install a timer to refresh all attached relative-time elements every
-// minute.
+// Internal: Get the abs distance between now and a date
+function getDistance(date) {
+  if (date == null) {
+    return 1000
+  }
+  return Math.abs(Date.now() - date.getTime())
+}
+
+// Internal: Depending on ms distance, decide when we need the next update
+function getNextUpdate(ms) {
+  if (ms <= 10 * 1000) {
+    return 1000
+  }
+  if (ms <= 60 * 1000) {
+    return 1000
+  }
+  if (ms <= 60 * 60 * 1000) {
+    return 60 * 1000
+  }
+  return 10 * 60 * 1000
+}
+
+// Internal: Refresh all attached relative-time elements and set a new timeout
+// for next run
 function updateNowElements() {
-  let time, i, len
-  for (i = 0, len = nowElements.length; i < len; i++) {
-    time = nowElements[i]
-    time.textContent = time.getFormattedDate() || ''
+  let nearestDistance
+  for (let i = 0, len = nowElements.length; i < len; i++) {
+    const timeEl = nowElements[i],
+      timeDistance = getDistance(timeEl.date),
+      oldValue = timeEl.textContent,
+      newValue = timeEl.getFormattedDate() || ''
+
+    if (oldValue !== newValue) {
+      timeEl.textContent = newValue
+      timeEl.dispatchEvent(
+        new CustomEvent('relative-time-updated', {
+          composed: true,
+          detail: {
+            oldValue,
+            newValue
+          }
+        })
+      )
+    }
+    if (nearestDistance == null || timeDistance < nearestDistance) {
+      nearestDistance = timeDistance
+    }
+  }
+  if (nearestDistance != null) {
+    updateNowElementsId = setTimeout(updateNowElements, getNextUpdate(nearestDistance))
   }
 }
 
