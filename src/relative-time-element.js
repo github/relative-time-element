@@ -8,7 +8,7 @@ export default class RelativeTimeElement extends ExtendedTimeElement {
   getFormattedDate(): ?string {
     const date = this.date
     if (date) {
-      return new RelativeTime(date, localeFromElement(this)).toString()
+      return new RelativeTime(date, localeFromElement(this)).toString(this.getAttribute('format'))
     }
   }
 

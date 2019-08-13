@@ -11,18 +11,19 @@ export default class RelativeTime {
     this.locale = locale
   }
 
-  toString() {
+  toString(format: ?string) {
     const ago = this.timeElapsed()
     if (ago) {
       return ago
-    } else {
-      const ahead = this.timeAhead()
-      if (ahead) {
-        return ahead
-      } else {
-        return `on ${this.formatDate()}`
-      }
     }
+    const ahead = this.timeAhead()
+    if (ahead) {
+      return ahead
+    }
+    if (format) {
+      return this.formatDate(format)
+    }
+    return `on ${this.formatDate()}`
   }
 
   timeElapsed() {
@@ -171,10 +172,13 @@ export default class RelativeTime {
     }
   }
 
-  formatDate() {
-    let format = isDayFirst() ? '%e %b' : '%b %e'
-    if (!isThisYear(this.date)) {
-      format += isYearSeparator() ? ', %Y' : ' %Y'
+  formatDate(defaultFormat: ?string) {
+    let format = defaultFormat
+    if (format == null) {
+      format = isDayFirst() ? '%e %b' : '%b %e'
+      if (!isThisYear(this.date)) {
+        format += isYearSeparator() ? ', %Y' : ' %Y'
+      }
     }
     return strftime(this.date, format)
   }
