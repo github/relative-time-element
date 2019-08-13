@@ -4,6 +4,50 @@ import {makeFormatter, localeFromElement} from './utils.js'
 import {isDuration, withinDuration} from './duration.js'
 import {strftime} from './strftime.js'
 
+export class RelativeTimeUpdatedEvent extends Event {
+  constructor(public oldText: string, public newText: string, public oldTitle: string, public newTitle: string) {
+    super('relative-time-updated', {bubbles: true, composed: true})
+  }
+}
+
+function getUnitFactor(ms: number): number {
+  ms = Math.abs(Date.now() - ms)
+  if (ms < 60 * 1000) return 1000
+  if (ms < 60 * 60 * 1000) return 60 * 1000
+  return 60 * 60 * 1000
+}
+
+const dateObserver = new (class {
+  elements: Set<RelativeTimeElement> = new Set()
+
+  observe(element: RelativeTimeElement) {
+    if (this.elements.has(element)) return
+    this.elements.add(element)
+    this.update()
+  }
+
+  unobserve(element: RelativeTimeElement) {
+    if (!this.elements.has(element)) return
+    this.elements.delete(element)
+    this.update()
+  }
+
+  timer: ReturnType<typeof setTimeout> = -1 as unknown as ReturnType<typeof setTimeout>
+  update() {
+    clearTimeout(this.timer)
+    if (!this.elements.size) return
+
+    let nearestDistance = Infinity
+    for (const timeEl of this.elements) {
+      const distance = timeEl.date ? getUnitFactor(timeEl.date.getTime()) : Infinity
+      nearestDistance = Math.min(nearestDistance, distance)
+      timeEl.update()
+    }
+    const ms = Math.min(60 * 60 * 1000, nearestDistance)
+    this.timer = setTimeout(() => this.update(), ms)
+  }
+})()
+
 export default class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFormatOptions {
   #customTitle = false
 
@@ -213,36 +257,11 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
   }
 
   connectedCallback(): void {
-    nowElements.push(this)
-
-    if (!updateNowElementsId) {
-      updateNowElements()
-      updateNowElementsId = window.setInterval(updateNowElements, 60 * 1000)
-    }
-
-    const title = this.getFormattedTitle()
-    if (title && !this.hasAttribute('title')) {
-      this.setAttribute('title', title)
-    }
-
-    const text = this.getFormattedDate()
-    if (text) {
-      this.textContent = text
-    }
+    this.update()
   }
 
   disconnectedCallback(): void {
-    const ix = nowElements.indexOf(this)
-    if (ix !== -1) {
-      nowElements.splice(ix, 1)
-    }
-
-    if (!nowElements.length) {
-      if (updateNowElementsId) {
-        clearInterval(updateNowElementsId)
-        updateNowElementsId = null
-      }
-    }
+    dateObserver.unobserve(this)
   }
 
   // Internal: Refresh the time element's formatted date when an attribute changes.
@@ -250,17 +269,39 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     if (attrName === 'title') {
       this.#customTitle = true
     }
+    this.update()
+  }
+
+  update() {
+    const oldText: string = this.textContent || ''
+    const oldTitle: string = this.getAttribute('title') || ''
+    let newTitle: string = oldTitle
+    let newText: string = oldText
+    const now = new Date()
     if (!this.#customTitle) {
-      const title = this.getFormattedTitle()
-      if (title) {
-        this.setAttribute('title', title)
+      newTitle = this.getFormattedTitle() || ''
+      if (newTitle) {
+        this.setAttribute('title', newTitle)
         this.#customTitle = false
       }
     }
 
-    const text = this.getFormattedDate()
-    if (text) {
-      this.textContent = text
+    newText = this.getFormattedDate(now) || ''
+    if (newText) {
+      this.textContent = newText
+    }
+
+    if (newText !== oldText || newTitle !== oldTitle) {
+      this.dispatchEvent(new RelativeTimeUpdatedEvent(oldText, newText, oldTitle, newTitle))
+    }
+
+    const date = this.date
+    const format = this.format
+    const isRelative = (format === 'auto' || format === 'micro') && date && withinDuration(now, date, this.threshold)
+    if (isRelative) {
+      dateObserver.observe(this)
+    } else {
+      dateObserver.unobserve(this)
     }
   }
 }
@@ -273,26 +314,6 @@ const titleFormatter = makeFormatter({
   minute: '2-digit',
   timeZoneName: 'short'
 })
-
-// Internal: Array tracking all elements attached to the document that need
-// to be updated every minute.
-const nowElements: RelativeTimeElement[] = []
-
-// Internal: Timer ID for `updateNowElements` interval.
-let updateNowElementsId: number | null
-
-// Internal: Install a timer to refresh all attached relative-time elements every
-// minute.
-function updateNowElements() {
-  let time
-  let i
-  let len
-
-  for (i = 0, len = nowElements.length; i < len; i++) {
-    time = nowElements[i]
-    time.textContent = time.getFormattedDate() || ''
-  }
-}
 
 // Public: RelativeTimeElement constructor.
 //

@@ -80,9 +80,30 @@
   <p>
     Relative time with custom format:
     <relative-time datetime="2017-01-01T00:00:00.000Z" format="%Y-%m-%d">
+  <p>
+
+  <p>
+    Nearby, dynamic, relative time:
+    <relative-time datetime="2019-08-12T20:50:00.000Z" id="dynamic1">
       Oops! This browser doesn't support Web Components.
     </relative-time>
   </p>
+
+  <p>
+    Nearby, dynamic, relative time:
+    <relative-time datetime="2019-08-12T20:50:00.000Z" id="dynamic2">
+      Oops! This browser doesn't support Web Components.
+    </relative-time>
+  </p>
+
+  <p>
+    Nearby, dynamic, relative time:
+    <relative-time datetime="2019-08-12T20:50:00.000Z" tense="past" id="dynamic3">
+      Oops! This browser doesn't support Web Components.
+    </relative-time>
+  </p>
+
+
 
   <p>
     Time until:
@@ -97,7 +118,15 @@
       Oops! This browser doesn't support Web Components.
     </time-until>
   </p>
-  <!-- <script type="module" src="../dist/index.js"></script> -->
-  <script type="module" src="https://unpkg.com/@github/time-elements@latest?module"></script>
+  <script type="module" src="../dist/index.js"></script>
+  <!-- <script type="module" src="https://unpkg.com/@github/time-elements@latest?module"></script> -->
+  <script>
+    document.body.addEventListener('relative-time-updated', event => {
+      console.log('event from', event.target, event)
+    });
+    document.getElementById('dynamic1').date = new Date()
+    document.getElementById('dynamic2').date = new Date(Date.now() - 30000)
+    document.getElementById('dynamic3').date = new Date(Date.now() + 5000)
+  </script>
 </body>
 </html>
