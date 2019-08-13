@@ -83,6 +83,12 @@
       Oops! This browser doesn't support Web Components.
     </relative-time>
   </p>
+  <p>
+    Nearby, dynamic, relative time:
+    <relative-time datetime="2019-08-12T20:50:00.000Z" id="dynamic">
+      Oops! This browser doesn't support Web Components.
+    </relative-time>
+  </p>
 
   <p>
     Time until:
@@ -98,5 +104,13 @@
     </time>
   </p>
   <script src="../dist/time-elements-legacy.js"></script>
+  <script>
+    const e = document.getElementById('dynamic'),
+      nowDate = new Date();
+    e.addEventListener('relative-time-updated', event => {
+      console.log('event from', e, event)
+    });
+    e.setAttribute('datetime', nowDate.toISOString());
+  </script>
 </body>
 </html>
