@@ -3,7 +3,12 @@
   "version": "3.0.5",
   "main": "dist/time-elements-legacy.js",
   "module": "dist/time-elements.js",
+  "types": "index.d.ts",
   "license": "MIT",
+  "files": [
+    "dist",
+    "index.d.ts"
+  ],
   "scripts": {
     "clean": "rm -rf dist",
     "lint": "github-lint",
