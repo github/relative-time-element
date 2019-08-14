@@ -1,6 +1,6 @@
 {
   "name": "@github/time-elements",
-  "version": "3.0.4",
+  "version": "3.0.5",
   "main": "dist/time-elements-legacy.js",
   "module": "dist/time-elements.js",
   "types": "index.d.ts",
@@ -16,7 +16,8 @@
     "build": "rollup -c && cp src/index.js.flow dist/time-elements.js.flow && cp src/index.js.flow dist/time-elements-legacy.js.flow",
     "prepublishOnly": "npm run build",
     "pretest": "npm run build",
-    "test": "karma start ./test/karma.config.js"
+    "test": "karma start ./test/karma.config.js",
+    "postpublish": "npm publish --ignore-scripts --@github:registry='https://npm.pkg.github.com'"
   },
   "repository": "github/time-elements",
   "devDependencies": {
