@@ -19,3 +19,12 @@ export class TimeAgoElement extends ExtendedTimeElement {
 export class TimeUntilElement extends ExtendedTimeElement {
   getFormattedDate(): string | undefined
 }
+
+declare global {
+  interface Window {
+    LocalTimeElement: typeof LocalTimeElement;
+    RelativeTimeElement: typeof RelativeTimeElement;
+    TimeAgoElement: typeof TimeAgoElement;
+    TimeUntilElement: typeof TimeUntilElement;
+  }
+}
