@@ -34,6 +34,9 @@ suite('title-format', function() {
     assert.match(time.getAttribute('title'), /1970/)
     time.setAttribute('datetime', '1979-05-01T00:00:00.000Z')
     assert.match(time.getAttribute('title'), /1979/)
+    time.setAttribute('title', 'custom title')
+    time.setAttribute('datetime', '1989-05-01T00:00:00.000Z')
+    assert.match(time.getAttribute('title'), /custom title/)
   })
 
   test('set the title attribute when parsed element is upgraded', function() {
