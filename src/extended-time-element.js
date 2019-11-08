@@ -3,7 +3,6 @@
 import {makeFormatter} from './utils'
 
 const datetimes = new WeakMap()
-const titles = new WeakMap()
 
 export default class ExtendedTimeElement extends HTMLElement {
   static get observedAttributes() {
@@ -12,9 +11,8 @@ export default class ExtendedTimeElement extends HTMLElement {
 
   connectedCallback() {
     const title = this.getFormattedTitle()
-    if (title && (!this.hasAttribute('title') || titles.get(this))) {
+    if (title && !this.hasAttribute('title')) {
       this.setAttribute('title', title)
-      titles.set(this, true)
     }
 
     const text = this.getFormattedDate()
@@ -25,6 +23,7 @@ export default class ExtendedTimeElement extends HTMLElement {
 
   // Internal: Refresh the time element's formatted date when an attribute changes.
   attributeChangedCallback(attrName: string, oldValue: string, newValue: string) {
+    const oldTitle = this.getFormattedTitle()
     if (attrName === 'datetime') {
       const millis = Date.parse(newValue)
       if (isNaN(millis)) {
@@ -33,10 +32,11 @@ export default class ExtendedTimeElement extends HTMLElement {
         datetimes.set(this, new Date(millis))
       }
     }
+
     const title = this.getFormattedTitle()
-    if (title && (!this.hasAttribute('title') || titles.get(this))) {
+    const currentTitle = this.getAttribute('title')
+    if (title && (!currentTitle || currentTitle === oldTitle)) {
       this.setAttribute('title', title)
-      titles.set(this, true)
     }
 
     const text = this.getFormattedDate()
