@@ -23,6 +23,7 @@ export default class ExtendedTimeElement extends HTMLElement {
 
   // Internal: Refresh the time element's formatted date when an attribute changes.
   attributeChangedCallback(attrName: string, oldValue: string, newValue: string) {
+    const oldTitle = this.getFormattedTitle()
     if (attrName === 'datetime') {
       const millis = Date.parse(newValue)
       if (isNaN(millis)) {
@@ -31,8 +32,10 @@ export default class ExtendedTimeElement extends HTMLElement {
         datetimes.set(this, new Date(millis))
       }
     }
+
     const title = this.getFormattedTitle()
-    if (title && !this.hasAttribute('title')) {
+    const currentTitle = this.getAttribute('title')
+    if (title && (!currentTitle || currentTitle === oldTitle)) {
       this.setAttribute('title', title)
     }
 
