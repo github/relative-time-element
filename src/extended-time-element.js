@@ -35,7 +35,7 @@ export default class ExtendedTimeElement extends HTMLElement {
 
     const title = this.getFormattedTitle()
     const currentTitle = this.getAttribute('title')
-    if (title && (!currentTitle || currentTitle === oldTitle)) {
+    if (attrName !== 'title' && title && (!currentTitle || currentTitle === oldTitle)) {
       this.setAttribute('title', title)
     }
 
