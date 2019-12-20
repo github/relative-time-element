@@ -84,6 +84,6 @@ suite('local-time', function() {
     if ('CustomElements' in window) {
       window.CustomElements.upgradeSubtree(root)
     }
-    assert.match(root.children[0].textContent, /^\d{1,2} (UTC|GMT([+-]\d+)?)$/)
+    assert.match(root.children[0].textContent, /^\d{1,2} (\w+([+-]\d+)?)$/)
   })
 })
