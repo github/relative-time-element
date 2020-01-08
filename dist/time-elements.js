@@ -868,4 +868,4 @@ if (!window.customElements.get('time-until')) {
   window.customElements.define('time-until', TimeUntilElement);
 }
 
-export { LocalTimeElement, RelativeTimeElement, TimeAgoElement, TimeUntilElement };
+export { LocalTimeElement, RelativeTime, RelativeTimeElement, TimeAgoElement, TimeUntilElement };
