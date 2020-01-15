@@ -1,4 +1,19 @@
 suite('time-ago', function() {
+  let dateNow
+
+  function freezeTime(date) {
+    dateNow = Date.now
+    Date.now = function() {
+      return date
+    }
+  }
+
+  teardown(function() {
+    if (dateNow) {
+      Date.now = dateNow
+    }
+  })
+
   test('always uses relative dates', function() {
     const now = new Date(Date.now() - 10 * 365 * 24 * 60 * 60 * 1000).toISOString()
     const time = document.createElement('time-ago')
