@@ -1,6 +1,6 @@
 {
   "name": "@github/time-elements",
-  "version": "3.0.10",
+  "version": "3.1.0",
   "main": "dist/time-elements-legacy.js",
   "module": "dist/time-elements.js",
   "types": "index.d.ts",
