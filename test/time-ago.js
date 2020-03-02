@@ -1,4 +1,19 @@
 suite('time-ago', function() {
+  let dateNow
+
+  function freezeTime(date) {
+    dateNow = Date.now
+    Date.now = function() {
+      return date
+    }
+  }
+
+  teardown(function() {
+    if (dateNow) {
+      Date.now = dateNow
+    }
+  })
+
   test('always uses relative dates', function() {
     const now = new Date(Date.now() - 10 * 365 * 24 * 60 * 60 * 1000).toISOString()
     const time = document.createElement('time-ago')
@@ -44,11 +59,20 @@ suite('time-ago', function() {
     assert.equal(time.textContent, '3 months ago')
   })
 
-  test('rewrites from now past datetime to years ago', function() {
-    const now = new Date(Date.now() - 12 * 30 * 24 * 60 * 60 * 1000).toISOString()
-    const time = document.createElement('time-ago')
-    time.setAttribute('datetime', now)
-    assert.equal(time.textContent, 'last year')
+  test('rewrites time-ago datetimes < 18months as "months ago"', function() {
+    freezeTime(new Date(2020, 0, 1))
+    const then = new Date(2018, 10, 1).toISOString()
+    const timeElement = document.createElement('time-ago')
+    timeElement.setAttribute('datetime', then)
+    assert.equal(timeElement.textContent, '15 months ago')
+  })
+
+  test('rewrites time-ago datetimes >= 18 months as "years ago"', function() {
+    freezeTime(new Date(2020, 0, 1))
+    const then = new Date(2018, 6, 1).toISOString()
+    const timeElement = document.createElement('time-ago')
+    timeElement.setAttribute('datetime', then)
+    assert.equal(timeElement.textContent, '2 years ago')
   })
 
   test('micro formats years', function() {
