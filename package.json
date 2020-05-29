@@ -1,31 +1,31 @@
 {
   "name": "@github/time-elements",
   "version": "3.1.0",
-  "main": "dist/time-elements-legacy.js",
-  "module": "dist/time-elements.js",
-  "types": "index.d.ts",
+  "main": "dist/index.js",
+  "type": "module",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
   "license": "MIT",
   "files": [
-    "dist",
-    "index.d.ts"
+    "dist"
   ],
   "scripts": {
     "clean": "rm -rf dist",
-    "lint": "github-lint",
+    "lint": "eslint . --ext .js,.ts && tsc --noEmit",
     "prebuild": "npm run clean && npm run lint && mkdir dist",
-    "build": "rollup -c && cp src/index.js.flow dist/time-elements.js.flow && cp src/index.js.flow dist/time-elements-legacy.js.flow",
+    "build": "tsc && rollup -c",
     "prepublishOnly": "npm run build",
     "pretest": "npm run build",
-    "test": "karma start ./test/karma.config.js",
+    "test": "karma start ./test/karma.config.cjs",
     "postpublish": "npm publish --ignore-scripts --@github:registry='https://npm.pkg.github.com'"
   },
+  "prettier": "@github/prettier-config",
   "repository": "github/time-elements",
   "devDependencies": {
-    "@babel/core": "^7.7.0",
-    "babel-preset-github": "^3.2.1",
+    "@github/prettier-config": "0.0.4",
     "chai": "^4.2.0",
     "eslint": "^6.6.0",
-    "eslint-plugin-github": "^3.2.1",
+    "eslint-plugin-github": "^4.0.1",
     "flow-bin": "^0.111.1",
     "karma": "^4.4.1",
     "karma-chai": "^0.1.0",
@@ -34,8 +34,7 @@
     "karma-mocha-reporter": "^2.2.5",
     "mocha": "^6.2.2",
     "rollup": "^1.26.3",
-    "rollup-plugin-babel": "^4.3.3",
-    "webcomponents.js": "^0.7.23"
+    "typescript": "^3.9.3"
   },
   "eslintIgnore": [
     "dist/"

@@ -1,48 +1,48 @@
-suite('time-ago', function() {
+suite('time-ago', function () {
   let dateNow
 
   function freezeTime(date) {
     dateNow = Date.now
-    Date.now = function() {
+    Date.now = function () {
       return date
     }
   }
 
-  teardown(function() {
+  teardown(function () {
     if (dateNow) {
       Date.now = dateNow
     }
   })
 
-  test('always uses relative dates', function() {
+  test('always uses relative dates', function () {
     const now = new Date(Date.now() - 10 * 365 * 24 * 60 * 60 * 1000).toISOString()
     const time = document.createElement('time-ago')
     time.setAttribute('datetime', now)
     assert.equal(time.textContent, '10 years ago')
   })
 
-  test('rewrites from now past datetime to minutes ago', function() {
+  test('rewrites from now past datetime to minutes ago', function () {
     const now = new Date(Date.now() - 3 * 60 * 1000).toISOString()
     const time = document.createElement('time-ago')
     time.setAttribute('datetime', now)
     assert.equal(time.textContent, '3 minutes ago')
   })
 
-  test('rewrites a few seconds ago to now', function() {
+  test('rewrites a few seconds ago to now', function () {
     const now = new Date().toISOString()
     const time = document.createElement('time-ago')
     time.setAttribute('datetime', now)
     assert.equal(time.textContent, 'now')
   })
 
-  test('displays future times as now', function() {
+  test('displays future times as now', function () {
     const now = new Date(Date.now() + 3 * 1000).toISOString()
     const time = document.createElement('time-ago')
     time.setAttribute('datetime', now)
     assert.equal(time.textContent, 'now')
   })
 
-  test('sets relative contents when parsed element is upgraded', function() {
+  test('sets relative contents when parsed element is upgraded', function () {
     const now = new Date().toISOString()
     const root = document.createElement('div')
     root.innerHTML = `<time-ago datetime="${now}"></time-ago>`
@@ -52,14 +52,14 @@ suite('time-ago', function() {
     assert.equal(root.children[0].textContent, 'now')
   })
 
-  test('rewrites from now past datetime to months ago', function() {
+  test('rewrites from now past datetime to months ago', function () {
     const now = new Date(Date.now() - 3 * 30 * 24 * 60 * 60 * 1000).toISOString()
     const time = document.createElement('time-ago')
     time.setAttribute('datetime', now)
     assert.equal(time.textContent, '3 months ago')
   })
 
-  test('rewrites time-ago datetimes < 18months as "months ago"', function() {
+  test('rewrites time-ago datetimes < 18months as "months ago"', function () {
     freezeTime(new Date(2020, 0, 1))
     const then = new Date(2018, 10, 1).toISOString()
     const timeElement = document.createElement('time-ago')
@@ -67,7 +67,7 @@ suite('time-ago', function() {
     assert.equal(timeElement.textContent, '15 months ago')
   })
 
-  test('rewrites time-ago datetimes >= 18 months as "years ago"', function() {
+  test('rewrites time-ago datetimes >= 18 months as "years ago"', function () {
     freezeTime(new Date(2020, 0, 1))
     const then = new Date(2018, 6, 1).toISOString()
     const timeElement = document.createElement('time-ago')
@@ -75,7 +75,7 @@ suite('time-ago', function() {
     assert.equal(timeElement.textContent, '2 years ago')
   })
 
-  test('micro formats years', function() {
+  test('micro formats years', function () {
     const now = new Date(Date.now() - 10 * 365 * 24 * 60 * 60 * 1000).toISOString()
     const time = document.createElement('time-ago')
     time.setAttribute('datetime', now)
@@ -83,7 +83,7 @@ suite('time-ago', function() {
     assert.equal(time.textContent, '10y')
   })
 
-  test('micro formats future times', function() {
+  test('micro formats future times', function () {
     const now = new Date(Date.now() + 3 * 1000).toISOString()
     const time = document.createElement('time-ago')
     time.setAttribute('datetime', now)
@@ -91,7 +91,7 @@ suite('time-ago', function() {
     assert.equal(time.textContent, '1m')
   })
 
-  test('micro formats hours', function() {
+  test('micro formats hours', function () {
     const now = new Date(Date.now() - 60 * 60 * 1000).toISOString()
     const time = document.createElement('time-ago')
     time.setAttribute('datetime', now)
@@ -99,7 +99,7 @@ suite('time-ago', function() {
     assert.equal(time.textContent, '1h')
   })
 
-  test('micro formats days', function() {
+  test('micro formats days', function () {
     const now = new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString()
     const time = document.createElement('time-ago')
     time.setAttribute('datetime', now)

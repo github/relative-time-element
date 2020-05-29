@@ -1,5 +1,3 @@
-/* @flow strict */
-
 import {makeFormatter} from './utils'
 
 const datetimes = new WeakMap()
@@ -45,7 +43,7 @@ export default class ExtendedTimeElement extends HTMLElement {
     }
   }
 
-  get date(): ?Date {
+  get date(): Date | null {
     return datetimes.get(this)
   }
 
@@ -54,7 +52,7 @@ export default class ExtendedTimeElement extends HTMLElement {
   // value takes precedence over this custom format.
   //
   // Returns a formatted time String.
-  getFormattedTitle(): ?string {
+  getFormattedTitle(): string | undefined {
     const date = this.date
     if (!date) return
 
@@ -74,7 +72,9 @@ export default class ExtendedTimeElement extends HTMLElement {
     }
   }
 
-  getFormattedDate(): ?string {}
+  getFormattedDate(): string | undefined {
+    return
+  }
 }
 
 const titleFormatter = makeFormatter({

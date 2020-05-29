@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "module": "esnext",
+    "target": "es2017",
+    "strict": true,
+    "declaration": true,
+    "outDir": "dist",
+    "removeComments": true
+  },
+  "files": [
+    "src/index.ts"
+  ]
+}
