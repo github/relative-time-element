@@ -75,7 +75,7 @@ suite('time-ago', function() {
 
   test('rewrites time-ago datetimes < 18months as "months ago"', function() {
     freezeTime(new Date(2020, 0, 1))
-    const then = new Date(2018, 10, 1).toISOString()
+    const then = new Date(2018, 9, 1).toISOString()
     const timeElement = document.createElement('time-ago')
     timeElement.setAttribute('datetime', then)
     assert.equal(timeElement.textContent, '15 months ago')
