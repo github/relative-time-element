@@ -1,16 +1,30 @@
 suite('time-ago', function() {
   let dateNow
 
-  function freezeTime(date) {
-    dateNow = Date.now
-    Date.now = function() {
-      return date
+  function freezeTime(expected) {
+    dateNow = Date
+
+    function MockDate(...args) {
+      if (args.length) {
+        return new dateNow(...args)
+      }
+      return new dateNow(expected)
     }
+
+    MockDate.UTC = dateNow.UTC
+    MockDate.parse = dateNow.parse
+    MockDate.now = () => expected.getTime()
+    MockDate.prototype = dateNow.prototype
+
+    // eslint-disable-next-line no-global-assign
+    Date = MockDate
   }
 
   teardown(function() {
     if (dateNow) {
-      Date.now = dateNow
+      // eslint-disable-next-line no-global-assign
+      Date = dateNow
+      dateNow = null
     }
   })
 
@@ -61,7 +75,7 @@ suite('time-ago', function() {
 
   test('rewrites time-ago datetimes < 18months as "months ago"', function() {
     freezeTime(new Date(2020, 0, 1))
-    const then = new Date(2018, 10, 1).toISOString()
+    const then = new Date(2018, 9, 1).toISOString()
     const timeElement = document.createElement('time-ago')
     timeElement.setAttribute('datetime', then)
     assert.equal(timeElement.textContent, '15 months ago')
