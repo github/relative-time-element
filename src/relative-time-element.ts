@@ -9,7 +9,7 @@ export default class RelativeTimeElement extends ExtendedTimeElement {
     return new RelativeTime(date, localeFromElement(this)).toString()
   }
 
-  connectedCallback() {
+  connectedCallback(): void {
     nowElements.push(this)
 
     if (!updateNowElementsId) {
@@ -19,7 +19,7 @@ export default class RelativeTimeElement extends ExtendedTimeElement {
     super.connectedCallback()
   }
 
-  disconnectedCallback() {
+  disconnectedCallback(): void {
     const ix = nowElements.indexOf(this)
     if (ix !== -1) {
       nowElements.splice(ix, 1)

@@ -4,7 +4,7 @@ import ExtendedTimeElement from './extended-time-element'
 const formatters = new WeakMap()
 
 export default class LocalTimeElement extends ExtendedTimeElement {
-  attributeChangedCallback(attrName: string, oldValue: string, newValue: string) {
+  attributeChangedCallback(attrName: string, oldValue: string, newValue: string): void {
     if (attrName === 'hour' || attrName === 'minute' || attrName === 'second' || attrName === 'time-zone-name') {
       formatters.delete(this)
     }
