@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "module": "esnext",
+    "module": "es2020",
     "target": "es2017",
     "strict": true,
     "declaration": true,
