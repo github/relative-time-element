@@ -163,16 +163,12 @@ export function isThisYear(date: Date): boolean {
   return now.getUTCFullYear() === date.getUTCFullYear()
 }
 
-type Intl$RelativeTimeFormatOptions = {numeric: string}
-type Intl$RelativeTimeFormat = {
-  format(value: number, unit: string): string
-}
-
-export function makeRelativeFormat(locale: string, options: unknown) {
+export function makeRelativeFormat(
+  locale: string,
+  options: Intl.RelativeTimeFormatOptions
+): Intl.RelativeTimeFormat | void {
   if ('Intl' in window && 'RelativeTimeFormat' in window.Intl) {
     try {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-expect-error https://github.com/microsoft/TypeScript/pull/36084
       return new Intl.RelativeTimeFormat(locale, options)
     } catch (e) {
       if (!(e instanceof RangeError)) {

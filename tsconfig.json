@@ -5,6 +5,7 @@
     "strict": true,
     "declaration": true,
     "outDir": "dist",
+    "lib": ["es2020.intl", "dom", "dom.iterable", "es2020"],
     "removeComments": true
   },
   "files": [

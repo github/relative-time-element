@@ -185,7 +185,7 @@ export default class RelativeTime {
   }
 }
 
-function formatRelativeTime(locale: string, value: number, unit: string): string {
+function formatRelativeTime(locale: string, value: number, unit: Intl.RelativeTimeFormatUnit): string {
   const formatter = makeRelativeFormat(locale, {numeric: 'auto'})
   if (formatter) {
     return formatter.format(value, unit)
