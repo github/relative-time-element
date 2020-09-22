@@ -1,5 +1,3 @@
-/* @flow strict */
-
 import LocalTimeElement from './local-time-element'
 import RelativeTimeElement from './relative-time-element'
 import TimeAgoElement from './time-ago-element'

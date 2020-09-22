@@ -1,11 +1,9 @@
-/* @flow strict */
-
 import RelativeTime from './relative-time'
 import RelativeTimeElement from './relative-time-element'
 import {localeFromElement} from './utils'
 
 export default class TimeAgoElement extends RelativeTimeElement {
-  getFormattedDate(): ?string {
+  getFormattedDate(): string | undefined {
     const format = this.getAttribute('format')
     const date = this.date
     if (!date) return
@@ -20,4 +18,13 @@ export default class TimeAgoElement extends RelativeTimeElement {
 if (!window.customElements.get('time-ago')) {
   window.TimeAgoElement = TimeAgoElement
   window.customElements.define('time-ago', TimeAgoElement)
+}
+
+declare global {
+  interface Window {
+    TimeAgoElement: typeof TimeAgoElement
+  }
+  interface HTMLElementTagNameMap {
+    'time-ago': TimeAgoElement
+  }
 }

@@ -1,15 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  <!-- For Reflect.construct -->
-  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/es6-shim/0.34.2/es6-shim.min.js"></script>
-  <!-- For CustomEvent -->
-  <script type="text/javascript" src="https://unpkg.com/@webcomponents/webcomponents-platform@1.0.0/webcomponents-platform.js"></script>
-  <!-- For Template -->
-  <script type="text/javascript" src="https://unpkg.com/@webcomponents/template@1.2.2/template.js"></script>
-  <!-- For HTML Imports and Custom Elements -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/1.0.22/webcomponents-hi-ce.js"></script>
+  <title>time elements</title>
 </head>
 <body>
   <h2>Past Date</h2>
@@ -86,17 +79,18 @@
 
   <p>
     Time until:
-    <time-until datetime="2017-01-01T00:00:00.000Z">
+    <time-until datetime="2020-12-31T00:00:00-05:00">
       Oops! This browser doesn't support Web Components.
     </time-until>
   </p>
 
   <p>
     Time until (micro format):
-    <time-until format="micro" datetime="2017-01-01T00:00:00.000Z">
+    <time-until format="micro" datetime="2020-12-31T00:00:00-05:00">
       Oops! This browser doesn't support Web Components.
     </time-until>
   </p>
-  <script src="../dist/time-elements-legacy.js"></script>
+  <!-- <script type="module" src="../dist/index.js"></script> -->
+  <script type="module" src="https://unpkg.com/@github/time-elements@latest?module"></script>
 </body>
 </html>

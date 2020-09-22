@@ -1,5 +1,3 @@
-/* @flow strict */
-
 import {strftime, makeFormatter, makeRelativeFormat, isDayFirst, isThisYear, isYearSeparator} from './utils'
 
 export default class RelativeTime {
@@ -11,7 +9,7 @@ export default class RelativeTime {
     this.locale = locale
   }
 
-  toString() {
+  toString(): string {
     const ago = this.timeElapsed()
     if (ago) {
       return ago
@@ -25,7 +23,7 @@ export default class RelativeTime {
     }
   }
 
-  timeElapsed() {
+  timeElapsed(): string | undefined | null {
     const ms = new Date().getTime() - this.date.getTime()
     const sec = Math.round(ms / 1000)
     const min = Math.round(sec / 60)
@@ -38,7 +36,7 @@ export default class RelativeTime {
     }
   }
 
-  timeAhead() {
+  timeAhead(): string | null {
     const ms = this.date.getTime() - new Date().getTime()
     const sec = Math.round(ms / 1000)
     const min = Math.round(sec / 60)
@@ -51,12 +49,12 @@ export default class RelativeTime {
     }
   }
 
-  timeAgo() {
+  timeAgo(): string | undefined {
     const ms = new Date().getTime() - this.date.getTime()
     return this.timeAgoFromMs(ms)
   }
 
-  timeAgoFromMs(ms: number) {
+  timeAgoFromMs(ms: number): string | undefined {
     const sec = Math.round(ms / 1000)
     const min = Math.round(sec / 60)
     const hr = Math.round(min / 60)
@@ -88,7 +86,7 @@ export default class RelativeTime {
     }
   }
 
-  microTimeAgo() {
+  microTimeAgo(): string {
     const ms = new Date().getTime() - this.date.getTime()
     const sec = Math.round(ms / 1000)
     const min = Math.round(sec / 60)
@@ -109,12 +107,12 @@ export default class RelativeTime {
     }
   }
 
-  timeUntil() {
+  timeUntil(): string {
     const ms = this.date.getTime() - new Date().getTime()
     return this.timeUntilFromMs(ms)
   }
 
-  timeUntilFromMs(ms: number) {
+  timeUntilFromMs(ms: number): string {
     const sec = Math.round(ms / 1000)
     const min = Math.round(sec / 60)
     const hr = Math.round(min / 60)
@@ -148,7 +146,7 @@ export default class RelativeTime {
     }
   }
 
-  microTimeUntil() {
+  microTimeUntil(): string {
     const ms = this.date.getTime() - new Date().getTime()
     const sec = Math.round(ms / 1000)
     const min = Math.round(sec / 60)
@@ -169,7 +167,7 @@ export default class RelativeTime {
     }
   }
 
-  formatDate() {
+  formatDate(): string {
     let format = isDayFirst() ? '%e %b' : '%b %e'
     if (!isThisYear(this.date)) {
       format += isYearSeparator() ? ', %Y' : ' %Y'
@@ -177,7 +175,7 @@ export default class RelativeTime {
     return strftime(this.date, format)
   }
 
-  formatTime() {
+  formatTime(): string {
     const formatter = timeFormatter()
     if (formatter) {
       return formatter.format(this.date)
@@ -187,7 +185,7 @@ export default class RelativeTime {
   }
 }
 
-function formatRelativeTime(locale: string, value: number, unit: string): string {
+function formatRelativeTime(locale: string, value: number, unit: Intl.RelativeTimeFormatUnit): string {
   const formatter = makeRelativeFormat(locale, {numeric: 'auto'})
   if (formatter) {
     return formatter.format(value, unit)
