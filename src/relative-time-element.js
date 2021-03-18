@@ -4,6 +4,21 @@ import RelativeTime from './relative-time'
 import ExtendedTimeElement from './extended-time-element'
 import {localeFromElement} from './utils'
 
+// Internal: Array tracking all elements attached to the document that need
+// to be updated every minute.
+const nowElements = new Set()
+
+// Internal: Timer ID for `updateNowElements` interval.
+let updateNowElementsId
+
+// Internal: Install a timer to refresh all attached relative-time elements every
+// minute.
+function updateNowElements() {
+  clearTimeout(updateNowElementsId)
+  for (const el of nowElements) el.textContent = el.getFormattedDate() || ''
+  if (nowElements.size) updateNowElementsId = setTimeout(updateNowElements, 60 * 1000)
+}
+
 export default class RelativeTimeElement extends ExtendedTimeElement {
   getFormattedDate(): ?string {
     const date = this.date
@@ -13,44 +28,13 @@ export default class RelativeTimeElement extends ExtendedTimeElement {
   }
 
   connectedCallback() {
-    nowElements.push(this)
-
-    if (!updateNowElementsId) {
-      updateNowElements()
-      updateNowElementsId = setInterval(updateNowElements, 60 * 1000)
-    }
+    nowElements.add(this)
+    updateNowElements()
     super.connectedCallback()
   }
 
   disconnectedCallback() {
-    const ix = nowElements.indexOf(this)
-    if (ix !== -1) {
-      nowElements.splice(ix, 1)
-    }
-
-    if (!nowElements.length) {
-      if (updateNowElementsId) {
-        clearInterval(updateNowElementsId)
-        updateNowElementsId = null
-      }
-    }
-  }
-}
-
-// Internal: Array tracking all elements attached to the document that need
-// to be updated every minute.
-const nowElements = []
-
-// Internal: Timer ID for `updateNowElements` interval.
-let updateNowElementsId
-
-// Internal: Install a timer to refresh all attached relative-time elements every
-// minute.
-function updateNowElements() {
-  let time, i, len
-  for (i = 0, len = nowElements.length; i < len; i++) {
-    time = nowElements[i]
-    time.textContent = time.getFormattedDate() || ''
+    nowElements.remove(this)
   }
 }
 
