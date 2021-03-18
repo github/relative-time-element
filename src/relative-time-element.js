@@ -34,7 +34,7 @@ export default class RelativeTimeElement extends ExtendedTimeElement {
   }
 
   disconnectedCallback() {
-    nowElements.remove(this)
+    nowElements.delete(this)
   }
 }
 
