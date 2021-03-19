@@ -29,7 +29,7 @@ export default class RelativeTimeElement extends ExtendedTimeElement {
 
   connectedCallback() {
     nowElements.add(this)
-    updateNowElements()
+    if (!updateNowElementsId) updateNowElements()
     super.connectedCallback()
   }
 
