@@ -4,7 +4,20 @@ const datetimes = new WeakMap()
 
 export default class ExtendedTimeElement extends HTMLElement {
   static get observedAttributes(): string[] {
-    return ['datetime', 'day', 'format', 'lang', 'hour', 'minute', 'month', 'second', 'title', 'weekday', 'year']
+    return [
+      'datetime',
+      'day',
+      'format',
+      'lang',
+      'hour',
+      'minute',
+      'month',
+      'second',
+      'title',
+      'weekday',
+      'year',
+      'time-zone-name'
+    ]
   }
 
   connectedCallback(): void {
