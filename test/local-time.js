@@ -95,7 +95,7 @@ suite('local-time', function () {
       window.CustomElements.upgradeSubtree(root)
     }
     assert.match(root.children[0].textContent, /^\d{1,2} (\w+([+-]\d+)?)$/)
-    assert.equal(root.children[0].textContent, '0 GMT+1')
+    assert.equal(root.children[0].textContent, '0 GMT+4')
   })
 
   test('updates time zone when the `time-zone-name` attribute changes', function () {
@@ -104,10 +104,10 @@ suite('local-time', function () {
     el.setAttribute('time-zone-name', 'short')
 
     fixture.appendChild(el)
-    assert.equal(el.textContent, '1/1/1970, GMT+1')
+    assert.equal(el.textContent, '1/1/1970, GMT+4')
 
     el.setAttribute('time-zone-name', 'long')
 
-    assert.equal(el.textContent, '1/1/1970, GMT+01:00')
+    assert.equal(el.textContent, '1/1/1970, Gulf Standard Time')
   })
 })
