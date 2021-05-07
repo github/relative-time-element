@@ -1,4 +1,14 @@
 suite('local-time', function () {
+  let fixture
+  suiteSetup(() => {
+    fixture = document.createElement('div')
+    document.body.appendChild(fixture)
+  })
+
+  teardown(() => {
+    fixture.innerHTML = ''
+  })
+
   test('null getFormattedDate when datetime missing', function () {
     const time = document.createElement('local-time')
     time.setAttribute('format', '%Y-%m-%dT%H:%M:%SZ')
@@ -85,5 +95,19 @@ suite('local-time', function () {
       window.CustomElements.upgradeSubtree(root)
     }
     assert.match(root.children[0].textContent, /^\d{1,2} (\w+([+-]\d+)?)$/)
+    assert.equal(root.children[0].textContent, '0 GMT+4')
+  })
+
+  test('updates time zone when the `time-zone-name` attribute changes', function () {
+    const el = document.createElement('local-time')
+    el.setAttribute('datetime', '1970-01-01T00:00:00.000-08:00')
+    el.setAttribute('time-zone-name', 'short')
+
+    fixture.appendChild(el)
+    assert.equal(el.textContent, '1/1/1970, GMT+4')
+
+    el.setAttribute('time-zone-name', 'long')
+
+    assert.equal(el.textContent, '1/1/1970, Gulf Standard Time')
   })
 })

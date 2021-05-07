@@ -16,7 +16,7 @@
     "build": "tsc && rollup -c",
     "prepublishOnly": "npm run build",
     "pretest": "npm run build",
-    "test": "karma start ./test/karma.config.cjs",
+    "test": "TZ=Asia/Dubai karma start ./test/karma.config.cjs",
     "postpublish": "npm publish --ignore-scripts --@github:registry='https://npm.pkg.github.com'"
   },
   "prettier": "@github/prettier-config",
