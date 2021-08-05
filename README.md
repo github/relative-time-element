@@ -145,7 +145,7 @@ Browsers without native [custom element support][support] require a [polyfill][]
 - Safari
 - Microsoft Edge
 
-[support]: https://caniuse.com/#feat=custom-elementsv1
+[support]: https://caniuse.com/custom-elementsv1
 [polyfill]: https://github.com/webcomponents/custom-elements
 
 ## See Also
