@@ -24,6 +24,7 @@
   "prettier": "@github/prettier-config",
   "repository": "github/time-elements",
   "devDependencies": {
+    "@custom-elements-manifest/analyzer": "^0.6.4",
     "@github/prettier-config": "0.0.4",
     "@open-wc/testing": "^3.1.6",
     "@web/dev-server-esbuild": "^0.3.2",
@@ -36,5 +37,6 @@
   },
   "eslintIgnore": [
     "dist/"
-  ]
+  ],
+  "customElements": "custom-elements.json"
 }
