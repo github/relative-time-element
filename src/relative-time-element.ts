@@ -1,6 +1,6 @@
-import RelativeTime from './relative-time'
-import ExtendedTimeElement from './extended-time-element'
-import {localeFromElement} from './utils'
+import RelativeTime from './relative-time.js'
+import ExtendedTimeElement from './extended-time-element.js'
+import {localeFromElement} from './utils.js'
 
 export default class RelativeTimeElement extends ExtendedTimeElement {
   getFormattedDate(): string | undefined {

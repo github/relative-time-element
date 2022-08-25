@@ -1,4 +1,4 @@
-import {makeFormatter} from './utils'
+import {makeFormatter} from './utils.js'
 
 const datetimes = new WeakMap()
 
