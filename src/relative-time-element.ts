@@ -44,7 +44,10 @@ let updateNowElementsId: number | null
 // Internal: Install a timer to refresh all attached relative-time elements every
 // minute.
 function updateNowElements() {
-  let time, i, len
+  let time
+  let i
+  let len
+
   for (i = 0, len = nowElements.length; i < len; i++) {
     time = nowElements[i]
     time.textContent = time.getFormattedDate() || ''

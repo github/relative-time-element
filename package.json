@@ -12,6 +12,7 @@
   "scripts": {
     "clean": "rm -rf dist",
     "lint": "eslint . --ext .js,.ts && tsc --noEmit",
+    "lint:fix": "npm run lint -- --fix",
     "prebuild": "npm run clean && npm run lint && mkdir dist",
     "build": "tsc && rollup -c",
     "prepublishOnly": "npm run build",
