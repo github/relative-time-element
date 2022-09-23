@@ -89,7 +89,7 @@ The optional `format="micro"` attribute shortens the descriptions to 1m, 1h, 1d,
 ``` html
 <time-until datetime="2012-04-01T16:30:00-08:00" format="micro">
   April 1, 2014
-</time-ago>
+</time-until>
 ```
 
 ### time-ago
