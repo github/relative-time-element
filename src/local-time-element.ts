@@ -1,7 +1,7 @@
-import {strftime, makeFormatter, isDayFirst} from './utils.js'
+import {strftime, makeFormatter, localeFromElement, isDayFirst} from './utils.js'
 import ExtendedTimeElement from './extended-time-element.js'
 
-const formatters = new WeakMap()
+const formatters = new WeakMap<Element, ReturnType<typeof makeFormatter>>()
 
 export default class LocalTimeElement extends ExtendedTimeElement {
   attributeChangedCallback(attrName: string, oldValue: string, newValue: string): void {
@@ -88,7 +88,7 @@ function formatDate(el: Element, date: Date) {
 // el - The local-time element to format.
 //
 // Returns a time String or null if no time formats are provided.
-function formatTime(el: Element, date: Date) {
+function formatTime(el: HTMLElement, date: Date) {
   const options: Intl.DateTimeFormatOptions = {}
 
   // retrieve format settings from attributes
@@ -112,7 +112,7 @@ function formatTime(el: Element, date: Date) {
     formatters.set(el, factory)
   }
 
-  const formatter = factory()
+  const formatter = factory(localeFromElement(el))
   if (formatter) {
     // locale-aware formatting of 24 or 12 hour times
     return formatter.format(date)

@@ -44,6 +44,7 @@ suite('local-time', function () {
 
   test('getFormattedDate with only time attributes', function () {
     const time = document.createElement('local-time')
+    time.setAttribute('lang', 'en-US')
     time.setAttribute('datetime', '1970-01-01T00:00:00.000Z')
     time.setAttribute('hour', 'numeric')
     time.setAttribute('minute', '2-digit')
@@ -100,6 +101,7 @@ suite('local-time', function () {
 
   test('updates time zone when the `time-zone-name` attribute changes', function () {
     const el = document.createElement('local-time')
+    el.setAttribute('lang', 'en-US')
     el.setAttribute('datetime', '1970-01-01T00:00:00.000-08:00')
     el.setAttribute('time-zone-name', 'short')
 

@@ -91,14 +91,13 @@ export function strftime(time: Date, formatString: string): string {
   })
 }
 
-export function makeFormatter(options: Intl.DateTimeFormatOptions): () => Intl.DateTimeFormat | undefined {
-  let format: Intl.DateTimeFormat | null
-  return function (): Intl.DateTimeFormat | undefined {
-    if (format) return format
+export function makeFormatter(
+  options: Intl.DateTimeFormatOptions
+): (locale?: string) => Intl.DateTimeFormat | undefined {
+  return function (locale?: string): Intl.DateTimeFormat | undefined {
     if ('Intl' in window) {
       try {
-        format = new Intl.DateTimeFormat(undefined, options)
-        return format
+        return new Intl.DateTimeFormat(locale, options)
       } catch (e) {
         if (!(e instanceof RangeError)) {
           throw e
@@ -108,7 +107,7 @@ export function makeFormatter(options: Intl.DateTimeFormatOptions): () => Intl.D
   }
 }
 
-let dayFirst: boolean | null = null
+const dayFirst: Record<string, boolean> = {}
 const dayFirstFormatter = makeFormatter({day: 'numeric', month: 'short'})
 
 // Private: Determine if the day should be formatted before the month name in
@@ -116,16 +115,16 @@ const dayFirstFormatter = makeFormatter({day: 'numeric', month: 'short'})
 // for en-US.
 //
 // Returns true if the day appears before the month.
-export function isDayFirst(): boolean {
-  if (dayFirst !== null) {
-    return dayFirst
+export function isDayFirst(locale = 'default'): boolean {
+  if (locale in dayFirst) {
+    return dayFirst[locale]
   }
 
-  const formatter = dayFirstFormatter()
+  const formatter = dayFirstFormatter(locale)
   if (formatter) {
     const output = formatter.format(new Date(0))
-    dayFirst = !!output.match(/^\d/)
-    return dayFirst
+    dayFirst[locale] = !!output.match(/^\d/)
+    return dayFirst[locale]
   } else {
     return false
   }
