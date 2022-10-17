@@ -168,7 +168,7 @@ export default class RelativeTime {
   }
 
   formatDate(): string {
-    let format = isDayFirst() ? '%e %b' : '%b %e'
+    let format = isDayFirst(this.locale) ? '%e %b' : '%b %e'
     if (!isThisYear(this.date)) {
       format += isYearSeparator() ? ', %Y' : ' %Y'
     }

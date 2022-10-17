@@ -114,6 +114,7 @@ suite('relative-time', function () {
   test('switches to dates after 30 past days', function () {
     const now = new Date(Date.now() - 30 * 60 * 60 * 24 * 1000).toISOString()
     const time = document.createElement('relative-time')
+    time.setAttribute('lang', 'en-US')
     time.setAttribute('datetime', now)
     assert.match(time.textContent, /on [A-Z][a-z]{2} \d{1,2}/)
   })
@@ -121,6 +122,7 @@ suite('relative-time', function () {
   test('switches to dates after 30 future days', function () {
     const now = new Date(Date.now() + 30 * 60 * 60 * 24 * 1000).toISOString()
     const time = document.createElement('relative-time')
+    time.setAttribute('lang', 'en-US')
     time.setAttribute('datetime', now)
     assert.match(time.textContent, /on [A-Z][a-z]{2} \d{1,2}/)
   })
