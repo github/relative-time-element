@@ -1,5 +1,3 @@
-/* @flow strict */
-
 const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 const months = [
   'January',
@@ -16,7 +14,7 @@ const months = [
   'December'
 ]
 
-function pad(num) {
+function pad(num: string | number) {
   return `0${num}`.slice(-2)
 }
 
@@ -28,7 +26,7 @@ export function strftime(time: Date, formatString: string): string {
   const hour = time.getHours()
   const minute = time.getMinutes()
   const second = time.getSeconds()
-  return formatString.replace(/%([%aAbBcdeHIlmMpPSwyYZz])/g, function(_arg) {
+  return formatString.replace(/%([%aAbBcdeHIlmMpPSwyYZz])/g, function (_arg) {
     let match
     const modifier = _arg[1]
     switch (modifier) {
@@ -93,14 +91,13 @@ export function strftime(time: Date, formatString: string): string {
   })
 }
 
-export function makeFormatter(options: Intl$DateTimeFormatOptions): () => ?Intl$DateTimeFormat {
-  let format
-  return function() {
-    if (format) return format
+export function makeFormatter(
+  options: Intl.DateTimeFormatOptions
+): (locale?: string) => Intl.DateTimeFormat | undefined {
+  return function (locale?: string): Intl.DateTimeFormat | undefined {
     if ('Intl' in window) {
       try {
-        format = new Intl.DateTimeFormat(undefined, options)
-        return format
+        return new Intl.DateTimeFormat(locale, options)
       } catch (e) {
         if (!(e instanceof RangeError)) {
           throw e
@@ -110,7 +107,7 @@ export function makeFormatter(options: Intl$DateTimeFormatOptions): () => ?Intl$
   }
 }
 
-let dayFirst = null
+const dayFirst: Record<string, boolean> = {}
 const dayFirstFormatter = makeFormatter({day: 'numeric', month: 'short'})
 
 // Private: Determine if the day should be formatted before the month name in
@@ -118,29 +115,29 @@ const dayFirstFormatter = makeFormatter({day: 'numeric', month: 'short'})
 // for en-US.
 //
 // Returns true if the day appears before the month.
-export function isDayFirst(): boolean {
-  if (dayFirst !== null) {
-    return dayFirst
+export function isDayFirst(locale = 'default'): boolean {
+  if (locale in dayFirst) {
+    return dayFirst[locale]
   }
 
-  const formatter = dayFirstFormatter()
+  const formatter = dayFirstFormatter(locale)
   if (formatter) {
     const output = formatter.format(new Date(0))
-    dayFirst = !!output.match(/^\d/)
-    return dayFirst
+    dayFirst[locale] = !!output.match(/^\d/)
+    return dayFirst[locale]
   } else {
     return false
   }
 }
 
-let yearSeparator = null
+let yearSeparator: boolean | null = null
 const yearFormatter = makeFormatter({day: 'numeric', month: 'short', year: 'numeric'})
 
 // Private: Determine if the year should be separated from the month and day
 // with a comma. For example, `9 Jun 2014` in en-GB and `Jun 9, 2014` in en-US.
 //
 // Returns true if the date needs a separator.
-export function isYearSeparator() {
+export function isYearSeparator(): boolean {
   if (yearSeparator !== null) {
     return yearSeparator
   }
@@ -160,21 +157,17 @@ export function isYearSeparator() {
 // date - The Date to test.
 //
 // Returns true if it's this year.
-export function isThisYear(date: Date) {
+export function isThisYear(date: Date): boolean {
   const now = new Date()
   return now.getUTCFullYear() === date.getUTCFullYear()
 }
 
-type Intl$RelativeTimeFormatOptions = {numeric: string}
-type Intl$RelativeTimeFormat = {
-  format(value: number, unit: string): string
-}
-
-export function makeRelativeFormat(locale: string, options: Intl$RelativeTimeFormatOptions): ?Intl$RelativeTimeFormat {
+export function makeRelativeFormat(
+  locale: string,
+  options: Intl.RelativeTimeFormatOptions
+): Intl.RelativeTimeFormat | void {
   if ('Intl' in window && 'RelativeTimeFormat' in window.Intl) {
     try {
-      // eslint-disable-next-line flowtype/no-flow-fix-me-comments
-      // $FlowFixMe: missing RelativeTimeFormat type
       return new Intl.RelativeTimeFormat(locale, options)
     } catch (e) {
       if (!(e instanceof RangeError)) {

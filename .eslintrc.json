@@ -1,21 +1,22 @@
 {
-  "extends": [
-    "plugin:github/browser",
-    "plugin:github/es6",
-    "plugin:github/flow"
-  ],
-  "parser": "babel-eslint",
+  "root": true,
+  "extends": ["plugin:github/browser", "plugin:github/recommended", "plugin:github/typescript"],
+  "rules": {
+    "import/extensions": ["error", "always"],
+    "import/no-unresolved": "off"
+  },
   "overrides": [
     {
       "files": "test/**/*.js",
       "rules": {
-        "flowtype/require-valid-file-annotation": "off",
-        "github/unescaped-html-literal": "off"
+        "github/unescaped-html-literal": "off",
+        "github/no-inner-html": "off",
+        "i18n-text/no-en": "off"
       }
     },
     {
       "files": "test/**/*.js",
-      "excludedFiles": "test/karma.config.js",
+      "excludedFiles": "test/karma.config.cjs",
       "env": {
         "mocha": true
       },

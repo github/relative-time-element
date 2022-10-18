@@ -68,11 +68,11 @@ So, a relative date phrase is used for up to a month and then the actual date is
 
 You can use `time-until` to always display a relative date that's in the future. It operates much like `<relative-time>`, except in the reverse, with past events shown as `just now` and future events always showing as relative:
 
-- 10 years from now
-- 20 days from now
-- 6 hours from now
-- 20 minutes from now
-- 30 seconds from now
+- in 10 years
+- in 20 days
+- in 6 hours
+- in 20 minutes
+- in 30 seconds
 - just now
 
 Add a `<time-until>` element to your markup. Provide a default formatted date as the element's text content (e.g. April 1, 2024).
@@ -80,6 +80,15 @@ Add a `<time-until>` element to your markup. Provide a default formatted date as
 ``` html
 <time-until datetime="2024-04-01T16:30:00-08:00">
   April 1, 2024
+</time-until>
+```
+#### Micro format
+
+The optional `format="micro"` attribute shortens the descriptions to 1m, 1h, 1d, 1y.
+
+``` html
+<time-until datetime="2012-04-01T16:30:00-08:00" format="micro">
+  April 1, 2014
 </time-until>
 ```
 
@@ -145,7 +154,7 @@ Browsers without native [custom element support][support] require a [polyfill][]
 - Safari
 - Microsoft Edge
 
-[support]: https://caniuse.com/#feat=custom-elementsv1
+[support]: https://caniuse.com/custom-elementsv1
 [polyfill]: https://github.com/webcomponents/custom-elements
 
 ## See Also

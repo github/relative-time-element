@@ -1,15 +1,26 @@
-/* @flow strict */
-
-import {makeFormatter} from './utils'
+import {makeFormatter} from './utils.js'
 
 const datetimes = new WeakMap()
 
 export default class ExtendedTimeElement extends HTMLElement {
-  static get observedAttributes() {
-    return ['datetime', 'day', 'format', 'lang', 'hour', 'minute', 'month', 'second', 'title', 'weekday', 'year']
+  static get observedAttributes(): string[] {
+    return [
+      'datetime',
+      'day',
+      'format',
+      'lang',
+      'hour',
+      'minute',
+      'month',
+      'second',
+      'title',
+      'weekday',
+      'year',
+      'time-zone-name'
+    ]
   }
 
-  connectedCallback() {
+  connectedCallback(): void {
     const title = this.getFormattedTitle()
     if (title && !this.hasAttribute('title')) {
       this.setAttribute('title', title)
@@ -22,7 +33,8 @@ export default class ExtendedTimeElement extends HTMLElement {
   }
 
   // Internal: Refresh the time element's formatted date when an attribute changes.
-  attributeChangedCallback(attrName: string, oldValue: string, newValue: string) {
+  attributeChangedCallback(attrName: string, oldValue: string, newValue: string): void {
+    const oldTitle = this.getFormattedTitle()
     if (attrName === 'datetime') {
       const millis = Date.parse(newValue)
       if (isNaN(millis)) {
@@ -31,8 +43,10 @@ export default class ExtendedTimeElement extends HTMLElement {
         datetimes.set(this, new Date(millis))
       }
     }
+
     const title = this.getFormattedTitle()
-    if (title && !this.hasAttribute('title')) {
+    const currentTitle = this.getAttribute('title')
+    if (attrName !== 'title' && title && (!currentTitle || currentTitle === oldTitle)) {
       this.setAttribute('title', title)
     }
 
@@ -42,7 +56,7 @@ export default class ExtendedTimeElement extends HTMLElement {
     }
   }
 
-  get date(): ?Date {
+  get date(): Date | null {
     return datetimes.get(this)
   }
 
@@ -51,7 +65,7 @@ export default class ExtendedTimeElement extends HTMLElement {
   // value takes precedence over this custom format.
   //
   // Returns a formatted time String.
-  getFormattedTitle(): ?string {
+  getFormattedTitle(): string | undefined {
     const date = this.date
     if (!date) return
 
@@ -71,7 +85,9 @@ export default class ExtendedTimeElement extends HTMLElement {
     }
   }
 
-  getFormattedDate(): ?string {}
+  getFormattedDate(): string | undefined {
+    return
+  }
 }
 
 const titleFormatter = makeFormatter({

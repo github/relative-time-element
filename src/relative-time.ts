@@ -1,6 +1,4 @@
-/* @flow strict */
-
-import {strftime, makeFormatter, makeRelativeFormat, isDayFirst, isThisYear, isYearSeparator} from './utils'
+import {strftime, makeFormatter, makeRelativeFormat, isDayFirst, isThisYear, isYearSeparator} from './utils.js'
 
 export default class RelativeTime {
   date: Date
@@ -11,7 +9,7 @@ export default class RelativeTime {
     this.locale = locale
   }
 
-  toString(format: ?string) {
+  toString(format: ?string): string {
     const ago = this.timeElapsed()
     if (ago) {
       return ago
@@ -26,7 +24,7 @@ export default class RelativeTime {
     return `on ${this.formatDate()}`
   }
 
-  timeElapsed() {
+  timeElapsed(): string | undefined | null {
     const ms = new Date().getTime() - this.date.getTime()
     const sec = Math.round(ms / 1000)
     const min = Math.round(sec / 60)
@@ -39,7 +37,7 @@ export default class RelativeTime {
     }
   }
 
-  timeAhead() {
+  timeAhead(): string | null {
     const ms = this.date.getTime() - new Date().getTime()
     const sec = Math.round(ms / 1000)
     const min = Math.round(sec / 60)
@@ -52,12 +50,12 @@ export default class RelativeTime {
     }
   }
 
-  timeAgo() {
+  timeAgo(): string | undefined {
     const ms = new Date().getTime() - this.date.getTime()
     return this.timeAgoFromMs(ms)
   }
 
-  timeAgoFromMs(ms: number) {
+  timeAgoFromMs(ms: number): string | undefined {
     const sec = Math.round(ms / 1000)
     const min = Math.round(sec / 60)
     const hr = Math.round(min / 60)
@@ -82,16 +80,14 @@ export default class RelativeTime {
       return formatRelativeTime(this.locale, -day, 'day')
     } else if (day < 30) {
       return formatRelativeTime(this.locale, -day, 'day')
-    } else if (month < 12) {
-      return formatRelativeTime(this.locale, -month, 'month')
     } else if (month < 18) {
-      return formatRelativeTime(this.locale, -year, 'year')
+      return formatRelativeTime(this.locale, -month, 'month')
     } else {
       return formatRelativeTime(this.locale, -year, 'year')
     }
   }
 
-  microTimeAgo() {
+  microTimeAgo(): string {
     const ms = new Date().getTime() - this.date.getTime()
     const sec = Math.round(ms / 1000)
     const min = Math.round(sec / 60)
@@ -112,12 +108,12 @@ export default class RelativeTime {
     }
   }
 
-  timeUntil() {
+  timeUntil(): string {
     const ms = this.date.getTime() - new Date().getTime()
     return this.timeUntilFromMs(ms)
   }
 
-  timeUntilFromMs(ms: number) {
+  timeUntilFromMs(ms: number): string {
     const sec = Math.round(ms / 1000)
     const min = Math.round(sec / 60)
     const hr = Math.round(min / 60)
@@ -151,7 +147,7 @@ export default class RelativeTime {
     }
   }
 
-  microTimeUntil() {
+  microTimeUntil(): string {
     const ms = this.date.getTime() - new Date().getTime()
     const sec = Math.round(ms / 1000)
     const min = Math.round(sec / 60)
@@ -172,7 +168,7 @@ export default class RelativeTime {
     }
   }
 
-  formatDate(defaultFormat: ?string) {
+  formatDate(defaultFormat: ?string): string {
     let format = defaultFormat
     if (format == null) {
       format = isDayFirst() ? '%e %b' : '%b %e'
@@ -183,7 +179,7 @@ export default class RelativeTime {
     return strftime(this.date, format)
   }
 
-  formatTime() {
+  formatTime(): string {
     const formatter = timeFormatter()
     if (formatter) {
       return formatter.format(this.date)
@@ -193,7 +189,7 @@ export default class RelativeTime {
   }
 }
 
-function formatRelativeTime(locale: string, value: number, unit: string): string {
+function formatRelativeTime(locale: string, value: number, unit: Intl.RelativeTimeFormatUnit): string {
   const formatter = makeRelativeFormat(locale, {numeric: 'auto'})
   if (formatter) {
     return formatter.format(value, unit)

@@ -1,12 +1,10 @@
-/* @flow strict */
+import {strftime, makeFormatter, localeFromElement, isDayFirst} from './utils.js'
+import ExtendedTimeElement from './extended-time-element.js'
 
-import {strftime, makeFormatter, isDayFirst} from './utils'
-import ExtendedTimeElement from './extended-time-element'
-
-const formatters = new WeakMap()
+const formatters = new WeakMap<Element, ReturnType<typeof makeFormatter>>()
 
 export default class LocalTimeElement extends ExtendedTimeElement {
-  attributeChangedCallback(attrName: string, oldValue: string, newValue: string) {
+  attributeChangedCallback(attrName: string, oldValue: string, newValue: string): void {
     if (attrName === 'hour' || attrName === 'minute' || attrName === 'second' || attrName === 'time-zone-name') {
       formatters.delete(this)
     }
@@ -29,7 +27,7 @@ export default class LocalTimeElement extends ExtendedTimeElement {
   //   second  - "numeric", "2-digit"
   //
   // Returns a formatted time String.
-  getFormattedDate(): ?string {
+  getFormattedDate(): string | undefined {
     const d = this.date
     if (!d) return
 
@@ -51,7 +49,7 @@ export default class LocalTimeElement extends ExtendedTimeElement {
 // Returns a date String or null if no date formats are provided.
 function formatDate(el: Element, date: Date) {
   // map attribute values to strftime
-  const props = {
+  const props: {[key: string]: {[key: string]: string}} = {
     weekday: {
       short: '%a',
       long: '%A'
@@ -73,7 +71,7 @@ function formatDate(el: Element, date: Date) {
   // build a strftime format string
   let format = isDayFirst() ? 'weekday day month year' : 'weekday month day, year'
   for (const prop in props) {
-    const value = props[prop][el.getAttribute(prop)]
+    const value = props[prop][el.getAttribute(prop) || '']
     format = format.replace(prop, value || '')
   }
 
@@ -81,9 +79,7 @@ function formatDate(el: Element, date: Date) {
   format = format.replace(/(\s,)|(,\s$)/, '')
 
   // squeeze spaces from final string
-  return strftime(date, format)
-    .replace(/\s+/, ' ')
-    .trim()
+  return strftime(date, format).replace(/\s+/, ' ').trim()
 }
 
 // Private: Format a time according to the `hour`, `minute`, and `second`
@@ -92,8 +88,8 @@ function formatDate(el: Element, date: Date) {
 // el - The local-time element to format.
 //
 // Returns a time String or null if no time formats are provided.
-function formatTime(el: Element, date: Date) {
-  const options: Intl$DateTimeFormatOptions = {}
+function formatTime(el: HTMLElement, date: Date) {
+  const options: Intl.DateTimeFormatOptions = {}
 
   // retrieve format settings from attributes
   const hour = el.getAttribute('hour')
@@ -116,7 +112,7 @@ function formatTime(el: Element, date: Date) {
     formatters.set(el, factory)
   }
 
-  const formatter = factory()
+  const formatter = factory(localeFromElement(el))
   if (formatter) {
     // locale-aware formatting of 24 or 12 hour times
     return formatter.format(date)
@@ -135,4 +131,13 @@ function formatTime(el: Element, date: Date) {
 if (!window.customElements.get('local-time')) {
   window.LocalTimeElement = LocalTimeElement
   window.customElements.define('local-time', LocalTimeElement)
+}
+
+declare global {
+  interface Window {
+    LocalTimeElement: typeof LocalTimeElement
+  }
+  interface HTMLElementTagNameMap {
+    'local-time': LocalTimeElement
+  }
 }

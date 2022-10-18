@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "module": "es2020",
+    "target": "es2017",
+    "strict": true,
+    "declaration": true,
+    "outDir": "dist",
+    "lib": ["es2020.intl", "dom", "dom.iterable", "es2020"],
+    "removeComments": true
+  },
+  "files": [
+    "src/index.ts"
+  ]
+}
