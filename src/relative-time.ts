@@ -9,7 +9,7 @@ export default class RelativeTime {
     this.locale = locale
   }
 
-  toString(format: ?string): string {
+  toString(format?: string): string {
     const ago = this.timeElapsed()
     if (ago) {
       return ago
@@ -168,7 +168,7 @@ export default class RelativeTime {
     }
   }
 
-  formatDate(defaultFormat: ?string): string {
+  formatDate(defaultFormat?: string): string {
     let format = defaultFormat
     if (format == null) {
       format = isDayFirst() ? '%e %b' : '%b %e'

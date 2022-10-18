@@ -6,7 +6,7 @@ export default class RelativeTimeElement extends ExtendedTimeElement {
   getFormattedDate(): string | undefined {
     const date = this.date
     if (!date) return
-    return new RelativeTime(date, localeFromElement(this)).toString(this.getAttribute('format'))
+    return new RelativeTime(date, localeFromElement(this)).toString(this.getAttribute('format') || undefined)
   }
 
   connectedCallback(): void {
