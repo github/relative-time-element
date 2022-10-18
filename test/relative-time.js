@@ -162,6 +162,23 @@ suite('relative-time', function () {
     assert.equal(root.children[0].textContent, 'now')
   })
 
+  test('allows for use of custom formats', function () {
+    const time = document.createElement('relative-time')
+    time.textContent = 'Jun 30'
+    time.setAttribute('datetime', '2022-01-10T12:00:00')
+    time.setAttribute('format', '%Y')
+    assert.equal(time.textContent, '2022')
+  })
+
+  test('ignores blank formats', function () {
+    const time = document.createElement('relative-time')
+    time.textContent = 'Jun 30'
+    time.setAttribute('datetime', '2022-01-10T12:00:00')
+    time.setAttribute('lang', 'en-US')
+    time.setAttribute('format', '')
+    assert.equal(time.textContent, 'on Jan 10')
+  })
+
   const esLangSupport = (function () {
     try {
       return new Intl.RelativeTimeFormat('es').format(1, 'minute') === 'dentro de 1 minuto'
