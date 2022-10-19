@@ -1,4 +1,5 @@
-import {strftime, makeFormatter, localeFromElement, isDayFirst} from './utils.js'
+import {makeFormatter, localeFromElement, isDayFirst} from './utils.js'
+import {strftime} from './strftime.js'
 import ExtendedTimeElement from './extended-time-element.js'
 
 const formatters = new WeakMap<Element, ReturnType<typeof makeFormatter>>()

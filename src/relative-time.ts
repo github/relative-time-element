@@ -1,4 +1,5 @@
-import {strftime, makeFormatter, makeRelativeFormat, isDayFirst, isThisYear, isYearSeparator} from './utils.js'
+import {makeFormatter, makeRelativeFormat, isDayFirst, isThisYear, isYearSeparator} from './utils.js'
+import {strftime} from './strftime.js'
 
 export default class RelativeTime {
   date: Date
