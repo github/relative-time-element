@@ -1,3 +1,6 @@
+import {assert} from '@open-wc/testing'
+import '../src/time-until-element.ts'
+
 suite('time-until', function () {
   test('always uses relative dates', function () {
     const now = new Date(Date.now() + 10 * 365 * 24 * 60 * 60 * 1000).toISOString()

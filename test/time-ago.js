@@ -1,3 +1,6 @@
+import {assert} from '@open-wc/testing'
+import '../src/time-ago-element.ts'
+
 suite('time-ago', function () {
   let dateNow
 
