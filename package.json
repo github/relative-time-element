@@ -1,7 +1,7 @@
 {
   "name": "@github/time-elements",
   "version": "3.1.2",
-  "main": "dist/index.js",
+  "main": "dist/bundle.js",
   "type": "module",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -14,7 +14,7 @@
     "lint": "eslint . --ext .js,.ts && tsc --noEmit",
     "lint:fix": "npm run lint -- --fix",
     "prebuild": "npm run clean && npm run lint && mkdir dist",
-    "bundle": "esbuild --bundle dist/index.js --keep-names --outfile=dist/index.js --allow-overwrite --format=esm",
+    "bundle": "esbuild --bundle dist/index.js --keep-names --outfile=dist/bundle.js --format=esm",
     "build": "tsc && npm run bundle",
     "prepublishOnly": "npm run build",
     "pretest": "npm run build",
