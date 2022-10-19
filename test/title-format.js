@@ -1,3 +1,6 @@
+import {assert} from '@open-wc/testing'
+import '../src/local-time-element.ts'
+
 suite('title-format', function () {
   test('null getFormattedTitle if datetime is missing', function () {
     const time = document.createElement('local-time')

@@ -1,3 +1,6 @@
+import {assert} from '@open-wc/testing'
+import '../src/local-time-element.ts'
+
 suite('local-time', function () {
   let fixture
   suiteSetup(() => {

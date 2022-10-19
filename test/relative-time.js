@@ -1,3 +1,6 @@
+import {assert} from '@open-wc/testing'
+import '../src/relative-time-element.ts'
+
 suite('relative-time', function () {
   test('rewrites from now past datetime to days ago', function () {
     const now = new Date(Date.now() - 3 * 60 * 60 * 24 * 1000).toISOString()
