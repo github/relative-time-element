@@ -22,11 +22,11 @@ export default class RelativeTime {
       return micro ? this.microTimeUntil() : this.timeUntil()
     }
     if (format === 'auto') {
-      const ago = micro ? this.microTimeAgo() : this.timeElapsed()
+      const ago = this.timeElapsed()
       if (ago) {
         return ago
       }
-      const ahead = micro ? this.microTimeUntil() : this.timeAhead()
+      const ahead = this.timeAhead()
       if (ahead) {
         return ahead
       }
