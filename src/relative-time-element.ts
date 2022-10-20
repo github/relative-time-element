@@ -1,3 +1,4 @@
+import type {Tense, Format} from './relative-time.js'
 import RelativeTime from './relative-time.js'
 import ExtendedTimeElement from './extended-time-element.js'
 import {localeFromElement} from './utils.js'
@@ -6,7 +7,32 @@ export default class RelativeTimeElement extends ExtendedTimeElement {
   getFormattedDate(): string | undefined {
     const date = this.date
     if (!date) return
-    return new RelativeTime(date, localeFromElement(this)).toString(this.getAttribute('format') || undefined)
+    return new RelativeTime(date, localeFromElement(this)).toString({
+      tense: this.tense,
+      format: this.format
+    })
+  }
+
+  get tense(): Tense {
+    const tense = this.getAttribute('tense')
+    if (tense === 'past') return 'past'
+    if (tense === 'future') return 'future'
+    return 'auto'
+  }
+
+  set tense(value: Tense) {
+    this.setAttribute('tense', value)
+  }
+
+  get format(): Format {
+    const format = this.getAttribute('format')
+    if (format === 'micro') return 'micro'
+    if (format && format.includes('%')) return format
+    return 'auto'
+  }
+
+  set format(value: Format) {
+    this.setAttribute('format', value)
   }
 
   connectedCallback(): void {

@@ -1,6 +1,9 @@
 import {makeFormatter, makeRelativeFormat, isDayFirst, isThisYear, isYearSeparator} from './utils.js'
 import {strftime} from './strftime.js'
 
+export type Format = 'auto' | 'micro' | string
+export type Tense = 'auto' | 'past' | 'future'
+
 export default class RelativeTime {
   date: Date
   locale: string
@@ -10,16 +13,25 @@ export default class RelativeTime {
     this.locale = locale
   }
 
-  toString(format?: string): string {
-    const ago = this.timeElapsed()
-    if (ago) {
-      return ago
+  toString({format = 'auto', tense = 'auto'}: {format?: Format; tense?: Tense} = {}): string | undefined {
+    const micro = format === 'micro'
+    if (tense === 'past') {
+      return micro ? this.microTimeAgo() : this.timeAgo()
     }
-    const ahead = this.timeAhead()
-    if (ahead) {
-      return ahead
+    if (tense === 'future') {
+      return micro ? this.microTimeUntil() : this.timeUntil()
     }
-    if (format) {
+    if (format === 'auto') {
+      const ago = micro ? this.microTimeAgo() : this.timeElapsed()
+      if (ago) {
+        return ago
+      }
+      const ahead = micro ? this.microTimeUntil() : this.timeAhead()
+      if (ahead) {
+        return ahead
+      }
+    }
+    if (format !== 'auto' && format !== 'micro') {
       return this.formatDate(format)
     }
     return `on ${this.formatDate()}`

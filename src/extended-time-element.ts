@@ -16,6 +16,7 @@ export default class ExtendedTimeElement extends HTMLElement {
       'title',
       'weekday',
       'year',
+      'tense',
       'time-zone-name'
     ]
   }
