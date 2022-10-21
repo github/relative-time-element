@@ -2,7 +2,6 @@ import {assert} from '@open-wc/testing'
 import {applyDuration, withinDuration} from '../src/duration.ts'
 
 suite('duration', function () {
-
   suite('applyDuration', function () {
     const referenceDate = '2022-10-21T16:48:44.104Z'
     const tests = [
@@ -44,5 +43,4 @@ suite('duration', function () {
       })
     }
   })
-
 })

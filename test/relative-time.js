@@ -115,7 +115,6 @@ suite('relative-time', function () {
   })
 
   suite('[threshold]', function () {
-
     test('switches to dates after 30 past days with default threshold', function () {
       const now = new Date(Date.now() - 31 * 60 * 60 * 24 * 1000).toISOString()
       const time = document.createElement('relative-time')
@@ -175,7 +174,6 @@ suite('relative-time', function () {
       time.setAttribute('datetime', now)
       assert.match(time.textContent, /[A-Z][a-z]{2} \d{1,2}/)
     })
-
   })
 
   test('ignores malformed dates', function () {
