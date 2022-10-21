@@ -34,7 +34,7 @@ export default class RelativeTimeElement extends ExtendedTimeElement {
     if (format !== 'auto' && format !== 'micro') {
       return relativeTime.formatDate(format)
     }
-    return `${this.prefix ? this.prefix + ' ' : ''}${relativeTime.formatDate()}`
+    return `${this.prefix ? `${this.prefix} ` : ''}${relativeTime.formatDate()}`
   }
 
   /** @deprecated */
