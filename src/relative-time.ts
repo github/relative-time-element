@@ -7,34 +7,10 @@ export type Tense = 'auto' | 'past' | 'future'
 export default class RelativeTime {
   date: Date
   locale: string
-
+  
   constructor(date: Date, locale: string) {
     this.date = date
     this.locale = locale
-  }
-
-  toString({format = 'auto', tense = 'auto'}: {format?: Format; tense?: Tense} = {}): string | undefined {
-    const micro = format === 'micro'
-    if (tense === 'past') {
-      return micro ? this.microTimeAgo() : this.timeAgo()
-    }
-    if (tense === 'future') {
-      return micro ? this.microTimeUntil() : this.timeUntil()
-    }
-    if (format === 'auto') {
-      const ago = micro ? this.microTimeAgo() : this.timeElapsed()
-      if (ago) {
-        return ago
-      }
-      const ahead = micro ? this.microTimeUntil() : this.timeAhead()
-      if (ahead) {
-        return ahead
-      }
-    }
-    if (format !== 'auto' && format !== 'micro') {
-      return this.formatDate(format)
-    }
-    return `on ${this.formatDate()}`
   }
 
   timeElapsed(): string | undefined | null {
