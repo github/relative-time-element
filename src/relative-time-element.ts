@@ -2,34 +2,27 @@ import type {Tense, Format} from './relative-time.js'
 import RelativeTime from './relative-time.js'
 import ExtendedTimeElement from './extended-time-element.js'
 import {localeFromElement} from './utils.js'
+import {isDuration, withinDuration} from './duration.js'
 
 export default class RelativeTimeElement extends ExtendedTimeElement {
   static get observedAttributes() {
     return [...ExtendedTimeElement.observedAttributes, 'prefix']
   }
 
-  getFormattedDate(): string | undefined {
+  getFormattedDate(now = new Date()): string | undefined {
     const date = this.date
     if (!date) return
     const relativeTime = new RelativeTime(date, localeFromElement(this))
     const format = this.format
     const tense = this.tense
     const micro = format === 'micro'
-    if (tense === 'past') {
+    const inFuture = now.getTime() < date.getTime()
+    const within = withinDuration(now, date, this.threshold)
+    if (tense === 'past' || (tense === 'auto' && !inFuture && within)) {
       return micro ? relativeTime.microTimeAgo() : relativeTime.timeAgo()
     }
-    if (tense === 'future') {
+    if (tense === 'future' || (tense === 'auto' && inFuture && within)) {
       return micro ? relativeTime.microTimeUntil() : relativeTime.timeUntil()
-    }
-    if (format === 'auto') {
-      const ago = micro ? relativeTime.microTimeAgo() : relativeTime.timeElapsed()
-      if (ago) {
-        return ago
-      }
-      const ahead = micro ? relativeTime.microTimeUntil() : relativeTime.timeAhead()
-      if (ahead) {
-        return ahead
-      }
     }
     if (format !== 'auto' && format !== 'micro') {
       return relativeTime.formatDate(format)
@@ -45,6 +38,15 @@ export default class RelativeTimeElement extends ExtendedTimeElement {
   /** @deprecated */
   set prefix(value: string) {
     this.setAttribute('prefix', value)
+  }
+
+  get threshold(): string {
+    const threshold = this.getAttribute('threshold')
+    return threshold && isDuration(threshold) ? threshold : 'P30D'
+  }
+
+  set threshold(value: string) {
+    this.setAttribute('threshold', value)
   }
 
   get tense(): Tense {

@@ -114,38 +114,68 @@ suite('relative-time', function () {
     assert.equal(time.textContent, 'in 2 days')
   })
 
-  test('switches to dates after 30 past days', function () {
-    const now = new Date(Date.now() - 30 * 60 * 60 * 24 * 1000).toISOString()
-    const time = document.createElement('relative-time')
-    time.setAttribute('lang', 'en-US')
-    time.setAttribute('datetime', now)
-    assert.match(time.textContent, /on [A-Z][a-z]{2} \d{1,2}/)
-  })
+  suite('[threshold]', function () {
 
-  test('switches to dates after 30 future days', function () {
-    const now = new Date(Date.now() + 30 * 60 * 60 * 24 * 1000).toISOString()
-    const time = document.createElement('relative-time')
-    time.setAttribute('lang', 'en-US')
-    time.setAttribute('datetime', now)
-    assert.match(time.textContent, /on [A-Z][a-z]{2} \d{1,2}/)
-  })
+    test('switches to dates after 30 past days with default threshold', function () {
+      const now = new Date(Date.now() - 31 * 60 * 60 * 24 * 1000).toISOString()
+      const time = document.createElement('relative-time')
+      time.setAttribute('lang', 'en-US')
+      time.setAttribute('datetime', now)
+      assert.match(time.textContent, /on [A-Z][a-z]{2} \d{1,2}/)
+    })
 
-  test('uses `prefix` attribute to customise prefix', function () {
-    const now = new Date(Date.now() + 30 * 60 * 60 * 24 * 1000).toISOString()
-    const time = document.createElement('relative-time')
-    time.setAttribute('prefix', 'will happen by')
-    time.setAttribute('lang', 'en-US')
-    time.setAttribute('datetime', now)
-    assert.match(time.textContent, /will happen by [A-Z][a-z]{2} \d{1,2}/)
-  })
+    test('switches to dates after 30 future days with default threshold', function () {
+      const now = new Date(Date.now() + 31 * 60 * 60 * 24 * 1000).toISOString()
+      const time = document.createElement('relative-time')
+      time.setAttribute('lang', 'en-US')
+      time.setAttribute('datetime', now)
+      assert.match(time.textContent, /on [A-Z][a-z]{2} \d{1,2}/)
+    })
 
-  test('uses `prefix` attribute to customise prefix as empty string', function () {
-    const now = new Date(Date.now() + 30 * 60 * 60 * 24 * 1000).toISOString()
-    const time = document.createElement('relative-time')
-    time.setAttribute('prefix', '')
-    time.setAttribute('lang', 'en-US')
-    time.setAttribute('datetime', now)
-    assert.match(time.textContent, /[A-Z][a-z]{2} \d{1,2}/)
+    test('switches to dates after 1 day with P1D threshold', function () {
+      const now = new Date(Date.now() - 2 * 60 * 60 * 24 * 1000).toISOString()
+      const time = document.createElement('relative-time')
+      time.setAttribute('lang', 'en-US')
+      time.setAttribute('threshold', 'P1D')
+      time.setAttribute('datetime', now)
+      assert.match(time.textContent, /on [A-Z][a-z]{2} \d{1,2}/)
+    })
+
+    test('switches to dates after 30 future days with default threshold', function () {
+      const now = new Date(Date.now() + 31 * 60 * 60 * 24 * 1000).toISOString()
+      const time = document.createElement('relative-time')
+      time.setAttribute('lang', 'en-US')
+      time.setAttribute('datetime', now)
+      assert.match(time.textContent, /on [A-Z][a-z]{2} \d{1,2}/)
+    })
+
+    test('switches to dates after 30 future days with P1D threshold', function () {
+      const now = new Date(Date.now() + 2 * 60 * 60 * 24 * 1000).toISOString()
+      const time = document.createElement('relative-time')
+      time.setAttribute('lang', 'en-US')
+      time.setAttribute('threshold', 'P1D')
+      time.setAttribute('datetime', now)
+      assert.match(time.textContent, /on [A-Z][a-z]{2} \d{1,2}/)
+    })
+
+    test('uses `prefix` attribute to customise prefix', function () {
+      const now = new Date(Date.now() + 31 * 60 * 60 * 24 * 1000).toISOString()
+      const time = document.createElement('relative-time')
+      time.setAttribute('prefix', 'will happen by')
+      time.setAttribute('lang', 'en-US')
+      time.setAttribute('datetime', now)
+      assert.match(time.textContent, /will happen by [A-Z][a-z]{2} \d{1,2}/)
+    })
+
+    test('uses `prefix` attribute to customise prefix as empty string', function () {
+      const now = new Date(Date.now() + 31 * 60 * 60 * 24 * 1000).toISOString()
+      const time = document.createElement('relative-time')
+      time.setAttribute('prefix', '')
+      time.setAttribute('lang', 'en-US')
+      time.setAttribute('datetime', now)
+      assert.match(time.textContent, /[A-Z][a-z]{2} \d{1,2}/)
+    })
+
   })
 
   test('ignores malformed dates', function () {
