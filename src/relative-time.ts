@@ -15,10 +15,6 @@ export default class RelativeTime {
 
   timeAgo(): string | undefined {
     const ms = new Date().getTime() - this.date.getTime()
-    return this.timeAgoFromMs(ms)
-  }
-
-  timeAgoFromMs(ms: number): string | undefined {
     const sec = Math.round(ms / 1000)
     const min = Math.round(sec / 60)
     const hr = Math.round(min / 60)
