@@ -13,32 +13,6 @@ export default class RelativeTime {
     this.locale = locale
   }
 
-  timeElapsed(): string | undefined | null {
-    const ms = new Date().getTime() - this.date.getTime()
-    const sec = Math.round(ms / 1000)
-    const min = Math.round(sec / 60)
-    const hr = Math.round(min / 60)
-    const day = Math.round(hr / 24)
-    if (ms >= 0 && day < 30) {
-      return this.timeAgoFromMs(ms)
-    } else {
-      return null
-    }
-  }
-
-  timeAhead(): string | null {
-    const ms = this.date.getTime() - new Date().getTime()
-    const sec = Math.round(ms / 1000)
-    const min = Math.round(sec / 60)
-    const hr = Math.round(min / 60)
-    const day = Math.round(hr / 24)
-    if (ms >= 0 && day < 30) {
-      return this.timeUntil()
-    } else {
-      return null
-    }
-  }
-
   timeAgo(): string | undefined {
     const ms = new Date().getTime() - this.date.getTime()
     return this.timeAgoFromMs(ms)
