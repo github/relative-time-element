@@ -69,10 +69,6 @@ export default class RelativeTime {
 
   timeUntil(): string {
     const ms = this.date.getTime() - new Date().getTime()
-    return this.timeUntilFromMs(ms)
-  }
-
-  timeUntilFromMs(ms: number): string {
     const sec = Math.round(ms / 1000)
     const min = Math.round(sec / 60)
     const hr = Math.round(min / 60)
