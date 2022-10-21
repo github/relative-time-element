@@ -7,7 +7,7 @@ export type Tense = 'auto' | 'past' | 'future'
 export default class RelativeTime {
   date: Date
   locale: string
-  
+
   constructor(date: Date, locale: string) {
     this.date = date
     this.locale = locale
