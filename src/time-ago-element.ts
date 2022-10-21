@@ -1,17 +1,9 @@
-import RelativeTime from './relative-time.js'
+import {Tense} from './relative-time.js'
 import RelativeTimeElement from './relative-time-element.js'
-import {localeFromElement} from './utils.js'
 
 export default class TimeAgoElement extends RelativeTimeElement {
-  getFormattedDate(): string | undefined {
-    const format = this.getAttribute('format')
-    const date = this.date
-    if (!date) return
-    if (format === 'micro') {
-      return new RelativeTime(date, localeFromElement(this)).microTimeAgo()
-    } else {
-      return new RelativeTime(date, localeFromElement(this)).timeAgo()
-    }
+  get tense(): Tense {
+    return 'past'
   }
 }
 
