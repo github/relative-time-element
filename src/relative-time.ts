@@ -13,30 +13,6 @@ export default class RelativeTime {
     this.locale = locale
   }
 
-  toString({format = 'auto', tense = 'auto'}: {format?: Format; tense?: Tense} = {}): string | undefined {
-    const micro = format === 'micro'
-    if (tense === 'past') {
-      return micro ? this.microTimeAgo() : this.timeAgo()
-    }
-    if (tense === 'future') {
-      return micro ? this.microTimeUntil() : this.timeUntil()
-    }
-    if (format === 'auto') {
-      const ago = this.timeElapsed()
-      if (ago) {
-        return ago
-      }
-      const ahead = this.timeAhead()
-      if (ahead) {
-        return ahead
-      }
-    }
-    if (format !== 'auto' && format !== 'micro') {
-      return this.formatDate(format)
-    }
-    return `on ${this.formatDate()}`
-  }
-
   timeElapsed(): string | undefined | null {
     const ms = new Date().getTime() - this.date.getTime()
     const sec = Math.round(ms / 1000)

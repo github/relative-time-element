@@ -130,6 +130,24 @@ suite('relative-time', function () {
     assert.match(time.textContent, /on [A-Z][a-z]{2} \d{1,2}/)
   })
 
+  test('uses `prefix` attribute to customise prefix', function () {
+    const now = new Date(Date.now() + 30 * 60 * 60 * 24 * 1000).toISOString()
+    const time = document.createElement('relative-time')
+    time.setAttribute('prefix', 'will happen by')
+    time.setAttribute('lang', 'en-US')
+    time.setAttribute('datetime', now)
+    assert.match(time.textContent, /will happen by [A-Z][a-z]{2} \d{1,2}/)
+  })
+
+  test('uses `prefix` attribute to customise prefix as empty string', function () {
+    const now = new Date(Date.now() + 30 * 60 * 60 * 24 * 1000).toISOString()
+    const time = document.createElement('relative-time')
+    time.setAttribute('prefix', '')
+    time.setAttribute('lang', 'en-US')
+    time.setAttribute('datetime', now)
+    assert.match(time.textContent, /[A-Z][a-z]{2} \d{1,2}/)
+  })
+
   test('ignores malformed dates', function () {
     const time = document.createElement('relative-time')
     time.textContent = 'Jun 30'
