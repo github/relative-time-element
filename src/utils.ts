@@ -69,21 +69,6 @@ export function isThisYear(date: Date): boolean {
   return now.getUTCFullYear() === date.getUTCFullYear()
 }
 
-export function makeRelativeFormat(
-  locale: string,
-  options: Intl.RelativeTimeFormatOptions
-): Intl.RelativeTimeFormat | void {
-  if ('Intl' in window && 'RelativeTimeFormat' in window.Intl) {
-    try {
-      return new Intl.RelativeTimeFormat(locale, options)
-    } catch (e) {
-      if (!(e instanceof RangeError)) {
-        throw e
-      }
-    }
-  }
-}
-
 // Private: Get preferred Intl locale for a target element.
 //
 // Traverses parents until it finds an explicit `lang` other returns "default".
