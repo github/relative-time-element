@@ -2,6 +2,35 @@ import {assert} from '@open-wc/testing'
 import '../src/relative-time-element.ts'
 
 suite('relative-time', function () {
+  let dateNow
+
+  function freezeTime(expected) {
+    dateNow = Date
+
+    function MockDate(...args) {
+      if (args.length) {
+        return new dateNow(...args)
+      }
+      return new dateNow(expected)
+    }
+
+    MockDate.UTC = dateNow.UTC
+    MockDate.parse = dateNow.parse
+    MockDate.now = () => expected.getTime()
+    MockDate.prototype = dateNow.prototype
+
+    // eslint-disable-next-line no-global-assign
+    Date = MockDate
+  }
+
+  teardown(function () {
+    if (dateNow) {
+      // eslint-disable-next-line no-global-assign
+      Date = dateNow
+      dateNow = null
+    }
+  })
+
   test('rewrites from now past datetime to days ago', function () {
     const now = new Date(Date.now() - 3 * 60 * 60 * 24 * 1000).toISOString()
     const time = document.createElement('relative-time')
@@ -257,35 +286,6 @@ suite('relative-time', function () {
   }
 
   suite('[tense=past]', function () {
-    let dateNow
-
-    function freezeTime(expected) {
-      dateNow = Date
-
-      function MockDate(...args) {
-        if (args.length) {
-          return new dateNow(...args)
-        }
-        return new dateNow(expected)
-      }
-
-      MockDate.UTC = dateNow.UTC
-      MockDate.parse = dateNow.parse
-      MockDate.now = () => expected.getTime()
-      MockDate.prototype = dateNow.prototype
-
-      // eslint-disable-next-line no-global-assign
-      Date = MockDate
-    }
-
-    teardown(function () {
-      if (dateNow) {
-        // eslint-disable-next-line no-global-assign
-        Date = dateNow
-        dateNow = null
-      }
-    })
-
     test('always uses relative dates', function () {
       const now = new Date(Date.now() - 10 * 365 * 24 * 60 * 60 * 1000).toISOString()
       const time = document.createElement('relative-time')
@@ -469,5 +469,34 @@ suite('relative-time', function () {
       time.setAttribute('format', 'micro')
       assert.equal(time.textContent, '1d')
     })
+  })
+
+  suite('table tests', function () {
+    const referenceDate = new Date('2022-10-24T14:46:00.000Z')
+    const tests = new Set([
+      {datetime: '2022-10-24T14:46:00.000Z', expected: '1m'},
+      {datetime: '2022-10-24T15:46:00.000Z', expected: '1h'},
+      {datetime: '2022-10-24T16:00:00.000Z', expected: '1h'},
+      {datetime: '2022-10-24T16:15:00.000Z', expected: '1h'},
+      {datetime: '2022-10-24T16:31:00.000Z', expected: '2h'},
+
+      {datetime: '2022-10-30T16:31:00.000Z', expected: '6d'},
+      {datetime: '2022-11-24T16:31:00.000Z', expected: '31d'},
+      {datetime: '2023-10-23T14:46:00.000Z', expected: '364d'},
+      {datetime: '2023-10-24T14:46:00.000Z', expected: '1y'},
+      {datetime: '2024-03-31T14:46:00.000Z', expected: '1y'},
+      {datetime: '2024-04-01T14:46:00.000Z', expected: '2y'}
+    ])
+
+    for (const {datetime, expected} of tests) {
+      test(`micro timeAgo -> ${datetime} -> ${expected}`, function () {
+        freezeTime(referenceDate)
+        const time = document.createElement('relative-time')
+        time.setAttribute('tense', 'past')
+        time.setAttribute('datetime', datetime)
+        time.setAttribute('format', 'micro')
+        assert.equal(time.textContent, expected)
+      })
+    }
   })
 })
