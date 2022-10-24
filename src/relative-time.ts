@@ -1,4 +1,4 @@
-import {makeFormatter, makeRelativeFormat, isDayFirst, isThisYear, isYearSeparator} from './utils.js'
+import {makeRelativeFormat, isDayFirst, isThisYear, isYearSeparator} from './utils.js'
 import {strftime} from './strftime.js'
 
 export type Format = 'auto' | 'micro' | string
@@ -133,15 +133,6 @@ export default class RelativeTime {
     }
     return strftime(this.date, format)
   }
-
-  formatTime(): string {
-    const formatter = timeFormatter()
-    if (formatter) {
-      return formatter.format(this.date)
-    } else {
-      return strftime(this.date, '%l:%M%P')
-    }
-  }
 }
 
 function formatRelativeTime(locale: string, value: number, unit: Intl.RelativeTimeFormatUnit): string {
@@ -230,5 +221,3 @@ function formatEnRelativeTime(value: number, unit: string): string {
 
   throw new RangeError(`Invalid unit argument for format() '${unit}'`)
 }
-
-const timeFormatter = makeFormatter({hour: 'numeric', minute: '2-digit'})
