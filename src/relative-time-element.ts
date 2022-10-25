@@ -1,7 +1,7 @@
 import type {Tense, Format} from './relative-time.js'
 import RelativeTime from './relative-time.js'
 import ExtendedTimeElement from './extended-time-element.js'
-import {localeFromElement} from './utils.js'
+import {localeFromElement, isDayFirst, isThisYear, isYearSeparator} from './utils.js'
 import {isDuration, withinDuration} from './duration.js'
 import {strftime} from './strftime.js'
 
@@ -13,7 +13,7 @@ export default class RelativeTimeElement extends ExtendedTimeElement {
   getFormattedDate(now = new Date()): string | undefined {
     const date = this.date
     if (!date) return
-    const format = this.format
+    let format = this.format
     if (format !== 'auto' && format !== 'micro') {
       return strftime(date, format)
     }
@@ -28,7 +28,11 @@ export default class RelativeTimeElement extends ExtendedTimeElement {
     if (tense === 'future' || (tense === 'auto' && inFuture && within)) {
       return micro ? relativeTime.microTimeUntil() : relativeTime.timeUntil()
     }
-    return `${this.prefix ? `${this.prefix} ` : ''}${relativeTime.formatDate()}`
+    format = isDayFirst() ? '%e %b' : '%b %e'
+    if (!isThisYear(date)) {
+      format += isYearSeparator() ? ', %Y' : ' %Y'
+    }
+    return `${this.prefix ? `${this.prefix} ` : ''}${strftime(date, format)}`
   }
 
   /** @deprecated */
