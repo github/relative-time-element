@@ -504,7 +504,6 @@ suite('relative-time', function () {
       {datetime: '2022-10-24T15:46:00.000Z', tense: 'past', format: 'micro', expected: '1m'},
 
       // Dates in the past
-      // 2022-10-24T14:46:00.000Z
       {datetime: '2022-10-24T13:46:00.000Z', tense: 'past', format: 'micro', expected: '1h'},
       {datetime: '2022-10-24T13:30:00.000Z', tense: 'past', format: 'micro', expected: '1h'},
       {datetime: '2022-10-24T13:17:00.000Z', tense: 'past', format: 'micro', expected: '1h'},
@@ -514,7 +513,41 @@ suite('relative-time', function () {
       {datetime: '2021-10-25T14:46:00.000Z', tense: 'past', format: 'micro', expected: '364d'},
       {datetime: '2021-10-24T14:46:00.000Z', tense: 'past', format: 'micro', expected: '1y'},
       {datetime: '2021-05-18T14:46:00.000Z', tense: 'past', format: 'micro', expected: '1y'},
-      {datetime: '2021-05-17T14:46:00.000Z', tense: 'past', format: 'micro', expected: '2y'}
+      {datetime: '2021-05-17T14:46:00.000Z', tense: 'past', format: 'micro', expected: '2y'},
+
+      // Dates in the past
+      {datetime: '2022-09-24T14:46:00.000Z', tense: 'future', format: 'auto', expected: 'now'},
+      {datetime: '2022-10-23T14:46:00.000Z', tense: 'future', format: 'auto', expected: 'now'},
+      {datetime: '2022-10-24T13:46:00.000Z', tense: 'future', format: 'auto', expected: 'now'},
+
+      // Dates in the future
+      {datetime: '2022-10-24T15:46:00.000Z', tense: 'future', format: 'auto', expected: 'in 1 hour'},
+      {datetime: '2022-10-24T16:00:00.000Z', tense: 'future', format: 'auto', expected: 'in 1 hour'},
+      {datetime: '2022-10-24T16:15:00.000Z', tense: 'future', format: 'auto', expected: 'in 1 hour'},
+      {datetime: '2022-10-24T16:31:00.000Z', tense: 'future', format: 'auto', expected: 'in 2 hours'},
+      {datetime: '2022-10-30T14:46:00.000Z', tense: 'future', format: 'auto', expected: 'in 6 days'},
+      {datetime: '2022-11-24T14:46:00.000Z', tense: 'future', format: 'auto', expected: 'next month'},
+      {datetime: '2023-10-23T14:46:00.000Z', tense: 'future', format: 'auto', expected: 'next year'},
+      {datetime: '2023-10-24T14:46:00.000Z', tense: 'future', format: 'auto', expected: 'next year'},
+      {datetime: '2024-03-31T14:46:00.000Z', tense: 'future', format: 'auto', expected: 'next year'},
+      {datetime: '2024-04-01T14:46:00.000Z', tense: 'future', format: 'auto', expected: 'in 2 years'},
+
+      // Dates in the future
+      {datetime: '2022-11-24T14:46:00.000Z', tense: 'past', format: 'auto', expected: 'now'},
+      {datetime: '2022-10-25T14:46:00.000Z', tense: 'past', format: 'auto', expected: 'now'},
+      {datetime: '2022-10-24T15:46:00.000Z', tense: 'past', format: 'auto', expected: 'now'},
+
+      // Dates in the past
+      {datetime: '2022-10-24T13:46:00.000Z', tense: 'past', format: 'auto', expected: '1 hour ago'},
+      {datetime: '2022-10-24T13:30:00.000Z', tense: 'past', format: 'auto', expected: '1 hour ago'},
+      {datetime: '2022-10-24T13:17:00.000Z', tense: 'past', format: 'auto', expected: '1 hour ago'},
+      {datetime: '2022-10-24T13:01:00.000Z', tense: 'past', format: 'auto', expected: '2 hours ago'},
+      {datetime: '2022-10-18T14:46:00.000Z', tense: 'past', format: 'auto', expected: '6 days ago'},
+      {datetime: '2022-09-23T14:46:00.000Z', tense: 'past', format: 'auto', expected: 'last month'},
+      {datetime: '2021-10-25T14:46:00.000Z', tense: 'past', format: 'auto', expected: '12 months ago'},
+      {datetime: '2021-10-24T14:46:00.000Z', tense: 'past', format: 'auto', expected: '12 months ago'},
+      {datetime: '2021-05-18T14:46:00.000Z', tense: 'past', format: 'auto', expected: '17 months ago'},
+      {datetime: '2021-05-17T14:46:00.000Z', tense: 'past', format: 'auto', expected: '2 years ago'}
     ])
 
     for (const {datetime, expected, tense, format} of tests) {
