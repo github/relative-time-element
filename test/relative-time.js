@@ -474,14 +474,17 @@ suite('relative-time', function () {
   suite('table tests', function () {
     const referenceDate = new Date('2022-10-24T14:46:00.000Z')
     const tests = new Set([
+      // Same as the current time
+      {datetime: '2022-10-24t14:46:00.000z', tense: 'future', format: 'micro', expected: '1m'},
+      {datetime: '2022-10-24t14:46:00.000z', tense: 'past', format: 'micro', expected: '1m'},
+      {datetime: '2022-10-24t14:46:00.000z', tense: 'auto', format: 'micro', expected: '1m'},
+      {datetime: '2022-10-24t14:46:00.000z', tense: 'auto', format: 'auto', expected: 'now'},
+      {datetime: '2022-10-24t14:46:00.000z', tense: 'auto', format: '%Y-%m-%d', expected: '2022-10-24'},
+
       // Dates in the past
       {datetime: '2022-09-24T14:46:00.000Z', tense: 'future', format: 'micro', expected: '1m'},
       {datetime: '2022-10-23T14:46:00.000Z', tense: 'future', format: 'micro', expected: '1m'},
       {datetime: '2022-10-24T13:46:00.000Z', tense: 'future', format: 'micro', expected: '1m'},
-
-      // Same as the current time
-      {datetime: '2022-10-24T14:46:00.000Z', tense: 'future', format: 'micro', expected: '1m'},
-      {datetime: '2022-10-24T14:46:00.000Z', tense: 'past', format: 'micro', expected: '1m'},
 
       // Dates in the future
       {datetime: '2022-10-24T15:46:00.000Z', tense: 'future', format: 'micro', expected: '1h'},
