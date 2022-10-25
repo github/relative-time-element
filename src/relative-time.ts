@@ -1,5 +1,3 @@
-import {isDayFirst, isThisYear, isYearSeparator} from './utils.js'
-import {strftime} from './strftime.js'
 import {RelativeTime as RelativeTimePonyfill} from './relative-time-ponyfill.js'
 
 export type Format = 'auto' | 'micro' | string
@@ -122,17 +120,6 @@ export default class RelativeTime {
     } else {
       return '1m'
     }
-  }
-
-  formatDate(defaultFormat?: string): string {
-    let format = defaultFormat
-    if (format == null) {
-      format = isDayFirst() ? '%e %b' : '%b %e'
-      if (!isThisYear(this.date)) {
-        format += isYearSeparator() ? ', %Y' : ' %Y'
-      }
-    }
-    return strftime(this.date, format)
   }
 }
 

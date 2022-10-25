@@ -3,8 +3,9 @@ import RelativeTime from './relative-time.js'
 import ExtendedTimeElement from './extended-time-element.js'
 import {localeFromElement} from './utils.js'
 import {isDuration, withinDuration} from './duration.js'
+import {strftime} from './strftime.js'
 
-export default class RelativeTimeElement extends ExtendedTimeElement {
+export default class RelativeTimeElement extends ExtendedTimeElement implements Intl.DateTimeFormatOptions {
   static get observedAttributes() {
     return [...ExtendedTimeElement.observedAttributes, 'prefix']
   }
@@ -12,22 +13,61 @@ export default class RelativeTimeElement extends ExtendedTimeElement {
   getFormattedDate(now = new Date()): string | undefined {
     const date = this.date
     if (!date) return
-    const relativeTime = new RelativeTime(date, localeFromElement(this))
     const format = this.format
     if (format !== 'auto' && format !== 'micro') {
-      return relativeTime.formatDate(format)
+      return strftime(date, format)
     }
     const tense = this.tense
     const micro = format === 'micro'
     const inFuture = now.getTime() < date.getTime()
     const within = withinDuration(now, date, this.threshold)
+    const relativeTime = new RelativeTime(date, localeFromElement(this))
     if (tense === 'past' || (tense === 'auto' && !inFuture && within)) {
       return micro ? relativeTime.microTimeAgo() : relativeTime.timeAgo()
     }
     if (tense === 'future' || (tense === 'auto' && inFuture && within)) {
       return micro ? relativeTime.microTimeUntil() : relativeTime.timeUntil()
     }
-    return `${this.prefix ? `${this.prefix} ` : ''}${relativeTime.formatDate()}`
+    if ('Intl' in window && 'DateTimeFormat' in Intl) {
+      const formatter = new Intl.DateTimeFormat(localeFromElement(this), {
+        minute: this.minute,
+        hour: this.hour,
+        day: this.day,
+        month: this.month,
+        year: this.year
+      })
+      return `${this.prefix} ${formatter.format(date)}`.trim()
+    }
+    return `${this.prefix} ${strftime(date, `%b %e${this.year === 'numeric' ? ', %Y' : ''}`)}`.trim()
+  }
+
+  get minute() {
+    const minute = this.getAttribute('minute')
+    if (minute === 'numeric' || minute === '2-digit') return minute
+  }
+  get hour() {
+    const hour = this.getAttribute('hour')
+    if (hour === 'numeric' || hour === '2-digit') return hour
+  }
+
+  get day() {
+    const day = this.getAttribute('day') ?? 'numeric'
+    if (day === 'numeric' || day === '2-digit') return day
+  }
+
+  get month() {
+    const month = this.getAttribute('month') ?? 'short'
+    if (month === 'numeric' || month === '2-digit' || month === 'short' || month === 'long' || month === 'narrow')
+      return month
+  }
+
+  get year() {
+    const year = this.getAttribute('year')
+    if (year === 'numeric' || year === '2-digit') return year
+
+    if (new Date().getUTCFullYear() !== this.date?.getUTCFullYear()) {
+      return 'numeric'
+    }
   }
 
   /** @deprecated */
