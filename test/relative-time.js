@@ -472,7 +472,7 @@ suite('relative-time', function () {
   })
 
   suite('table tests', function () {
-    const referenceDate = new Date('2022-10-24T14:46:00.000Z')
+    const referenceDate = '2022-10-24T14:46:00.000Z'
     const tests = new Set([
       // Same as the current time
       {datetime: '2022-10-24t14:46:00.000z', tense: 'future', format: 'micro', expected: '1m'},
@@ -547,12 +547,49 @@ suite('relative-time', function () {
       {datetime: '2021-10-25T14:46:00.000Z', tense: 'past', format: 'auto', expected: '12 months ago'},
       {datetime: '2021-10-24T14:46:00.000Z', tense: 'past', format: 'auto', expected: '12 months ago'},
       {datetime: '2021-05-18T14:46:00.000Z', tense: 'past', format: 'auto', expected: '17 months ago'},
-      {datetime: '2021-05-17T14:46:00.000Z', tense: 'past', format: 'auto', expected: '2 years ago'}
+      {datetime: '2021-05-17T14:46:00.000Z', tense: 'past', format: 'auto', expected: '2 years ago'},
+
+      // Edge case dates
+      {
+        reference: '2022-01-01T12:00:00.000Z',
+        datetime: '2021-12-31T12:00:00.000Z',
+        tense: 'past',
+        format: 'auto',
+        expected: 'yesterday'
+      },
+      {
+        reference: '2022-01-01T12:00:00.000Z',
+        datetime: '2021-12-31T12:00:00.000Z',
+        tense: 'past',
+        format: 'micro',
+        expected: '1d'
+      },
+      {
+        reference: '2022-12-31T12:00:00.000Z',
+        datetime: '2022-01-01T12:00:00.000Z',
+        tense: 'past',
+        format: 'micro',
+        expected: '364d'
+      },
+      {
+        reference: '2022-12-31T12:00:00.000Z',
+        datetime: '2024-03-01T12:00:00.000Z',
+        tense: 'future',
+        format: 'auto',
+        expected: 'next year'
+      },
+      {
+        reference: '2022-12-31T12:00:00.000Z',
+        datetime: '2024-03-01T12:00:00.000Z',
+        tense: 'future',
+        format: 'micro',
+        expected: '1y'
+      }
     ])
 
-    for (const {datetime, expected, tense, format} of tests) {
+    for (const {datetime, expected, tense, format, reference = referenceDate} of tests) {
       test(`<relative-time datetime="${datetime}" tense="${tense}" format="${format}"> => ${expected}`, function () {
-        freezeTime(referenceDate)
+        freezeTime(new Date(reference))
         const time = document.createElement('relative-time')
         time.setAttribute('tense', tense)
         time.setAttribute('datetime', datetime)
