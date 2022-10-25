@@ -474,27 +474,53 @@ suite('relative-time', function () {
   suite('table tests', function () {
     const referenceDate = new Date('2022-10-24T14:46:00.000Z')
     const tests = new Set([
-      {datetime: '2022-10-24T14:46:00.000Z', expected: '1m'},
-      {datetime: '2022-10-24T15:46:00.000Z', expected: '1h'},
-      {datetime: '2022-10-24T16:00:00.000Z', expected: '1h'},
-      {datetime: '2022-10-24T16:15:00.000Z', expected: '1h'},
-      {datetime: '2022-10-24T16:31:00.000Z', expected: '2h'},
+      // Dates in the past
+      {datetime: '2022-09-24T14:46:00.000Z', tense: 'future', format: 'micro', expected: '1m'},
+      {datetime: '2022-10-23T14:46:00.000Z', tense: 'future', format: 'micro', expected: '1m'},
+      {datetime: '2022-10-24T13:46:00.000Z', tense: 'future', format: 'micro', expected: '1m'},
 
-      {datetime: '2022-10-30T16:31:00.000Z', expected: '6d'},
-      {datetime: '2022-11-24T16:31:00.000Z', expected: '31d'},
-      {datetime: '2023-10-23T14:46:00.000Z', expected: '364d'},
-      {datetime: '2023-10-24T14:46:00.000Z', expected: '1y'},
-      {datetime: '2024-03-31T14:46:00.000Z', expected: '1y'},
-      {datetime: '2024-04-01T14:46:00.000Z', expected: '2y'}
+      // Same as the current time
+      {datetime: '2022-10-24T14:46:00.000Z', tense: 'future', format: 'micro', expected: '1m'},
+      {datetime: '2022-10-24T14:46:00.000Z', tense: 'past', format: 'micro', expected: '1m'},
+
+      // Dates in the future
+      {datetime: '2022-10-24T15:46:00.000Z', tense: 'future', format: 'micro', expected: '1h'},
+      {datetime: '2022-10-24T16:00:00.000Z', tense: 'future', format: 'micro', expected: '1h'},
+      {datetime: '2022-10-24T16:15:00.000Z', tense: 'future', format: 'micro', expected: '1h'},
+      {datetime: '2022-10-24T16:31:00.000Z', tense: 'future', format: 'micro', expected: '2h'},
+      {datetime: '2022-10-30T14:46:00.000Z', tense: 'future', format: 'micro', expected: '6d'},
+      {datetime: '2022-11-24T14:46:00.000Z', tense: 'future', format: 'micro', expected: '31d'},
+      {datetime: '2023-10-23T14:46:00.000Z', tense: 'future', format: 'micro', expected: '364d'},
+      {datetime: '2023-10-24T14:46:00.000Z', tense: 'future', format: 'micro', expected: '1y'},
+      {datetime: '2024-03-31T14:46:00.000Z', tense: 'future', format: 'micro', expected: '1y'},
+      {datetime: '2024-04-01T14:46:00.000Z', tense: 'future', format: 'micro', expected: '2y'},
+
+      // Dates in the future
+      {datetime: '2022-11-24T14:46:00.000Z', tense: 'past', format: 'micro', expected: '1m'},
+      {datetime: '2022-10-25T14:46:00.000Z', tense: 'past', format: 'micro', expected: '1m'},
+      {datetime: '2022-10-24T15:46:00.000Z', tense: 'past', format: 'micro', expected: '1m'},
+
+      // Dates in the past
+      // 2022-10-24T14:46:00.000Z
+      {datetime: '2022-10-24T13:46:00.000Z', tense: 'past', format: 'micro', expected: '1h'},
+      {datetime: '2022-10-24T13:30:00.000Z', tense: 'past', format: 'micro', expected: '1h'},
+      {datetime: '2022-10-24T13:17:00.000Z', tense: 'past', format: 'micro', expected: '1h'},
+      {datetime: '2022-10-24T13:01:00.000Z', tense: 'past', format: 'micro', expected: '2h'},
+      {datetime: '2022-10-18T14:46:00.000Z', tense: 'past', format: 'micro', expected: '6d'},
+      {datetime: '2022-09-23T14:46:00.000Z', tense: 'past', format: 'micro', expected: '31d'},
+      {datetime: '2021-10-25T14:46:00.000Z', tense: 'past', format: 'micro', expected: '364d'},
+      {datetime: '2021-10-24T14:46:00.000Z', tense: 'past', format: 'micro', expected: '1y'},
+      {datetime: '2021-05-18T14:46:00.000Z', tense: 'past', format: 'micro', expected: '1y'},
+      {datetime: '2021-05-17T14:46:00.000Z', tense: 'past', format: 'micro', expected: '2y'}
     ])
 
-    for (const {datetime, expected} of tests) {
-      test(`micro timeUntil -> ${datetime} -> ${expected}`, function () {
+    for (const {datetime, expected, tense, format} of tests) {
+      test(`<relative-time datetime="${datetime}" tense="${tense}" format="${format}"> => ${expected}`, function () {
         freezeTime(referenceDate)
         const time = document.createElement('relative-time')
-        time.setAttribute('tense', 'future')
+        time.setAttribute('tense', tense)
         time.setAttribute('datetime', datetime)
-        time.setAttribute('format', 'micro')
+        time.setAttribute('format', format)
         assert.equal(time.textContent, expected)
       })
     }
