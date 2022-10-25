@@ -489,10 +489,10 @@ suite('relative-time', function () {
     ])
 
     for (const {datetime, expected} of tests) {
-      test(`micro timeAgo -> ${datetime} -> ${expected}`, function () {
+      test(`micro timeUntil -> ${datetime} -> ${expected}`, function () {
         freezeTime(referenceDate)
         const time = document.createElement('relative-time')
-        time.setAttribute('tense', 'past')
+        time.setAttribute('tense', 'future')
         time.setAttribute('datetime', datetime)
         time.setAttribute('format', 'micro')
         assert.equal(time.textContent, expected)
