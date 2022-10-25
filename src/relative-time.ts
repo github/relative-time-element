@@ -1,5 +1,6 @@
-import {makeFormatter, makeRelativeFormat, isDayFirst, isThisYear, isYearSeparator} from './utils.js'
+import {isDayFirst, isThisYear, isYearSeparator} from './utils.js'
 import {strftime} from './strftime.js'
+import {RelativeTime as RelativeTimePonyfill} from './relative-time-ponyfill.js'
 
 export type Format = 'auto' | 'micro' | string
 export type Tense = 'auto' | 'past' | 'future'
@@ -133,102 +134,19 @@ export default class RelativeTime {
     }
     return strftime(this.date, format)
   }
-
-  formatTime(): string {
-    const formatter = timeFormatter()
-    if (formatter) {
-      return formatter.format(this.date)
-    } else {
-      return strftime(this.date, '%l:%M%P')
-    }
-  }
 }
 
 function formatRelativeTime(locale: string, value: number, unit: Intl.RelativeTimeFormatUnit): string {
-  const formatter = makeRelativeFormat(locale, {numeric: 'auto'})
-  if (formatter) {
-    return formatter.format(value, unit)
-  } else {
-    return formatEnRelativeTime(value, unit)
-  }
-}
-
-// Simplified "en" RelativeTimeFormat.format function
-//
-// Values should roughly match
-//   new Intl.RelativeTimeFormat('en', {numeric: 'auto'}).format(value, unit)
-//
-function formatEnRelativeTime(value: number, unit: string): string {
-  if (value === 0) {
-    switch (unit) {
-      case 'year':
-      case 'quarter':
-      case 'month':
-      case 'week':
-        return `this ${unit}`
-      case 'day':
-        return 'today'
-      case 'hour':
-      case 'minute':
-        return `in 0 ${unit}s`
-      case 'second':
-        return 'now'
-    }
-  } else if (value === 1) {
-    switch (unit) {
-      case 'year':
-      case 'quarter':
-      case 'month':
-      case 'week':
-        return `next ${unit}`
-      case 'day':
-        return 'tomorrow'
-      case 'hour':
-      case 'minute':
-      case 'second':
-        return `in 1 ${unit}`
-    }
-  } else if (value === -1) {
-    switch (unit) {
-      case 'year':
-      case 'quarter':
-      case 'month':
-      case 'week':
-        return `last ${unit}`
-      case 'day':
-        return 'yesterday'
-      case 'hour':
-      case 'minute':
-      case 'second':
-        return `1 ${unit} ago`
-    }
-  } else if (value > 1) {
-    switch (unit) {
-      case 'year':
-      case 'quarter':
-      case 'month':
-      case 'week':
-      case 'day':
-      case 'hour':
-      case 'minute':
-      case 'second':
-        return `in ${value} ${unit}s`
-    }
-  } else if (value < -1) {
-    switch (unit) {
-      case 'year':
-      case 'quarter':
-      case 'month':
-      case 'week':
-      case 'day':
-      case 'hour':
-      case 'minute':
-      case 'second':
-        return `${-value} ${unit}s ago`
+  let formatter
+  if ('Intl' in window && 'RelativeTimeFormat' in window.Intl) {
+    try {
+      formatter = new Intl.RelativeTimeFormat(locale, {numeric: 'auto'})
+    } catch (e) {
+      if (!(e instanceof RangeError)) {
+        throw e
+      }
     }
   }
-
-  throw new RangeError(`Invalid unit argument for format() '${unit}'`)
+  formatter ||= new RelativeTimePonyfill()
+  return formatter.format(value, unit)
 }
-
-const timeFormatter = makeFormatter({hour: 'numeric', minute: '2-digit'})
