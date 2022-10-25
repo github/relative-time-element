@@ -3,6 +3,7 @@ import RelativeTime from './relative-time.js'
 import ExtendedTimeElement from './extended-time-element.js'
 import {localeFromElement} from './utils.js'
 import {isDuration, withinDuration} from './duration.js'
+import {strftime} from './strftime.js'
 
 export default class RelativeTimeElement extends ExtendedTimeElement {
   static get observedAttributes() {
@@ -12,15 +13,15 @@ export default class RelativeTimeElement extends ExtendedTimeElement {
   getFormattedDate(now = new Date()): string | undefined {
     const date = this.date
     if (!date) return
-    const relativeTime = new RelativeTime(date, localeFromElement(this))
     const format = this.format
     if (format !== 'auto' && format !== 'micro') {
-      return relativeTime.formatDate(format)
+      return strftime(date, format)
     }
     const tense = this.tense
     const micro = format === 'micro'
     const inFuture = now.getTime() < date.getTime()
     const within = withinDuration(now, date, this.threshold)
+    const relativeTime = new RelativeTime(date, localeFromElement(this))
     if (tense === 'past' || (tense === 'auto' && !inFuture && within)) {
       return micro ? relativeTime.microTimeAgo() : relativeTime.timeAgo()
     }
