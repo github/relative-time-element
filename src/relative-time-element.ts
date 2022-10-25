@@ -14,6 +14,9 @@ export default class RelativeTimeElement extends ExtendedTimeElement {
     if (!date) return
     const relativeTime = new RelativeTime(date, localeFromElement(this))
     const format = this.format
+    if (format !== 'auto' && format !== 'micro') {
+      return relativeTime.formatDate(format)
+    }
     const tense = this.tense
     const micro = format === 'micro'
     const inFuture = now.getTime() < date.getTime()
@@ -23,9 +26,6 @@ export default class RelativeTimeElement extends ExtendedTimeElement {
     }
     if (tense === 'future' || (tense === 'auto' && inFuture && within)) {
       return micro ? relativeTime.microTimeUntil() : relativeTime.timeUntil()
-    }
-    if (format !== 'auto' && format !== 'micro') {
-      return relativeTime.formatDate(format)
     }
     return `${this.prefix ? `${this.prefix} ` : ''}${relativeTime.formatDate()}`
   }
