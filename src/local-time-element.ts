@@ -1,10 +1,10 @@
 import {makeFormatter, localeFromElement, isDayFirst} from './utils.js'
 import {strftime} from './strftime.js'
-import ExtendedTimeElement from './extended-time-element.js'
+import RelativeTimeElement from './relative-time-element.js'
 
 const formatters = new WeakMap<Element, ReturnType<typeof makeFormatter>>()
 
-export default class LocalTimeElement extends ExtendedTimeElement {
+export default class LocalTimeElement extends RelativeTimeElement {
   attributeChangedCallback(attrName: string, oldValue: string, newValue: string): void {
     if (attrName === 'hour' || attrName === 'minute' || attrName === 'second' || attrName === 'time-zone-name') {
       formatters.delete(this)
@@ -28,9 +28,9 @@ export default class LocalTimeElement extends ExtendedTimeElement {
   //   second  - "numeric", "2-digit"
   //
   // Returns a formatted time String.
-  getFormattedDate(): string | undefined {
+  get format(): string {
     const d = this.date
-    if (!d) return
+    if (!d) return ''
 
     const date = formatDate(this, d) || ''
     const time = formatTime(this, d) || ''
