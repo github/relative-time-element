@@ -1,15 +1,15 @@
 import {makeFormatter, localeFromElement, isDayFirst} from './utils.js'
 import {strftime} from './strftime.js'
-import ExtendedTimeElement from './extended-time-element.js'
+import RelativeTimeElement from './relative-time-element.js'
 
 const formatters = new WeakMap<Element, ReturnType<typeof makeFormatter>>()
 
-export default class LocalTimeElement extends ExtendedTimeElement {
-  attributeChangedCallback(attrName: string, oldValue: string, newValue: string): void {
+export default class LocalTimeElement extends RelativeTimeElement {
+  attributeChangedCallback(attrName: string): void {
     if (attrName === 'hour' || attrName === 'minute' || attrName === 'second' || attrName === 'time-zone-name') {
       formatters.delete(this)
     }
-    super.attributeChangedCallback(attrName, oldValue, newValue)
+    super.attributeChangedCallback(attrName)
   }
 
   // Formats the element's date, in the user's current locale, according to
