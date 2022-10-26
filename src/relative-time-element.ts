@@ -87,9 +87,18 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     const minute = this.getAttribute('minute')
     if (minute === 'numeric' || minute === '2-digit') return minute
   }
+
+  set minute(value: 'numeric' | '2-digit' | undefined) {
+    this.setAttribute('minute', value || '')
+  }
+
   get hour() {
     const hour = this.getAttribute('hour')
     if (hour === 'numeric' || hour === '2-digit') return hour
+  }
+
+  set hour(value: 'numeric' | '2-digit' | undefined) {
+    this.setAttribute('hour', value || '')
   }
 
   get day() {
@@ -97,10 +106,19 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     if (day === 'numeric' || day === '2-digit') return day
   }
 
+  set day(value: 'numeric' | '2-digit' | undefined) {
+    this.setAttribute('day', value || '')
+  }
+
   get month() {
     const month = this.getAttribute('month') ?? 'short'
-    if (month === 'numeric' || month === '2-digit' || month === 'short' || month === 'long' || month === 'narrow')
+    if (month === 'numeric' || month === '2-digit' || month === 'short' || month === 'long' || month === 'narrow') {
       return month
+    }
+  }
+
+  set month(value: 'numeric' | '2-digit' | 'short' | 'long' | 'narrow' | undefined) {
+    this.setAttribute('month', value || '')
   }
 
   get year() {
@@ -110,6 +128,10 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     if (!this.hasAttribute('year') && new Date().getUTCFullYear() !== this.date?.getUTCFullYear()) {
       return 'numeric'
     }
+  }
+
+  set year(value: 'numeric' | '2-digit' | undefined) {
+    this.setAttribute('day', value || '')
   }
 
   get timeZoneName() {
@@ -124,6 +146,12 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     ) {
       return name
     }
+  }
+
+  set timeZoneName(
+    value: 'long' | 'short' | 'shortOffset' | 'longOffset' | 'shortGeneric' | 'longGeneric' | undefined
+  ) {
+    this.setAttribute('time-zone-name', value || '')
   }
 
   /** @deprecated */
