@@ -23,12 +23,24 @@ suite('relative-time', function () {
     Date = MockDate
   }
 
-  teardown(function () {
+  let fixture
+  suiteSetup(() => {
+    fixture = document.createElement('div')
+    document.body.appendChild(fixture)
+  })
+
+  teardown(() => {
+    fixture.innerHTML = ''
     if (dateNow) {
       // eslint-disable-next-line no-global-assign
       Date = dateNow
       dateNow = null
     }
+  })
+
+  test("doesn't error when no date is provided", function () {
+    const element = document.createElement('relative-time')
+    assert.doesNotThrow(() => element.attributeChangedCallback('datetime', null, null))
   })
 
   test('rewrites from now past datetime to days ago', function () {
@@ -468,6 +480,123 @@ suite('relative-time', function () {
       time.setAttribute('datetime', now)
       time.setAttribute('format', 'micro')
       assert.equal(time.textContent, '1d')
+    })
+  })
+
+  suite('[threshold=0][prefix=""]', () => {
+    test('getFormattedDate with only date attributes', function () {
+      const time = document.createElement('relative-time')
+      time.setAttribute('datetime', '1970-01-01T00:00:00.000Z')
+      time.setAttribute('threshold', '0')
+      time.setAttribute('prefix', '')
+      time.setAttribute('day', 'numeric')
+      time.setAttribute('month', 'short')
+      time.setAttribute('year', 'numeric')
+
+      assert.include(['Dec 31, 1969', '31 Dec 1969', 'Jan 1, 1970', '1 Jan 1970'], time.textContent)
+    })
+
+    test('getFormattedDate with empty year attribute', function () {
+      const time = document.createElement('relative-time')
+      time.setAttribute('datetime', '1970-01-01T00:00:00.000Z')
+      time.setAttribute('threshold', '0')
+      time.setAttribute('prefix', '')
+      time.setAttribute('year', '')
+      time.setAttribute('day', 'numeric')
+      time.setAttribute('month', 'short')
+
+      assert.include(['Dec 31', '31 Dec', 'Jan 1', '1 Jan'], time.textContent)
+    })
+
+    test('getFormattedDate with only time attributes', function () {
+      const time = document.createElement('relative-time')
+      time.setAttribute('lang', 'en-US')
+      time.setAttribute('datetime', '1970-01-01T00:00:00.000Z')
+      time.setAttribute('threshold', '0')
+      time.setAttribute('prefix', '')
+      time.setAttribute('year', '')
+      time.setAttribute('month', '')
+      time.setAttribute('day', '')
+      time.setAttribute('hour', 'numeric')
+      time.setAttribute('minute', '2-digit')
+
+      if ('Intl' in window) {
+        assert.match(time.getFormattedDate(), /^\d{1,2}:\d\d (AM|PM)$/)
+      } else {
+        assert.match(time.getFormattedDate(), /^\d{2}:\d{2}$/)
+      }
+    })
+
+    test('ignores contents if datetime attribute is missing', function () {
+      const time = document.createElement('relative-time')
+      time.setAttribute('year', 'numeric')
+      time.setAttribute('threshold', '0')
+      time.setAttribute('prefix', '')
+      assert.equal(time.textContent, '')
+    })
+
+    test('can provide just year', function () {
+      const time = document.createElement('relative-time')
+      time.setAttribute('datetime', '1970-01-01T00:00:00.000Z')
+      time.setAttribute('day', '')
+      time.setAttribute('month', '')
+      time.setAttribute('year', 'numeric')
+      time.setAttribute('threshold', '0')
+      time.setAttribute('prefix', '')
+      assert.include(['1969', '1970'], time.textContent)
+    })
+
+    test('updates format when attributes change', function () {
+      const time = document.createElement('relative-time')
+      time.setAttribute('datetime', '1970-01-01T00:00:00.000Z')
+      time.setAttribute('threshold', '0')
+      time.setAttribute('prefix', '')
+      time.setAttribute('day', '')
+      time.setAttribute('month', '')
+
+      time.setAttribute('year', 'numeric')
+      assert.include(['1969', '1970'], time.textContent)
+
+      time.setAttribute('year', '2-digit')
+      assert.include(['69', '70'], time.textContent)
+    })
+
+    test('sets formatted contents when parsed element is upgraded', function () {
+      const root = document.createElement('div')
+      root.innerHTML =
+        '<relative-time datetime="1970-01-01T00:00:00.000Z" day="" month="" year="numeric" prefix="" threshold="0"></relative-time>'
+      if ('CustomElements' in window) {
+        window.CustomElements.upgradeSubtree(root)
+      }
+      assert.include(['1969', '1970'], root.children[0].textContent)
+    })
+    ;('Intl' in window ? test : test.skip)('displays time zone name', function () {
+      const root = document.createElement('div')
+      root.innerHTML =
+        '<relative-time datetime="1970-01-01T00:00:00.000Z" day="" month="" year="" minute="2-digit" time-zone-name="short" prefix="" threshold="0"></relative-time>'
+      if ('CustomElements' in window) {
+        window.CustomElements.upgradeSubtree(root)
+      }
+      assert.match(root.children[0].textContent, /^\d{1,2} (\w+([+-]\d+)?)$/)
+      assert.equal(root.children[0].textContent, '0 GMT+4')
+    })
+
+    test('updates time zone when the `time-zone-name` attribute changes', function () {
+      const el = document.createElement('relative-time')
+      el.setAttribute('lang', 'en-US')
+      el.setAttribute('datetime', '1970-01-01T00:00:00.000-08:00')
+      el.setAttribute('day', 'numeric')
+      el.setAttribute('month', 'numeric')
+      el.setAttribute('time-zone-name', 'short')
+      el.setAttribute('threshold', '0')
+      el.setAttribute('prefix', '')
+
+      fixture.appendChild(el)
+      assert.equal(el.textContent, '1/1/1970, GMT+4')
+
+      el.setAttribute('time-zone-name', 'long')
+
+      assert.equal(el.textContent, '1/1/1970, Gulf Standard Time')
     })
   })
 

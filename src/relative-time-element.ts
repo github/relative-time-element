@@ -34,7 +34,8 @@ export default class RelativeTimeElement extends ExtendedTimeElement implements 
         hour: this.hour,
         day: this.day,
         month: this.month,
-        year: this.year
+        year: this.year,
+        timeZoneName: this.timeZoneName
       })
       return `${this.prefix} ${formatter.format(date)}`.trim()
     }
@@ -65,8 +66,22 @@ export default class RelativeTimeElement extends ExtendedTimeElement implements 
     const year = this.getAttribute('year')
     if (year === 'numeric' || year === '2-digit') return year
 
-    if (new Date().getUTCFullYear() !== this.date?.getUTCFullYear()) {
+    if (!this.hasAttribute('year') && new Date().getUTCFullYear() !== this.date?.getUTCFullYear()) {
       return 'numeric'
+    }
+  }
+
+  get timeZoneName() {
+    const name = this.getAttribute('time-zone-name')
+    if (
+      name === 'long' ||
+      name === 'short' ||
+      name === 'shortOffset' ||
+      name === 'longOffset' ||
+      name === 'shortGeneric' ||
+      name === 'longGeneric'
+    ) {
+      return name
     }
   }
 
