@@ -1,13 +1,54 @@
 import type {Tense, Format} from './relative-time.js'
 import RelativeTime from './relative-time.js'
-import ExtendedTimeElement from './extended-time-element.js'
-import {localeFromElement} from './utils.js'
+import {makeFormatter, localeFromElement} from './utils.js'
 import {isDuration, withinDuration} from './duration.js'
 import {strftime} from './strftime.js'
 
-export default class RelativeTimeElement extends ExtendedTimeElement implements Intl.DateTimeFormatOptions {
+export default class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFormatOptions {
+  #customTitle = false
+
   static get observedAttributes() {
-    return [...ExtendedTimeElement.observedAttributes, 'prefix']
+    return [
+      'datetime',
+      'day',
+      'format',
+      'lang',
+      'hour',
+      'minute',
+      'month',
+      'second',
+      'title',
+      'weekday',
+      'year',
+      'tense',
+      'time-zone-name',
+      'prefix'
+    ]
+  }
+
+  // Internal: Format the ISO 8601 timestamp according to the user agent's
+  // locale-aware formatting rules. The element's existing `title` attribute
+  // value takes precedence over this custom format.
+  //
+  // Returns a formatted time String.
+  getFormattedTitle(): string | undefined {
+    const date = this.date
+    if (!date) return
+
+    const formatter = titleFormatter()
+    if (formatter) {
+      return formatter.format(date)
+    } else {
+      try {
+        return date.toLocaleString()
+      } catch (e) {
+        if (e instanceof RangeError) {
+          return date.toString()
+        } else {
+          throw e
+        }
+      }
+    }
   }
 
   getFormattedDate(now = new Date()): string | undefined {
@@ -111,6 +152,23 @@ export default class RelativeTimeElement extends ExtendedTimeElement implements 
     this.setAttribute('format', value)
   }
 
+  get datetime() {
+    return this.getAttribute('datetime') || ''
+  }
+
+  set datetime(value: string) {
+    this.setAttribute('datetime', value)
+  }
+
+  get date() {
+    const parsed = Date.parse(this.datetime)
+    return Number.isNaN(parsed) ? null : new Date(parsed)
+  }
+
+  set date(value: Date | null) {
+    this.datetime = value?.toISOString() || ''
+  }
+
   connectedCallback(): void {
     nowElements.push(this)
 
@@ -118,7 +176,16 @@ export default class RelativeTimeElement extends ExtendedTimeElement implements 
       updateNowElements()
       updateNowElementsId = window.setInterval(updateNowElements, 60 * 1000)
     }
-    super.connectedCallback()
+
+    const title = this.getFormattedTitle()
+    if (title && !this.hasAttribute('title')) {
+      this.setAttribute('title', title)
+    }
+
+    const text = this.getFormattedDate()
+    if (text) {
+      this.textContent = text
+    }
   }
 
   disconnectedCallback(): void {
@@ -134,7 +201,35 @@ export default class RelativeTimeElement extends ExtendedTimeElement implements 
       }
     }
   }
+
+  // Internal: Refresh the time element's formatted date when an attribute changes.
+  attributeChangedCallback(attrName: string): void {
+    if (attrName === 'title') {
+      this.#customTitle = true
+    }
+    if (!this.#customTitle) {
+      const title = this.getFormattedTitle()
+      if (title) {
+        this.setAttribute('title', title)
+        this.#customTitle = false
+      }
+    }
+
+    const text = this.getFormattedDate()
+    if (text) {
+      this.textContent = text
+    }
+  }
 }
+
+const titleFormatter = makeFormatter({
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+  hour: 'numeric',
+  minute: '2-digit',
+  timeZoneName: 'short'
+})
 
 // Internal: Array tracking all elements attached to the document that need
 // to be updated every minute.
