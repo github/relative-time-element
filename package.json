@@ -15,11 +15,12 @@
     "lint:fix": "npm run lint -- --fix",
     "prebuild": "npm run clean && npm run lint && mkdir dist",
     "bundle": "esbuild --bundle dist/index.js --keep-names --outfile=dist/bundle.js --format=esm",
-    "build": "tsc && npm run bundle",
+    "build": "tsc && npm run bundle && npm run manifest",
     "prepublishOnly": "npm run build",
     "pretest": "npm run build",
     "test": "web-test-runner",
-    "postpublish": "npm publish --ignore-scripts --@github:registry='https://npm.pkg.github.com'"
+    "postpublish": "npm publish --ignore-scripts --@github:registry='https://npm.pkg.github.com'",
+    "manifest": "custom-elements-manifest analyze"
   },
   "prettier": "@github/prettier-config",
   "repository": "github/time-elements",
