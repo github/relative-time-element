@@ -7,7 +7,8 @@
   "types": "dist/index.d.ts",
   "license": "MIT",
   "files": [
-    "dist"
+    "dist",
+    "custom-elements.json"
   ],
   "scripts": {
     "clean": "rm -rf dist",
@@ -15,15 +16,17 @@
     "lint:fix": "npm run lint -- --fix",
     "prebuild": "npm run clean && npm run lint && mkdir dist",
     "bundle": "esbuild --bundle dist/index.js --keep-names --outfile=dist/bundle.js --format=esm",
-    "build": "tsc && npm run bundle",
+    "build": "tsc && npm run bundle && npm run manifest",
     "prepublishOnly": "npm run build",
     "pretest": "npm run build",
     "test": "web-test-runner",
-    "postpublish": "npm publish --ignore-scripts --@github:registry='https://npm.pkg.github.com'"
+    "postpublish": "npm publish --ignore-scripts --@github:registry='https://npm.pkg.github.com'",
+    "manifest": "custom-elements-manifest analyze"
   },
   "prettier": "@github/prettier-config",
   "repository": "github/time-elements",
   "devDependencies": {
+    "@custom-elements-manifest/analyzer": "^0.6.4",
     "@github/prettier-config": "0.0.4",
     "@open-wc/testing": "^3.1.6",
     "@web/dev-server-esbuild": "^0.3.2",
@@ -36,5 +39,6 @@
   },
   "eslintIgnore": [
     "dist/"
-  ]
+  ],
+  "customElements": "custom-elements.json"
 }
