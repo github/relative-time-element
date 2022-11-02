@@ -62,14 +62,14 @@ suite('local-time', function () {
   test('ignores contents if datetime attribute is missing', function () {
     const time = document.createElement('local-time')
     time.setAttribute('year', 'numeric')
-    assert.equal(time.textContent, '')
+    assert.equal(time.shadowRoot.textContent, '')
   })
 
   test('sets formatted contents to format attribute', function () {
     const time = document.createElement('local-time')
     time.setAttribute('datetime', '1970-01-01T00:00:00.000Z')
     time.setAttribute('year', 'numeric')
-    assert.include(['1969', '1970'], time.textContent)
+    assert.include(['1969', '1970'], time.shadowRoot.textContent)
   })
 
   test('updates format when attributes change', function () {
@@ -77,10 +77,10 @@ suite('local-time', function () {
     time.setAttribute('datetime', '1970-01-01T00:00:00.000Z')
 
     time.setAttribute('year', 'numeric')
-    assert.include(['1969', '1970'], time.textContent)
+    assert.include(['1969', '1970'], time.shadowRoot.textContent)
 
     time.setAttribute('year', '2-digit')
-    assert.include(['69', '70'], time.textContent)
+    assert.include(['69', '70'], time.shadowRoot.textContent)
   })
 
   test('sets formatted contents when parsed element is upgraded', function () {
@@ -89,7 +89,7 @@ suite('local-time', function () {
     if ('CustomElements' in window) {
       window.CustomElements.upgradeSubtree(root)
     }
-    assert.include(['1969', '1970'], root.children[0].textContent)
+    assert.include(['1969', '1970'], root.children[0].shadowRoot.textContent)
   })
   ;('Intl' in window ? test : test.skip)('displays time zone name', function () {
     const root = document.createElement('div')
@@ -98,8 +98,8 @@ suite('local-time', function () {
     if ('CustomElements' in window) {
       window.CustomElements.upgradeSubtree(root)
     }
-    assert.match(root.children[0].textContent, /^\d{1,2} (\w+([+-]\d+)?)$/)
-    assert.equal(root.children[0].textContent, '0 GMT+4')
+    assert.match(root.children[0].shadowRoot.textContent, /^\d{1,2} (\w+([+-]\d+)?)$/)
+    assert.equal(root.children[0].shadowRoot.textContent, '0 GMT+4')
   })
 
   test('updates time zone when the `time-zone-name` attribute changes', function () {
@@ -109,10 +109,10 @@ suite('local-time', function () {
     el.setAttribute('time-zone-name', 'short')
 
     fixture.appendChild(el)
-    assert.equal(el.textContent, '1/1/1970, GMT+4')
+    assert.equal(el.shadowRoot.textContent, '1/1/1970, GMT+4')
 
     el.setAttribute('time-zone-name', 'long')
 
-    assert.equal(el.textContent, '1/1/1970, Gulf Standard Time')
+    assert.equal(el.shadowRoot.textContent, '1/1/1970, Gulf Standard Time')
   })
 })

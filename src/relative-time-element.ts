@@ -256,6 +256,11 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     this.datetime = value?.toISOString() || ''
   }
 
+  constructor() {
+    super()
+    if (!this.shadowRoot) this.attachShadow({mode: 'open'})
+  }
+
   connectedCallback(): void {
     this.update()
   }
@@ -273,7 +278,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
   }
 
   update() {
-    const oldText: string = this.textContent || ''
+    const oldText: string = this.shadowRoot!.textContent || ''
     const oldTitle: string = this.getAttribute('title') || ''
     let newTitle: string = oldTitle
     let newText: string = oldText
@@ -288,7 +293,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
 
     newText = this.getFormattedDate(now) || ''
     if (newText) {
-      this.textContent = newText
+      this.shadowRoot!.textContent = newText
     }
 
     if (newText !== oldText || newTitle !== oldTitle) {
