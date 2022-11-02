@@ -1,8 +1,12 @@
 import type {Tense, Format} from './relative-time.js'
 import RelativeTime from './relative-time.js'
+import {DateTimeFormat as DateTimeFormatPonyFill} from './datetimeformat-ponyfill.js'
 import {makeFormatter, localeFromElement} from './utils.js'
 import {isDuration, withinDuration} from './duration.js'
 import {strftime} from './strftime.js'
+
+const supportsIntlDatetime = 'Intl' in window && 'RelativeTimeFormat'
+const DateTimeFormat = supportsIntlDatetime ? Intl.DateTimeFormat : DateTimeFormatPonyFill
 
 export class RelativeTimeUpdatedEvent extends Event {
   constructor(public oldText: string, public newText: string, public oldTitle: string, public newTitle: string) {
@@ -113,18 +117,15 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     if (tense === 'future' || (tense === 'auto' && inFuture && within)) {
       return micro ? relativeTime.microTimeUntil() : relativeTime.timeUntil()
     }
-    if ('Intl' in window && 'DateTimeFormat' in Intl) {
-      const formatter = new Intl.DateTimeFormat(localeFromElement(this), {
-        minute: this.minute,
-        hour: this.hour,
-        day: this.day,
-        month: this.month,
-        year: this.year,
-        timeZoneName: this.timeZoneName
-      })
-      return `${this.prefix} ${formatter.format(date)}`.trim()
-    }
-    return `${this.prefix} ${strftime(date, `%b %e${this.year === 'numeric' ? ', %Y' : ''}`)}`.trim()
+    const formatter = new DateTimeFormat(localeFromElement(this), {
+      minute: this.minute,
+      hour: this.hour,
+      day: this.day,
+      month: this.month,
+      year: this.year,
+      timeZoneName: this.timeZoneName
+    })
+    return `${this.prefix} ${formatter.format(date)}`.trim()
   }
 
   get minute() {
