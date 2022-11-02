@@ -6,28 +6,28 @@ suite('time-until', function () {
     const now = new Date(Date.now() + 10 * 365 * 24 * 60 * 60 * 1000).toISOString()
     const time = document.createElement('time-until')
     time.setAttribute('datetime', now)
-    assert.equal(time.textContent, 'in 10 years')
+    assert.equal(time.shadowRoot.textContent, 'in 10 years')
   })
 
   test('rewrites from now future datetime to minutes ago', function () {
     const now = new Date(Date.now() + 3 * 60 * 1000).toISOString()
     const time = document.createElement('time-until')
     time.setAttribute('datetime', now)
-    assert.equal(time.textContent, 'in 3 minutes')
+    assert.equal(time.shadowRoot.textContent, 'in 3 minutes')
   })
 
   test('rewrites a few seconds from now to now', function () {
     const now = new Date().toISOString()
     const time = document.createElement('time-until')
     time.setAttribute('datetime', now)
-    assert.equal(time.textContent, 'now')
+    assert.equal(time.shadowRoot.textContent, 'now')
   })
 
   test('displays past times as now', function () {
     const now = new Date(Date.now() + 3 * 1000).toISOString()
     const time = document.createElement('time-until')
     time.setAttribute('datetime', now)
-    assert.equal(time.textContent, 'now')
+    assert.equal(time.shadowRoot.textContent, 'now')
   })
 
   test('sets relative contents when parsed element is upgraded', function () {
@@ -37,7 +37,7 @@ suite('time-until', function () {
     if ('CustomElements' in window) {
       window.CustomElements.upgradeSubtree(root)
     }
-    assert.equal(root.children[0].textContent, 'now')
+    assert.equal(root.children[0].shadowRoot.textContent, 'now')
   })
 
   test('micro formats years', function () {
@@ -45,7 +45,7 @@ suite('time-until', function () {
     const time = document.createElement('time-until')
     time.setAttribute('datetime', now)
     time.setAttribute('format', 'micro')
-    assert.equal(time.textContent, '10y')
+    assert.equal(time.shadowRoot.textContent, '10y')
   })
 
   test('micro formats past times', function () {
@@ -53,7 +53,7 @@ suite('time-until', function () {
     const time = document.createElement('time-until')
     time.setAttribute('datetime', now)
     time.setAttribute('format', 'micro')
-    assert.equal(time.textContent, '1m')
+    assert.equal(time.shadowRoot.textContent, '1m')
   })
 
   test('micro formats hours', function () {
@@ -61,7 +61,7 @@ suite('time-until', function () {
     const time = document.createElement('time-until')
     time.setAttribute('datetime', now)
     time.setAttribute('format', 'micro')
-    assert.equal(time.textContent, '1h')
+    assert.equal(time.shadowRoot.textContent, '1h')
   })
 
   test('micro formats days', function () {
@@ -69,6 +69,6 @@ suite('time-until', function () {
     const time = document.createElement('time-until')
     time.setAttribute('datetime', now)
     time.setAttribute('format', 'micro')
-    assert.equal(time.textContent, '1d')
+    assert.equal(time.shadowRoot.textContent, '1d')
   })
 })

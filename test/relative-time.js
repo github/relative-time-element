@@ -47,112 +47,112 @@ suite('relative-time', function () {
     const now = new Date(Date.now() - 3 * 60 * 60 * 24 * 1000).toISOString()
     const time = document.createElement('relative-time')
     time.setAttribute('datetime', now)
-    assert.equal(time.textContent, '3 days ago')
+    assert.equal(time.shadowRoot.textContent, '3 days ago')
   })
 
   test('rewrites from now future datetime to days from now', function () {
     const now = new Date(Date.now() + 3 * 60 * 60 * 24 * 1000).toISOString()
     const time = document.createElement('relative-time')
     time.setAttribute('datetime', now)
-    assert.equal(time.textContent, 'in 3 days')
+    assert.equal(time.shadowRoot.textContent, 'in 3 days')
   })
 
   test('rewrites from now past datetime to yesterday', function () {
     const now = new Date(Date.now() - 1 * 60 * 60 * 24 * 1000).toISOString()
     const time = document.createElement('relative-time')
     time.setAttribute('datetime', now)
-    assert.equal(time.textContent, 'yesterday')
+    assert.equal(time.shadowRoot.textContent, 'yesterday')
   })
 
   test('rewrites from now past datetime to hours ago', function () {
     const now = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString()
     const time = document.createElement('relative-time')
     time.setAttribute('datetime', now)
-    assert.equal(time.textContent, '3 hours ago')
+    assert.equal(time.shadowRoot.textContent, '3 hours ago')
   })
 
   test('rewrites from now future datetime to minutes from now', function () {
     const now = new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString()
     const time = document.createElement('relative-time')
     time.setAttribute('datetime', now)
-    assert.equal(time.textContent, 'in 3 hours')
+    assert.equal(time.shadowRoot.textContent, 'in 3 hours')
   })
 
   test('rewrites from now past datetime to an hour ago', function () {
     const now = new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString()
     const time = document.createElement('relative-time')
     time.setAttribute('datetime', now)
-    assert.equal(time.textContent, '1 hour ago')
+    assert.equal(time.shadowRoot.textContent, '1 hour ago')
   })
 
   test('rewrites from now past datetime to minutes ago', function () {
     const now = new Date(Date.now() - 3 * 60 * 1000).toISOString()
     const time = document.createElement('relative-time')
     time.setAttribute('datetime', now)
-    assert.equal(time.textContent, '3 minutes ago')
+    assert.equal(time.shadowRoot.textContent, '3 minutes ago')
   })
 
   test('rewrites from now future datetime to minutes from now', function () {
     const now = new Date(Date.now() + 3 * 60 * 1000).toISOString()
     const time = document.createElement('relative-time')
     time.setAttribute('datetime', now)
-    assert.equal(time.textContent, 'in 3 minutes')
+    assert.equal(time.shadowRoot.textContent, 'in 3 minutes')
   })
 
   test('rewrites from now past datetime to a minute ago', function () {
     const now = new Date(Date.now() - 1 * 60 * 1000).toISOString()
     const time = document.createElement('relative-time')
     time.setAttribute('datetime', now)
-    assert.equal(time.textContent, '1 minute ago')
+    assert.equal(time.shadowRoot.textContent, '1 minute ago')
   })
 
   test('rewrites a few seconds ago to now', function () {
     const now = new Date().toISOString()
     const time = document.createElement('relative-time')
     time.setAttribute('datetime', now)
-    assert.equal(time.textContent, 'now')
+    assert.equal(time.shadowRoot.textContent, 'now')
   })
 
   test('rewrites a few seconds from now to now', function () {
     const now = new Date().toISOString()
     const time = document.createElement('relative-time')
     time.setAttribute('datetime', now)
-    assert.equal(time.textContent, 'now')
+    assert.equal(time.shadowRoot.textContent, 'now')
   })
 
   test('displays future times as now', function () {
     const now = new Date(Date.now() + 3 * 1000).toISOString()
     const time = document.createElement('relative-time')
     time.setAttribute('datetime', now)
-    assert.equal(time.textContent, 'now')
+    assert.equal(time.shadowRoot.textContent, 'now')
   })
 
   test('displays yesterday', function () {
     const now = new Date(Date.now() - 60 * 60 * 24 * 1000).toISOString()
     const time = document.createElement('relative-time')
     time.setAttribute('datetime', now)
-    assert.equal(time.textContent, 'yesterday')
+    assert.equal(time.shadowRoot.textContent, 'yesterday')
   })
 
   test('displays a day from now', function () {
     const now = new Date(Date.now() + 60 * 60 * 24 * 1000).toISOString()
     const time = document.createElement('relative-time')
     time.setAttribute('datetime', now)
-    assert.equal(time.textContent, 'tomorrow')
+    assert.equal(time.shadowRoot.textContent, 'tomorrow')
   })
 
   test('displays 2 days ago', function () {
     const now = new Date(Date.now() - 2 * 60 * 60 * 24 * 1000).toISOString()
     const time = document.createElement('relative-time')
     time.setAttribute('datetime', now)
-    assert.equal(time.textContent, '2 days ago')
+    assert.equal(time.shadowRoot.textContent, '2 days ago')
   })
 
   test('displays 2 days from now', function () {
     const now = new Date(Date.now() + 2 * 60 * 60 * 24 * 1000).toISOString()
     const time = document.createElement('relative-time')
     time.setAttribute('datetime', now)
-    assert.equal(time.textContent, 'in 2 days')
+    assert.equal(time.shadowRoot.textContent, 'in 2 days')
   })
 
   suite('[threshold]', function () {
@@ -161,7 +161,7 @@ suite('relative-time', function () {
       const time = document.createElement('relative-time')
       time.setAttribute('lang', 'en-US')
       time.setAttribute('datetime', now)
-      assert.match(time.textContent, /on [A-Z][a-z]{2} \d{1,2}/)
+      assert.match(time.shadowRoot.textContent, /on [A-Z][a-z]{2} \d{1,2}/)
     })
 
     test('switches to dates after 30 future days with default threshold', function () {
@@ -169,7 +169,7 @@ suite('relative-time', function () {
       const time = document.createElement('relative-time')
       time.setAttribute('lang', 'en-US')
       time.setAttribute('datetime', now)
-      assert.match(time.textContent, /on [A-Z][a-z]{2} \d{1,2}/)
+      assert.match(time.shadowRoot.textContent, /on [A-Z][a-z]{2} \d{1,2}/)
     })
 
     test('switches to dates after 1 day with P1D threshold', function () {
@@ -178,7 +178,7 @@ suite('relative-time', function () {
       time.setAttribute('lang', 'en-US')
       time.setAttribute('threshold', 'P1D')
       time.setAttribute('datetime', now)
-      assert.match(time.textContent, /on [A-Z][a-z]{2} \d{1,2}/)
+      assert.match(time.shadowRoot.textContent, /on [A-Z][a-z]{2} \d{1,2}/)
     })
 
     test('switches to dates after 30 future days with default threshold', function () {
@@ -186,7 +186,7 @@ suite('relative-time', function () {
       const time = document.createElement('relative-time')
       time.setAttribute('lang', 'en-US')
       time.setAttribute('datetime', now)
-      assert.match(time.textContent, /on [A-Z][a-z]{2} \d{1,2}/)
+      assert.match(time.shadowRoot.textContent, /on [A-Z][a-z]{2} \d{1,2}/)
     })
 
     test('switches to dates after 30 future days with P1D threshold', function () {
@@ -195,7 +195,7 @@ suite('relative-time', function () {
       time.setAttribute('lang', 'en-US')
       time.setAttribute('threshold', 'P1D')
       time.setAttribute('datetime', now)
-      assert.match(time.textContent, /on [A-Z][a-z]{2} \d{1,2}/)
+      assert.match(time.shadowRoot.textContent, /on [A-Z][a-z]{2} \d{1,2}/)
     })
 
     test('uses `prefix` attribute to customise prefix', function () {
@@ -204,7 +204,7 @@ suite('relative-time', function () {
       time.setAttribute('prefix', 'will happen by')
       time.setAttribute('lang', 'en-US')
       time.setAttribute('datetime', now)
-      assert.match(time.textContent, /will happen by [A-Z][a-z]{2} \d{1,2}/)
+      assert.match(time.shadowRoot.textContent, /will happen by [A-Z][a-z]{2} \d{1,2}/)
     })
 
     test('uses `prefix` attribute to customise prefix as empty string', function () {
@@ -213,22 +213,22 @@ suite('relative-time', function () {
       time.setAttribute('prefix', '')
       time.setAttribute('lang', 'en-US')
       time.setAttribute('datetime', now)
-      assert.match(time.textContent, /[A-Z][a-z]{2} \d{1,2}/)
+      assert.match(time.shadowRoot.textContent, /[A-Z][a-z]{2} \d{1,2}/)
     })
   })
 
   test('ignores malformed dates', function () {
     const time = document.createElement('relative-time')
-    time.textContent = 'Jun 30'
+    time.shadowRoot.textContent = 'Jun 30'
     time.setAttribute('datetime', 'bogus')
-    assert.equal(time.textContent, 'Jun 30')
+    assert.equal(time.shadowRoot.textContent, 'Jun 30')
   })
 
   test('ignores blank dates', function () {
     const time = document.createElement('relative-time')
-    time.textContent = 'Jun 30'
+    time.shadowRoot.textContent = 'Jun 30'
     time.setAttribute('datetime', '')
-    assert.equal(time.textContent, 'Jun 30')
+    assert.equal(time.shadowRoot.textContent, 'Jun 30')
   })
 
   test('ignores removed dates', function () {
@@ -236,10 +236,10 @@ suite('relative-time', function () {
     const now = new Date().toISOString()
 
     time.setAttribute('datetime', now)
-    assert.equal(time.textContent, 'now')
+    assert.equal(time.shadowRoot.textContent, 'now')
 
     time.removeAttribute('datetime')
-    assert.equal(time.textContent, 'now')
+    assert.equal(time.shadowRoot.textContent, 'now')
   })
 
   test('sets relative contents when parsed element is upgraded', function () {
@@ -249,24 +249,24 @@ suite('relative-time', function () {
     if ('CustomElements' in window) {
       window.CustomElements.upgradeSubtree(root)
     }
-    assert.equal(root.children[0].textContent, 'now')
+    assert.equal(root.children[0].shadowRoot.textContent, 'now')
   })
 
   test('allows for use of custom formats', function () {
     const time = document.createElement('relative-time')
-    time.textContent = 'Jun 30'
+    time.shadowRoot.textContent = 'Jun 30'
     time.setAttribute('datetime', '2022-01-10T12:00:00')
     time.setAttribute('format', '%Y')
-    assert.equal(time.textContent, '2022')
+    assert.equal(time.shadowRoot.textContent, '2022')
   })
 
   test('ignores blank formats', function () {
     const time = document.createElement('relative-time')
-    time.textContent = 'Jun 30'
+    time.shadowRoot.textContent = 'Jun 30'
     time.setAttribute('datetime', '2022-01-10T12:00:00')
     time.setAttribute('lang', 'en-US')
     time.setAttribute('format', '')
-    assert.equal(time.textContent, 'on Jan 10')
+    assert.equal(time.shadowRoot.textContent, 'on Jan 10')
   })
 
   const esLangSupport = (function () {
@@ -303,7 +303,7 @@ suite('relative-time', function () {
       const time = document.createElement('relative-time')
       time.setAttribute('tense', 'past')
       time.setAttribute('datetime', now)
-      assert.equal(time.textContent, '10 years ago')
+      assert.equal(time.shadowRoot.textContent, '10 years ago')
     })
 
     test('rewrites from now past datetime to minutes ago', function () {
@@ -311,7 +311,7 @@ suite('relative-time', function () {
       const time = document.createElement('relative-time')
       time.setAttribute('tense', 'past')
       time.setAttribute('datetime', now)
-      assert.equal(time.textContent, '3 minutes ago')
+      assert.equal(time.shadowRoot.textContent, '3 minutes ago')
     })
 
     test('rewrites a few seconds ago to now', function () {
@@ -319,7 +319,7 @@ suite('relative-time', function () {
       const time = document.createElement('relative-time')
       time.setAttribute('tense', 'past')
       time.setAttribute('datetime', now)
-      assert.equal(time.textContent, 'now')
+      assert.equal(time.shadowRoot.textContent, 'now')
     })
 
     test('displays future times as now', function () {
@@ -327,7 +327,7 @@ suite('relative-time', function () {
       const time = document.createElement('relative-time')
       time.setAttribute('tense', 'past')
       time.setAttribute('datetime', now)
-      assert.equal(time.textContent, 'now')
+      assert.equal(time.shadowRoot.textContent, 'now')
     })
 
     test('sets relative contents when parsed element is upgraded', function () {
@@ -337,7 +337,7 @@ suite('relative-time', function () {
       if ('CustomElements' in window) {
         window.CustomElements.upgradeSubtree(root)
       }
-      assert.equal(root.children[0].textContent, 'now')
+      assert.equal(root.children[0].shadowRoot.textContent, 'now')
     })
 
     test('rewrites from now past datetime to months ago', function () {
@@ -345,7 +345,7 @@ suite('relative-time', function () {
       const time = document.createElement('relative-time')
       time.setAttribute('tense', 'past')
       time.setAttribute('datetime', now)
-      assert.equal(time.textContent, '3 months ago')
+      assert.equal(time.shadowRoot.textContent, '3 months ago')
     })
 
     test('rewrites relative-time datetimes < 18 months as "months ago"', function () {
@@ -354,7 +354,7 @@ suite('relative-time', function () {
       const timeElement = document.createElement('relative-time')
       timeElement.setAttribute('tense', 'past')
       timeElement.setAttribute('datetime', then)
-      assert.equal(timeElement.textContent, '15 months ago')
+      assert.equal(timeElement.shadowRoot.textContent, '15 months ago')
     })
 
     test('rewrites relative-time datetimes >= 18 months as "years ago"', function () {
@@ -363,7 +363,7 @@ suite('relative-time', function () {
       const timeElement = document.createElement('relative-time')
       timeElement.setAttribute('tense', 'past')
       timeElement.setAttribute('datetime', then)
-      assert.equal(timeElement.textContent, '2 years ago')
+      assert.equal(timeElement.shadowRoot.textContent, '2 years ago')
     })
 
     test('micro formats years', function () {
@@ -372,7 +372,7 @@ suite('relative-time', function () {
       time.setAttribute('tense', 'past')
       time.setAttribute('datetime', now)
       time.setAttribute('format', 'micro')
-      assert.equal(time.textContent, '10y')
+      assert.equal(time.shadowRoot.textContent, '10y')
     })
 
     test('micro formats future times', function () {
@@ -381,7 +381,7 @@ suite('relative-time', function () {
       time.setAttribute('tense', 'past')
       time.setAttribute('datetime', now)
       time.setAttribute('format', 'micro')
-      assert.equal(time.textContent, '1m')
+      assert.equal(time.shadowRoot.textContent, '1m')
     })
 
     test('micro formats hours', function () {
@@ -390,7 +390,7 @@ suite('relative-time', function () {
       time.setAttribute('tense', 'past')
       time.setAttribute('datetime', now)
       time.setAttribute('format', 'micro')
-      assert.equal(time.textContent, '1h')
+      assert.equal(time.shadowRoot.textContent, '1h')
     })
 
     test('micro formats days', function () {
@@ -399,7 +399,7 @@ suite('relative-time', function () {
       time.setAttribute('tense', 'past')
       time.setAttribute('datetime', now)
       time.setAttribute('format', 'micro')
-      assert.equal(time.textContent, '1d')
+      assert.equal(time.shadowRoot.textContent, '1d')
     })
   })
 
@@ -409,7 +409,7 @@ suite('relative-time', function () {
       const time = document.createElement('relative-time')
       time.setAttribute('tense', 'future')
       time.setAttribute('datetime', now)
-      assert.equal(time.textContent, 'in 10 years')
+      assert.equal(time.shadowRoot.textContent, 'in 10 years')
     })
 
     test('rewrites from now future datetime to minutes ago', function () {
@@ -417,7 +417,7 @@ suite('relative-time', function () {
       const time = document.createElement('relative-time')
       time.setAttribute('tense', 'future')
       time.setAttribute('datetime', now)
-      assert.equal(time.textContent, 'in 3 minutes')
+      assert.equal(time.shadowRoot.textContent, 'in 3 minutes')
     })
 
     test('rewrites a few seconds from now to now', function () {
@@ -425,7 +425,7 @@ suite('relative-time', function () {
       const time = document.createElement('relative-time')
       time.setAttribute('tense', 'future')
       time.setAttribute('datetime', now)
-      assert.equal(time.textContent, 'now')
+      assert.equal(time.shadowRoot.textContent, 'now')
     })
 
     test('displays past times as now', function () {
@@ -433,7 +433,7 @@ suite('relative-time', function () {
       const time = document.createElement('relative-time')
       time.setAttribute('tense', 'future')
       time.setAttribute('datetime', now)
-      assert.equal(time.textContent, 'now')
+      assert.equal(time.shadowRoot.textContent, 'now')
     })
 
     test('sets relative contents when parsed element is upgraded', function () {
@@ -443,7 +443,7 @@ suite('relative-time', function () {
       if ('CustomElements' in window) {
         window.CustomElements.upgradeSubtree(root)
       }
-      assert.equal(root.children[0].textContent, 'now')
+      assert.equal(root.children[0].shadowRoot.textContent, 'now')
     })
 
     test('micro formats years', function () {
@@ -452,7 +452,7 @@ suite('relative-time', function () {
       time.setAttribute('tense', 'future')
       time.setAttribute('datetime', now)
       time.setAttribute('format', 'micro')
-      assert.equal(time.textContent, '10y')
+      assert.equal(time.shadowRoot.textContent, '10y')
     })
 
     test('micro formats past times', function () {
@@ -461,7 +461,7 @@ suite('relative-time', function () {
       time.setAttribute('tense', 'future')
       time.setAttribute('datetime', now)
       time.setAttribute('format', 'micro')
-      assert.equal(time.textContent, '1m')
+      assert.equal(time.shadowRoot.textContent, '1m')
     })
 
     test('micro formats hours', function () {
@@ -470,7 +470,7 @@ suite('relative-time', function () {
       time.setAttribute('tense', 'future')
       time.setAttribute('datetime', now)
       time.setAttribute('format', 'micro')
-      assert.equal(time.textContent, '1h')
+      assert.equal(time.shadowRoot.textContent, '1h')
     })
 
     test('micro formats days', function () {
@@ -479,7 +479,7 @@ suite('relative-time', function () {
       time.setAttribute('tense', 'future')
       time.setAttribute('datetime', now)
       time.setAttribute('format', 'micro')
-      assert.equal(time.textContent, '1d')
+      assert.equal(time.shadowRoot.textContent, '1d')
     })
   })
 
@@ -493,7 +493,7 @@ suite('relative-time', function () {
       time.setAttribute('month', 'short')
       time.setAttribute('year', 'numeric')
 
-      assert.include(['Dec 31, 1969', '31 Dec 1969', 'Jan 1, 1970', '1 Jan 1970'], time.textContent)
+      assert.include(['Dec 31, 1969', '31 Dec 1969', 'Jan 1, 1970', '1 Jan 1970'], time.shadowRoot.textContent)
     })
 
     test('getFormattedDate with empty year attribute', function () {
@@ -505,7 +505,7 @@ suite('relative-time', function () {
       time.setAttribute('day', 'numeric')
       time.setAttribute('month', 'short')
 
-      assert.include(['Dec 31', '31 Dec', 'Jan 1', '1 Jan'], time.textContent)
+      assert.include(['Dec 31', '31 Dec', 'Jan 1', '1 Jan'], time.shadowRoot.textContent)
     })
 
     test('getFormattedDate with only time attributes', function () {
@@ -532,7 +532,7 @@ suite('relative-time', function () {
       time.setAttribute('year', 'numeric')
       time.setAttribute('threshold', '0')
       time.setAttribute('prefix', '')
-      assert.equal(time.textContent, '')
+      assert.equal(time.shadowRoot.textContent, '')
     })
 
     test('can provide just year', function () {
@@ -543,7 +543,7 @@ suite('relative-time', function () {
       time.setAttribute('year', 'numeric')
       time.setAttribute('threshold', '0')
       time.setAttribute('prefix', '')
-      assert.include(['1969', '1970'], time.textContent)
+      assert.include(['1969', '1970'], time.shadowRoot.textContent)
     })
 
     test('updates format when attributes change', function () {
@@ -555,10 +555,10 @@ suite('relative-time', function () {
       time.setAttribute('month', '')
 
       time.setAttribute('year', 'numeric')
-      assert.include(['1969', '1970'], time.textContent)
+      assert.include(['1969', '1970'], time.shadowRoot.textContent)
 
       time.setAttribute('year', '2-digit')
-      assert.include(['69', '70'], time.textContent)
+      assert.include(['69', '70'], time.shadowRoot.textContent)
     })
 
     test('sets formatted contents when parsed element is upgraded', function () {
@@ -568,7 +568,7 @@ suite('relative-time', function () {
       if ('CustomElements' in window) {
         window.CustomElements.upgradeSubtree(root)
       }
-      assert.include(['1969', '1970'], root.children[0].textContent)
+      assert.include(['1969', '1970'], root.children[0].shadowRoot.textContent)
     })
     ;('Intl' in window ? test : test.skip)('displays time zone name', function () {
       const root = document.createElement('div')
@@ -577,8 +577,8 @@ suite('relative-time', function () {
       if ('CustomElements' in window) {
         window.CustomElements.upgradeSubtree(root)
       }
-      assert.match(root.children[0].textContent, /^\d{1,2} (\w+([+-]\d+)?)$/)
-      assert.equal(root.children[0].textContent, '0 GMT+4')
+      assert.match(root.children[0].shadowRoot.textContent, /^\d{1,2} (\w+([+-]\d+)?)$/)
+      assert.equal(root.children[0].shadowRoot.textContent, '0 GMT+4')
     })
 
     test('updates time zone when the `time-zone-name` attribute changes', function () {
@@ -592,11 +592,11 @@ suite('relative-time', function () {
       el.setAttribute('prefix', '')
 
       fixture.appendChild(el)
-      assert.equal(el.textContent, '1/1/1970, GMT+4')
+      assert.equal(el.shadowRoot.textContent, '1/1/1970, GMT+4')
 
       el.setAttribute('time-zone-name', 'long')
 
-      assert.equal(el.textContent, '1/1/1970, Gulf Standard Time')
+      assert.equal(el.shadowRoot.textContent, '1/1/1970, Gulf Standard Time')
     })
   })
 
@@ -723,7 +723,7 @@ suite('relative-time', function () {
         time.setAttribute('tense', tense)
         time.setAttribute('datetime', datetime)
         time.setAttribute('format', format)
-        assert.equal(time.textContent, expected)
+        assert.equal(time.shadowRoot.textContent, expected)
       })
     }
   })
