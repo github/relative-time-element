@@ -66,19 +66,19 @@ So, a relative date phrase is used for up to a month and then the actual date is
 
 #### Attributes
 
-| Property Name  | Attribute Name   | Possible Values                                                                    | Default Value          |
-|:--------------:|:----------------:|:----------------------------------------------------------------------------------:|:----------------------:|
-| `datetime`     | `datetime`       | `string`                                                                           | -                      |
-| `date`         | -                | `Date | null`                                                                      | -                      |
-| `tense`        | `tense`          | `'auto'|'past'|'future'`                                                           | `'auto'`               |
-| `threshold`    | `threshold`      | `string`                                                                           | `'P30D'`               |
-| `prefix`       | `prefix`         | `string`                                                                           | `'on'`                 |
-| `minute`       | `minute`         | `'numeric'|'2-digit'|undefined`                                                    | `undefined`            |
-| `hour`         | `hour`           | `'numeric'|'2-digit'|undefined`                                                    | `undefined`            |
-| `day`          | `day`            | `'numeric'|'2-digit'|undefined`                                                    | `'numeric'`            |
-| `month`        | `month`          | `'numeric'|'2-digit'|'short'|'long'|'narrow'|undefined`                            | `'short'`              |
-| `year`         | `year`           | `'numeric'|'2-digit'|undefined`                                                    | `'numeric'`<sup>*</sup>|
-| `timeZoneName` | `time-zone-name` | `'long'|'short'|'shortOffset'|'longOffset'|'shortGeneric'|'longGeneric'|undefined` | `undefined`            |
+| Property Name  | Attribute Name   | Possible Values                                                                          | Default Value          |
+|:---------------|:-----------------|:-----------------------------------------------------------------------------------------|:-----------------------|
+| `datetime`     | `datetime`       | `string`                                                                                 | -                      |
+| `date`         | -                | `Date \| null`                                                                           | -                      |
+| `tense`        | `tense`          | `'auto'\|'past'\|'future'`                                                               | `'auto'`               |
+| `threshold`    | `threshold`      | `string`                                                                                 | `'P30D'`               |
+| `prefix`       | `prefix`         | `string`                                                                                 | `'on'`                 |
+| `minute`       | `minute`         | `'numeric'\|'2-digit'\|undefined`                                                        | `undefined`            |
+| `hour`         | `hour`           | `'numeric'\|'2-digit'\|undefined`                                                        | `undefined`            |
+| `day`          | `day`            | `'numeric'\|'2-digit'\|undefined`                                                        | `'numeric'`            |
+| `month`        | `month`          | `'numeric'\|'2-digit'\|'short'\|'long'\|'narrow'\|undefined`                             | `'short'`              |
+| `year`         | `year`           | `'numeric'\|'2-digit'\|undefined`                                                        | `'numeric'`<sup>*</sup>|
+| `timeZoneName` | `time-zone-name` | `'long'\|'short'\|'shortOffset'\|'longOffset'\|'shortGeneric'\|'longGeneric'\|undefined` | `undefined`            |
 
 <sup>*</sup>: If unspecified, `year` will return `'numeric'` if `datetime` represents the same year as the current year. It will return `undefined` if unspecified and if `datetime` represents a different year to the current year.
 
