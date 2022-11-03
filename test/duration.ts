@@ -50,7 +50,7 @@ suite('duration', function () {
     ])
     for (const {input, expected} of tests) {
       test(`${referenceDate} -> ${input} -> ${expected}`, () => {
-        assert.equal(applyDuration(new Date(referenceDate), input)?.toISOString(), expected)
+        assert.equal(applyDuration(new Date(referenceDate), Duration.from(input))?.toISOString(), expected)
       })
     }
   })
