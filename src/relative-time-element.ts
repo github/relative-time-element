@@ -1,7 +1,6 @@
 import DurationFormat from './relative-time.js'
 import {DateTimeFormat as DateTimeFormatPonyFill} from './datetimeformat-ponyfill.js'
 import {RelativeTimeFormat as RelativeTimeFormatPonyfill} from './relative-time-ponyfill.js'
-import {makeFormatter, localeFromElement} from './utils.js'
 import {isDuration, withinDuration} from './duration.js'
 import {strftime} from './strftime.js'
 
@@ -61,6 +60,10 @@ const dateObserver = new (class {
 export default class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFormatOptions {
   #customTitle = false
 
+  get #lang() {
+    return this.closest('[lang]')?.getAttribute('lang') ?? 'default'
+  }
+
   static get observedAttributes() {
     return [
       'datetime',
@@ -89,20 +92,14 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     const date = this.date
     if (!date) return
 
-    const formatter = titleFormatter()
-    if (formatter) {
-      return formatter.format(date)
-    } else {
-      try {
-        return date.toLocaleString()
-      } catch (e) {
-        if (e instanceof RangeError) {
-          return date.toString()
-        } else {
-          throw e
-        }
-      }
-    }
+    return new DateTimeFormat(this.#lang, {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      timeZoneName: 'short'
+    }).format(date)
   }
 
   getFormattedDate(now = new Date()): string | undefined {
@@ -116,7 +113,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     const micro = format === 'micro'
     const inFuture = now.getTime() < date.getTime()
     const within = withinDuration(now, date, this.threshold)
-    const locale = localeFromElement(this)
+    const locale = this.#lang
     const durationFormat = new DurationFormat(date)
     const relativeFormat = new RelativeTimeFormat(locale, {numeric: 'auto'})
 
@@ -324,15 +321,6 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     }
   }
 }
-
-const titleFormatter = makeFormatter({
-  day: 'numeric',
-  month: 'short',
-  year: 'numeric',
-  hour: 'numeric',
-  minute: '2-digit',
-  timeZoneName: 'short'
-})
 
 // Public: RelativeTimeElement constructor.
 //
