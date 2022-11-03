@@ -1,12 +1,18 @@
-import type {Tense, Format} from './relative-time.js'
-import RelativeTime from './relative-time.js'
+import DurationFormat from './relative-time.js'
 import {DateTimeFormat as DateTimeFormatPonyFill} from './datetimeformat-ponyfill.js'
+import {RelativeTimeFormat as RelativeTimeFormatPonyfill} from './relative-time-ponyfill.js'
 import {makeFormatter, localeFromElement} from './utils.js'
 import {isDuration, withinDuration} from './duration.js'
 import {strftime} from './strftime.js'
 
-const supportsIntlDatetime = 'Intl' in window && 'RelativeTimeFormat'
+const supportsIntlDatetime = 'Intl' in window && 'DateTimeFormat'
 const DateTimeFormat = supportsIntlDatetime ? Intl.DateTimeFormat : DateTimeFormatPonyFill
+
+const supportsIntlRelativeTime = 'Intl' in window && 'RelativeTimeFormat'
+const RelativeTimeFormat = supportsIntlRelativeTime ? Intl.RelativeTimeFormat : RelativeTimeFormatPonyfill
+
+export type Format = 'auto' | 'micro' | string
+export type Tense = 'auto' | 'past' | 'future'
 
 export class RelativeTimeUpdatedEvent extends Event {
   constructor(public oldText: string, public newText: string, public oldTitle: string, public newTitle: string) {
@@ -110,14 +116,21 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     const micro = format === 'micro'
     const inFuture = now.getTime() < date.getTime()
     const within = withinDuration(now, date, this.threshold)
-    const relativeTime = new RelativeTime(date, localeFromElement(this))
+    const locale = localeFromElement(this)
+    const durationFormat = new DurationFormat(date)
+    const relativeFormat = new RelativeTimeFormat(locale, {numeric: 'auto'})
+
     if (tense === 'past' || (tense === 'auto' && !inFuture && within)) {
-      return micro ? relativeTime.microTimeAgo() : relativeTime.timeAgo()
+      const [int, unit] = micro ? durationFormat.microTimeAgo() : durationFormat.timeAgo()
+      if (micro) return `${int}${unit[0]}`
+      return relativeFormat.format(int, unit)
     }
     if (tense === 'future' || (tense === 'auto' && inFuture && within)) {
-      return micro ? relativeTime.microTimeUntil() : relativeTime.timeUntil()
+      const [int, unit] = micro ? durationFormat.microTimeUntil() : durationFormat.timeUntil()
+      if (micro) return `${int}${unit[0]}`
+      return relativeFormat.format(int, unit)
     }
-    const formatter = new DateTimeFormat(localeFromElement(this), {
+    const formatter = new DateTimeFormat(locale, {
       minute: this.minute,
       hour: this.hour,
       day: this.day,
