@@ -1,4 +1,4 @@
-import {RelativeTime as RelativeTimePonyfill} from './relative-time-ponyfill.js'
+import {RelativeTimeFormat} from './relative-time-ponyfill.js'
 
 export type Format = 'auto' | 'micro' | string
 export type Tense = 'auto' | 'past' | 'future'
@@ -134,6 +134,6 @@ function formatRelativeTime(locale: string, value: number, unit: Intl.RelativeTi
       }
     }
   }
-  formatter ||= new RelativeTimePonyfill()
+  formatter ||= new RelativeTimeFormat()
   return formatter.format(value, unit)
 }

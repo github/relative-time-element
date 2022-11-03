@@ -1,4 +1,4 @@
-export class RelativeTime implements Intl.RelativeTimeFormat {
+export class RelativeTimeFormat implements Intl.RelativeTimeFormat {
   formatToParts() {
     return []
   }

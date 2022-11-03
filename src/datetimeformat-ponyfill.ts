@@ -10,10 +10,15 @@ export class DateTimeFormat implements Intl.DateTimeFormat {
       weekday: options.weekday,
       minute: options.minute,
       hour: options.hour,
-      day: options.day ?? '2-digit',
-      month: options.month ?? '2-digit',
-      year: options.year ?? 'numeric',
+      day: options.day,
+      month: options.month,
+      year: options.year,
       timeZone: options.timeZone ?? ''
+    }
+    if (!Object.keys(options).length) {
+      this.#options.day = '2-digit'
+      this.#options.month = '2-digit'
+      this.#options.year = 'numeric'
     }
   }
 
@@ -36,21 +41,26 @@ export class DateTimeFormat implements Intl.DateTimeFormat {
     if (weekday === 'long') str += '%A'
     if (weekday === 'short') str += '%a'
     if (weekday === 'narrow') str += '%a'
-    if (month === 'numeric') str += ' %m'
-    if (month === '2-digit') str += ' %m'
-    if (month === 'long') str += ' %B'
-    if (month === 'short') str += ' %b'
-    if (month === 'narrow') str += ' %b'
-    if (day === 'numeric') str += ' %e'
-    if (day === '2-digit') str += ' %d'
-    if (year === 'numeric') str += ', %Y'
-    if (year === '2-digit') str += ', %y'
-    if (hour === 'numeric') str += ' %H'
-    if (hour === '2-digit') str += ' %H'
+    if ((month === 'numeric' || month === '2-digit') && day && year) {
+      str += `${weekday ? ', ' : ''}%m/%d/%${year === '2-digit' ? 'y' : 'Y'}`
+    } else {
+      if (month === 'numeric') str += `${weekday ? ', ' : ''}%m`
+      if (month === '2-digit') str += `${weekday ? ', ' : ''}%m`
+      if (month === 'long') str += `${weekday ? ', ' : ''}%B`
+      if (month === 'short') str += `${weekday ? ', ' : ''}%b`
+      if (month === 'narrow') str += `${weekday ? ', ' : ''}%b`
+      if (day === 'numeric') str += ' %e'
+      if (day === '2-digit') str += ' %d'
+      if (year === 'numeric') str += ', %Y'
+      if (year === '2-digit') str += ', %y'
+    }
+    if (hour === 'numeric') str += `${str ? ',' : ''}%l`
+    if (hour === '2-digit') str += `${str ? ', ' : ''}%H`
     if (minute === 'numeric') str += `${hour ? ':' : ''}%M`
     if (minute === '2-digit') str += `${hour ? ':' : ''}%M`
     if (second === 'numeric') str += `${hour ? ':' : ''}%S`
     if (second === '2-digit') str += `${hour || minute ? ':' : ''}%S`
+    if (hour) str += ' %p'
 
     return strftime(new Date(value), str.trim())
   }
