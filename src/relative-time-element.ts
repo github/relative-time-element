@@ -129,6 +129,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
       return relativeFormat.format(int, unit)
     }
     const formatter = new DateTimeFormat(locale, {
+      second: this.second,
       minute: this.minute,
       hour: this.hour,
       day: this.day,
@@ -137,6 +138,15 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
       timeZoneName: this.timeZoneName
     })
     return `${this.prefix} ${formatter.format(date)}`.trim()
+  }
+
+  get second() {
+    const second = this.getAttribute('second')
+    if (second === 'numeric' || second === '2-digit') return second
+  }
+
+  set second(value: 'numeric' | '2-digit' | undefined) {
+    this.setAttribute('second', value || '')
   }
 
   get minute() {
