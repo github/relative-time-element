@@ -73,8 +73,10 @@ So, a relative date phrase is used for up to a month and then the actual date is
 | `tense`        | `tense`          | `'auto'\|'past'\|'future'`                                                               | `'auto'`               |
 | `threshold`    | `threshold`      | `string`                                                                                 | `'P30D'`               |
 | `prefix`       | `prefix`         | `string`                                                                                 | `'on'`                 |
+| `second`       | `second`         | `'numeric'\|'2-digit'\|undefined`                                                        | `undefined`            |
 | `minute`       | `minute`         | `'numeric'\|'2-digit'\|undefined`                                                        | `undefined`            |
 | `hour`         | `hour`           | `'numeric'\|'2-digit'\|undefined`                                                        | `undefined`            |
+| `weekday`      | `weekday`        | `'short'\|'long'\|'narrow'\|undefined`                                                   | `undefined`            |
 | `day`          | `day`            | `'numeric'\|'2-digit'\|undefined`                                                        | `'numeric'`            |
 | `month`        | `month`          | `'numeric'\|'2-digit'\|'short'\|'long'\|'narrow'\|undefined`                             | `'short'`              |
 | `year`         | `year`           | `'numeric'\|'2-digit'\|undefined`                                                        | `'numeric'`<sup>*</sup>|
@@ -148,7 +150,7 @@ When formatting an absolute date (see above `threshold` for more details) it can
 </relative-time>
 ```
 
-##### minute, hour, day, month, year, timeZoneName
+##### second, minute, hour, weekday, day, month, year, timeZoneName
 
 For dates outside of the specified `threshold`, the formatting of the date can be configured using these attributes. The values for these attributes are passed to [Intl.DateTimeFormat](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat):
 

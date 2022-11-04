@@ -1,4 +1,4 @@
-import DurationFormat from './relative-time.js'
+import {microTimeAgo, microTimeUntil, timeUntil, timeAgo} from './duration-format.js'
 import {DateTimeFormat as DateTimeFormatPonyFill} from './datetimeformat-ponyfill.js'
 import {RelativeTimeFormat as RelativeTimeFormatPonyfill} from './relative-time-ponyfill.js'
 import {isDuration, withinDuration} from './duration.js'
@@ -64,22 +64,25 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     return this.closest('[lang]')?.getAttribute('lang') ?? 'default'
   }
 
+  #renderRoot: Node = this.shadowRoot ? this.shadowRoot : this.attachShadow ? this.attachShadow({mode: 'open'}) : this
+
   static get observedAttributes() {
     return [
-      'datetime',
-      'day',
-      'format',
-      'lang',
-      'hour',
-      'minute',
-      'month',
       'second',
-      'title',
+      'minute',
+      'hour',
       'weekday',
+      'day',
+      'month',
       'year',
-      'tense',
       'time-zone-name',
-      'prefix'
+      'prefix',
+      'threhsold',
+      'tense',
+      'format',
+      'datetime',
+      'lang',
+      'title'
     ]
   }
 
@@ -114,28 +117,38 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     const inFuture = now.getTime() < date.getTime()
     const within = withinDuration(now, date, this.threshold)
     const locale = this.#lang
-    const durationFormat = new DurationFormat(date)
     const relativeFormat = new RelativeTimeFormat(locale, {numeric: 'auto'})
 
     if (tense === 'past' || (tense === 'auto' && !inFuture && within)) {
-      const [int, unit] = micro ? durationFormat.microTimeAgo() : durationFormat.timeAgo()
+      const [int, unit] = micro ? microTimeAgo(date) : timeAgo(date)
       if (micro) return `${int}${unit[0]}`
       return relativeFormat.format(int, unit)
     }
     if (tense === 'future' || (tense === 'auto' && inFuture && within)) {
-      const [int, unit] = micro ? durationFormat.microTimeUntil() : durationFormat.timeUntil()
+      const [int, unit] = micro ? microTimeUntil(date) : timeUntil(date)
       if (micro) return `${int}${unit[0]}`
       return relativeFormat.format(int, unit)
     }
     const formatter = new DateTimeFormat(locale, {
+      second: this.second,
       minute: this.minute,
       hour: this.hour,
+      weekday: this.weekday,
       day: this.day,
       month: this.month,
       year: this.year,
       timeZoneName: this.timeZoneName
     })
     return `${this.prefix} ${formatter.format(date)}`.trim()
+  }
+
+  get second() {
+    const second = this.getAttribute('second')
+    if (second === 'numeric' || second === '2-digit') return second
+  }
+
+  set second(value: 'numeric' | '2-digit' | undefined) {
+    this.setAttribute('second', value || '')
   }
 
   get minute() {
@@ -154,6 +167,15 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
 
   set hour(value: 'numeric' | '2-digit' | undefined) {
     this.setAttribute('hour', value || '')
+  }
+
+  get weekday() {
+    const weekday = this.getAttribute('weekday')
+    if (weekday === 'long' || weekday === 'short' || weekday === 'narrow') return weekday
+  }
+
+  set weekday(value: 'short' | 'long' | 'narrow' | undefined) {
+    this.setAttribute('weekday', value || '')
   }
 
   get day() {
@@ -267,11 +289,6 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     this.datetime = value?.toISOString() || ''
   }
 
-  constructor() {
-    super()
-    if (!this.shadowRoot) this.attachShadow({mode: 'open'})
-  }
-
   connectedCallback(): void {
     this.update()
   }
@@ -289,7 +306,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
   }
 
   update() {
-    const oldText: string = this.shadowRoot!.textContent || ''
+    const oldText: string = this.#renderRoot.textContent || ''
     const oldTitle: string = this.getAttribute('title') || ''
     let newTitle: string = oldTitle
     let newText: string = oldText
@@ -304,7 +321,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
 
     newText = this.getFormattedDate(now) || ''
     if (newText) {
-      this.shadowRoot!.textContent = newText
+      this.#renderRoot.textContent = newText
     }
 
     if (newText !== oldText || newTitle !== oldTitle) {
