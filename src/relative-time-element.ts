@@ -66,20 +66,21 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
 
   static get observedAttributes() {
     return [
-      'datetime',
-      'day',
-      'format',
-      'lang',
-      'hour',
-      'minute',
-      'month',
       'second',
-      'title',
+      'minute',
+      'hour',
       'weekday',
+      'day',
+      'month',
       'year',
-      'tense',
       'time-zone-name',
-      'prefix'
+      'prefix',
+      'threhsold',
+      'tense',
+      'format',
+      'datetime',
+      'lang',
+      'title'
     ]
   }
 
