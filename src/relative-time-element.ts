@@ -1,4 +1,4 @@
-import DurationFormat from './relative-time.js'
+import DurationFormat from './duration-format.js'
 import {DateTimeFormat as DateTimeFormatPonyFill} from './datetimeformat-ponyfill.js'
 import {RelativeTimeFormat as RelativeTimeFormatPonyfill} from './relative-time-ponyfill.js'
 import {isDuration, withinDuration} from './duration.js'

@@ -1,6 +1,6 @@
 export type Unit = 'second' | 'minute' | 'hour' | 'day' | 'month' | 'year'
 
-export default class RelativeTime {
+export default class DurationFormat {
   date: Date
 
   constructor(date: Date) {
