@@ -3,7 +3,6 @@ import {Duration, applyDuration, withinDuration} from '../src/duration.ts'
 import {Temporal} from '@js-temporal/polyfill'
 
 suite('duration', function () {
-
   suite('Duration class', () => {
     const tests = new Set([
       {input: 'P4Y', years: 4},
