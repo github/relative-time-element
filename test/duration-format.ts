@@ -1,5 +1,5 @@
 import {assert} from '@open-wc/testing'
-import {DurationFormat} from '../src/duration-format.js'
+import {timeUntil} from '../src/duration-format.js'
 
 suite('duration format', function () {
   let dateNow
@@ -33,18 +33,18 @@ suite('duration format', function () {
   const tests = new Set([
     // Same as the current time
     // Dates in the future
-    {method: 'timeUntil', datetime: '2022-10-24T15:46:00.000Z', expected: [1, 'hour']},
-    {method: 'timeUntil', datetime: '2022-10-24T16:00:00.000Z', expected: [1, 'hour']},
-    {method: 'timeUntil', datetime: '2022-10-24T16:15:00.000Z', expected: [1, 'hour']},
-    {method: 'timeUntil', datetime: '2022-10-24T16:31:00.000Z', expected: [2, 'hour']},
-    {method: 'timeUntil', datetime: '2022-10-30T14:46:00.000Z', expected: [6, 'day']},
-    {method: 'timeUntil', datetime: '2022-11-24T14:46:00.000Z', expected: [1, 'month']},
-    {method: 'timeUntil', datetime: '2023-10-23T14:46:00.000Z', expected: [1, 'year']},
-    {method: 'timeUntil', datetime: '2023-10-24T14:46:00.000Z', expected: [1, 'year']},
-    {method: 'timeUntil', datetime: '2024-03-31T14:46:00.000Z', expected: [1, 'year']},
-    {method: 'timeUntil', datetime: '2024-04-01T14:46:00.000Z', expected: [2, 'year']},
+    {method: timeUntil, datetime: '2022-10-24T15:46:00.000Z', expected: [1, 'hour']},
+    {method: timeUntil, datetime: '2022-10-24T16:00:00.000Z', expected: [1, 'hour']},
+    {method: timeUntil, datetime: '2022-10-24T16:15:00.000Z', expected: [1, 'hour']},
+    {method: timeUntil, datetime: '2022-10-24T16:31:00.000Z', expected: [2, 'hour']},
+    {method: timeUntil, datetime: '2022-10-30T14:46:00.000Z', expected: [6, 'day']},
+    {method: timeUntil, datetime: '2022-11-24T14:46:00.000Z', expected: [1, 'month']},
+    {method: timeUntil, datetime: '2023-10-23T14:46:00.000Z', expected: [1, 'year']},
+    {method: timeUntil, datetime: '2023-10-24T14:46:00.000Z', expected: [1, 'year']},
+    {method: timeUntil, datetime: '2024-03-31T14:46:00.000Z', expected: [1, 'year']},
+    {method: timeUntil, datetime: '2024-04-01T14:46:00.000Z', expected: [2, 'year']},
     {
-      method: 'timeUntil',
+      method: timeUntil,
       reference: '2022-12-31T12:00:00.000Z',
       datetime: '2024-03-01T12:00:00.000Z',
       expected: [1, 'year']
@@ -54,8 +54,7 @@ suite('duration format', function () {
   for (const {method, datetime, expected, reference = referenceDate} of tests) {
     test(`${datetime} ${method} -> ${expected}`, function () {
       freezeTime(new Date(reference))
-      assert.deepEqual(new DurationFormat(new Date(datetime))[method](), expected)
+      assert.deepEqual(method(new Date(datetime)), expected)
     })
   }
-
 })
