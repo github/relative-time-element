@@ -132,6 +132,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
       second: this.second,
       minute: this.minute,
       hour: this.hour,
+      weekday: this.weekday,
       day: this.day,
       month: this.month,
       year: this.year,
@@ -165,6 +166,15 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
 
   set hour(value: 'numeric' | '2-digit' | undefined) {
     this.setAttribute('hour', value || '')
+  }
+
+  get weekday() {
+    const weekday = this.getAttribute('weekday')
+    if (weekday === 'long' || weekday === 'short' || weekday === 'narrow') return weekday
+  }
+
+  set weekday(value: 'short' | 'long' | 'narrow' | undefined) {
+    this.setAttribute('weekday', value || '')
   }
 
   get day() {
