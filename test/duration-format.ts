@@ -1,5 +1,5 @@
 import {assert} from '@open-wc/testing'
-import DurationFormat from '../src/duration-format.js'
+import {DurationFormat} from '../src/duration-format.js'
 
 suite('duration format', function () {
   let dateNow
