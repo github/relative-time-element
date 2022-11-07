@@ -1,5 +1,5 @@
 import {assert} from '@open-wc/testing'
-import '../src/relative-time-element.ts'
+import RelativeTimeElement from '../src/relative-time-element.ts'
 
 suite('relative-time', function () {
   let dateNow
@@ -36,6 +36,26 @@ suite('relative-time', function () {
       Date = dateNow
       dateNow = null
     }
+  })
+
+  test('does not call update() frequently with attributeChangedCallback', () => {
+    let counter = 0
+    const el = document.createElement('relative-time')
+    el.update = function () {
+      counter += 1
+      return RelativeTimeElement.prototype.update.call(this)
+    }
+    assert.equal(counter, 0)
+    el.setAttribute('datetime', new Date().toISOString())
+    assert.equal(counter, 1)
+    el.setAttribute('datetime', el.getAttribute('datetime'))
+    assert.equal(counter, 1)
+    el.disconnectedCallback()
+    assert.equal(counter, 1)
+    el.setAttribute('title', 'custom')
+    assert.equal(counter, 1)
+    el.setAttribute('title', 'another custom')
+    assert.equal(counter, 1)
   })
 
   test("doesn't error when no date is provided", function () {
