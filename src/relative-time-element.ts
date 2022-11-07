@@ -28,17 +28,26 @@ function getUnitFactor(ms: number): number {
 
 const dateObserver = new (class {
   elements: Set<RelativeTimeElement> = new Set()
+  time = 0
 
   observe(element: RelativeTimeElement) {
     if (this.elements.has(element)) return
     this.elements.add(element)
-    this.update()
+    const date = element.date
+    if (date && date.getTime()) {
+      const ms = getUnitFactor(date.getTime())
+      const time = Date.now() + ms
+      if (time < this.time) {
+        clearTimeout(this.timer)
+        this.timer = setTimeout(() => this.update, ms)
+        this.time = time
+      }
+    }
   }
 
   unobserve(element: RelativeTimeElement) {
     if (!this.elements.has(element)) return
     this.elements.delete(element)
-    this.update()
   }
 
   timer: ReturnType<typeof setTimeout> = -1 as unknown as ReturnType<typeof setTimeout>
@@ -52,8 +61,9 @@ const dateObserver = new (class {
       nearestDistance = Math.min(nearestDistance, distance)
       timeEl.update()
     }
-    const ms = Math.min(60 * 60 * 1000, nearestDistance)
-    this.timer = setTimeout(() => this.update(), ms)
+    this.time = Math.min(60 * 60 * 1000, nearestDistance)
+    this.timer = setTimeout(() => this.update(), this.time)
+    this.time += Date.now()
   }
 })()
 
@@ -298,11 +308,10 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
   }
 
   // Internal: Refresh the time element's formatted date when an attribute changes.
-  attributeChangedCallback(attrName: string): void {
-    if (attrName === 'title') {
-      this.#customTitle = true
-    }
-    this.update()
+  attributeChangedCallback(attrName: string, oldValue: unknown, newValue: unknown): void {
+    if (oldValue === newValue) return
+    if (attrName === 'title') this.#customTitle = true
+    if (!this.#customTitle) this.update()
   }
 
   update() {
