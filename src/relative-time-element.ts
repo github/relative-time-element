@@ -28,7 +28,7 @@ function getUnitFactor(ms: number): number {
 
 const dateObserver = new (class {
   elements: Set<RelativeTimeElement> = new Set()
-  time = 0
+  time = Infinity
 
   observe(element: RelativeTimeElement) {
     if (this.elements.has(element)) return
