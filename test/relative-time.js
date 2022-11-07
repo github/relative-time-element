@@ -58,6 +58,19 @@ suite('relative-time', function () {
     assert.equal(counter, 1)
   })
 
+  test('updates the time automatically when it is a few seconds ago', async function () {
+    this.timeout(3000)
+    const el = document.createElement('relative-time')
+    el.setAttribute('datetime', new Date(Date.now() + 25000).toISOString())
+    const display = el.shadowRoot?.textContent || el.textContent
+    assert.match(display, /in \d+ seconds/)
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    const nextDisplay = el.shadowRoot.textContent || el.textContent
+    assert.match(nextDisplay, /in \d+ seconds/)
+    console.log(nextDisplay, display)
+    assert.notEqual(nextDisplay, display)
+  })
+
   test("doesn't error when no date is provided", function () {
     const element = document.createElement('relative-time')
     assert.doesNotThrow(() => element.attributeChangedCallback('datetime', null, null))
