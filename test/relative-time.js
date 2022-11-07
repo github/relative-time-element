@@ -59,6 +59,7 @@ suite('relative-time', function () {
   })
 
   test('updates the time automatically when it is a few seconds ago', async function () {
+    // eslint-disable-next-line @typescript-eslint/no-invalid-this
     this.timeout(3000)
     const el = document.createElement('relative-time')
     el.setAttribute('datetime', new Date(Date.now() + 25000).toISOString())
@@ -67,7 +68,6 @@ suite('relative-time', function () {
     await new Promise(resolve => setTimeout(resolve, 2000))
     const nextDisplay = el.shadowRoot.textContent || el.textContent
     assert.match(nextDisplay, /in \d+ seconds/)
-    console.log(nextDisplay, display)
     assert.notEqual(nextDisplay, display)
   })
 
