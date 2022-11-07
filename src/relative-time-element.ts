@@ -39,7 +39,7 @@ const dateObserver = new (class {
       const time = Date.now() + ms
       if (time < this.time) {
         clearTimeout(this.timer)
-        this.timer = setTimeout(() => this.update, ms)
+        this.timer = setTimeout(() => this.update(), ms)
         this.time = time
       }
     }
