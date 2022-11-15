@@ -58,6 +58,13 @@ suite('relative-time', function () {
     assert.equal(counter, 1)
   })
 
+  test('shadowDOM reflects textContent with invalid date', () => {
+    const el = document.createElement('relative-time')
+    el.textContent = 'A date string'
+    el.setAttribute('datetime', 'Invalid')
+    if (el.shadowRoot) assert.equal(el.shadowRoot.textContent, el.textContent)
+  })
+
   test('updates the time automatically when it is a few seconds ago', async function () {
     // eslint-disable-next-line @typescript-eslint/no-invalid-this
     this.timeout(3000)
