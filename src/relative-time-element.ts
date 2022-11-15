@@ -331,6 +331,9 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     newText = this.getFormattedDate(now) || ''
     if (newText) {
       this.#renderRoot.textContent = newText
+    } else if (this.shadowRoot === this.#renderRoot && this.textContent) {
+      // Ensure invalid dates fall back to lightDOM text content
+      this.#renderRoot.textContent = this.textContent
     }
 
     if (newText !== oldText || newTitle !== oldTitle) {
