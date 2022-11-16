@@ -1,4 +1,5 @@
-export type Unit = 'second' | 'minute' | 'hour' | 'day' | 'month' | 'year'
+export const unitNames = ['second', 'minute', 'hour', 'day', 'month', 'year'] as const
+export type Unit = typeof unitNames[number]
 
 export function timeAgo(date: Date): [number, Unit] {
   const ms = new Date().getTime() - date.getTime()
@@ -108,4 +109,22 @@ export function microTimeUntil(date: Date): [number, Unit] {
   } else {
     return [1, 'minute']
   }
+}
+
+export function elapsedTime(date: Date): Array<[number, Unit]> {
+  const ms = Math.abs(date.getTime() - new Date().getTime())
+  const sec = Math.floor(ms / 1000)
+  const min = Math.floor(sec / 60)
+  const hr = Math.floor(min / 60)
+  const day = Math.floor(hr / 24)
+  const month = Math.floor(day / 30)
+  const year = Math.floor(month / 12)
+  const units: Array<[number, Unit]> = []
+  if (year) units.push([year, 'year'])
+  if (month - year * 12) units.push([month - year * 12, 'month'])
+  if (day - month * 30) units.push([day - month * 30, 'day'])
+  if (hr - day * 24) units.push([hr - day * 24, 'hour'])
+  if (min - hr * 60) units.push([min - hr * 60, 'minute'])
+  if (sec - min * 60) units.push([sec - min * 60, 'second'])
+  return units
 }
