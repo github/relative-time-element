@@ -1,4 +1,4 @@
-import {microTimeAgo, microTimeUntil, timeUntil, timeAgo} from './duration-format.js'
+import {unitNames, Unit, microTimeAgo, microTimeUntil, timeUntil, timeAgo, elapsedTime} from './duration-format.js'
 import {DateTimeFormat as DateTimeFormatPonyFill} from './datetimeformat-ponyfill.js'
 import {RelativeTimeFormat as RelativeTimeFormatPonyfill} from './relative-time-ponyfill.js'
 import {isDuration, withinDuration} from './duration.js'
@@ -10,7 +10,7 @@ const DateTimeFormat = supportsIntlDatetime ? Intl.DateTimeFormat : DateTimeForm
 const supportsIntlRelativeTime = 'Intl' in window && 'RelativeTimeFormat' in Intl
 const RelativeTimeFormat = supportsIntlRelativeTime ? Intl.RelativeTimeFormat : RelativeTimeFormatPonyfill
 
-export type Format = 'auto' | 'micro' | string
+export type Format = 'auto' | 'micro' | 'elapsed' | string
 export type Tense = 'auto' | 'past' | 'future'
 
 export class RelativeTimeUpdatedEvent extends Event {
@@ -19,8 +19,17 @@ export class RelativeTimeUpdatedEvent extends Event {
   }
 }
 
-function getUnitFactor(ms: number): number {
-  ms = Math.abs(Date.now() - ms)
+function getUnitFactor(el: RelativeTimeElement): number {
+  if (!el.date) return Infinity
+  if (el.format === 'elapsed') {
+    const precision = el.precision
+    if (precision === 'second') {
+      return 1000
+    } else if (precision === 'minute') {
+      return 60 * 1000
+    }
+  }
+  const ms = Math.abs(Date.now() - el.date.getTime())
   if (ms < 60 * 1000) return 1000
   if (ms < 60 * 60 * 1000) return 60 * 1000
   return 60 * 60 * 1000
@@ -35,7 +44,7 @@ const dateObserver = new (class {
     this.elements.add(element)
     const date = element.date
     if (date && date.getTime()) {
-      const ms = getUnitFactor(date.getTime())
+      const ms = getUnitFactor(element)
       const time = Date.now() + ms
       if (time < this.time) {
         clearTimeout(this.timer)
@@ -57,8 +66,7 @@ const dateObserver = new (class {
 
     let nearestDistance = Infinity
     for (const timeEl of this.elements) {
-      const distance = timeEl.date ? getUnitFactor(timeEl.date.getTime()) : Infinity
-      nearestDistance = Math.min(nearestDistance, distance)
+      nearestDistance = Math.min(nearestDistance, getUnitFactor(timeEl))
       timeEl.update()
     }
     this.time = Math.min(60 * 60 * 1000, nearestDistance)
@@ -89,6 +97,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
       'prefix',
       'threhsold',
       'tense',
+      'precision',
       'format',
       'datetime',
       'lang',
@@ -119,8 +128,12 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     const date = this.date
     if (!date) return
     const format = this.format
-    if (format !== 'auto' && format !== 'micro') {
+    if (format !== 'auto' && format !== 'micro' && format !== 'elapsed') {
       return strftime(date, format)
+    } else if (format === 'elapsed') {
+      const precisionIndex = unitNames.indexOf(this.precision) || 0
+      const units = elapsedTime(date).filter(unit => unitNames.indexOf(unit[1]) >= precisionIndex)
+      return units.map(([int, unit]) => `${int}${unit[0]}`).join(' ') || `0${this.precision[0]}`
     }
     const tense = this.tense
     const micro = format === 'micro'
@@ -271,9 +284,20 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     this.setAttribute('tense', value)
   }
 
+  get precision(): Unit {
+    const precision = this.getAttribute('precision') as unknown as Unit
+    if (unitNames.includes(precision)) return precision
+    return 'second'
+  }
+
+  set precision(value: Unit) {
+    this.setAttribute('precision', value)
+  }
+
   get format(): Format {
     const format = this.getAttribute('format')
     if (format === 'micro') return 'micro'
+    if (format === 'elapsed') return 'elapsed'
     if (format && format.includes('%')) return format
     return 'auto'
   }
@@ -343,7 +367,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     const date = this.date
     const format = this.format
     const isRelative = (format === 'auto' || format === 'micro') && date && withinDuration(now, date, this.threshold)
-    if (isRelative) {
+    if (format === 'elapsed' || isRelative) {
       dateObserver.observe(this)
     } else {
       dateObserver.unobserve(this)

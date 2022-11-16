@@ -684,6 +684,25 @@ suite('relative-time', function () {
       {datetime: '2021-05-18T14:46:00.000Z', tense: 'past', format: 'micro', expected: '1y'},
       {datetime: '2021-05-17T14:46:00.000Z', tense: 'past', format: 'micro', expected: '2y'},
 
+      // Elapsed Times
+      {datetime: '2022-10-24T14:46:10.000Z', format: 'elapsed', expected: '10s'},
+      {datetime: '2022-10-24T14:45:50.000Z', format: 'elapsed', expected: '10s'},
+      {datetime: '2022-10-24T14:45:50.000Z', format: 'elapsed', precision: 'minute', expected: '0m'},
+      {datetime: '2022-10-24T14:47:40.000Z', format: 'elapsed', expected: '1m 40s'},
+      {datetime: '2022-10-24T14:44:20.000Z', format: 'elapsed', expected: '1m 40s'},
+      {datetime: '2022-10-24T14:44:20.000Z', format: 'elapsed', precision: 'minute', expected: '1m'},
+      {datetime: '2022-10-24T15:51:40.000Z', format: 'elapsed', expected: '1h 5m 40s'},
+      {datetime: '2022-10-24T15:51:40.000Z', format: 'elapsed', precision: 'minute', expected: '1h 5m'},
+      {datetime: '2022-10-24T15:52:00.000Z', format: 'elapsed', expected: '1h 6m'},
+      {datetime: '2022-10-24T17:46:00.000Z', format: 'elapsed', expected: '3h'},
+      {datetime: '2022-10-24T10:46:00.000Z', format: 'elapsed', expected: '4h'},
+      {datetime: '2022-10-25T18:46:00.000Z', format: 'elapsed', expected: '1d 4h'},
+      {datetime: '2022-10-23T10:46:00.000Z', format: 'elapsed', expected: '1d 4h'},
+      {datetime: '2022-10-23T10:46:00.000Z', format: 'elapsed', precision: 'day', expected: '1d'},
+      {datetime: '2021-10-30T14:46:00.000Z', format: 'elapsed', expected: '11m 29d'},
+      {datetime: '2021-10-30T14:46:00.000Z', format: 'elapsed', precision: 'month', expected: '11m'},
+      {datetime: '2021-10-29T14:46:00.000Z', format: 'elapsed', expected: '1y'},
+
       // Dates in the past
       {datetime: '2022-09-24T14:46:00.000Z', tense: 'future', format: 'auto', expected: 'now'},
       {datetime: '2022-10-23T14:46:00.000Z', tense: 'future', format: 'auto', expected: 'now'},
@@ -756,13 +775,14 @@ suite('relative-time', function () {
       }
     ])
 
-    for (const {datetime, expected, tense, format, reference = referenceDate} of tests) {
+    for (const {datetime, expected, tense, format, precision = '', reference = referenceDate} of tests) {
       test(`<relative-time datetime="${datetime}" tense="${tense}" format="${format}"> => ${expected}`, function () {
         freezeTime(new Date(reference))
         const time = document.createElement('relative-time')
         time.setAttribute('tense', tense)
         time.setAttribute('datetime', datetime)
         time.setAttribute('format', format)
+        time.setAttribute('precision', precision)
         assert.equal(time.shadowRoot.textContent, expected)
       })
     }

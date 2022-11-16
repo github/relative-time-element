@@ -69,8 +69,10 @@ So, a relative date phrase is used for up to a month and then the actual date is
 | Property Name  | Attribute Name   | Possible Values                                                                          | Default Value          |
 |:---------------|:-----------------|:-----------------------------------------------------------------------------------------|:-----------------------|
 | `datetime`     | `datetime`       | `string`                                                                                 | -                      |
+| `format`       | `format`         | `'auto'|'micro'|'elapsed'|string`                                                        | 'auto'                 |
 | `date`         | -                | `Date \| null`                                                                           | -                      |
 | `tense`        | `tense`          | `'auto'\|'past'\|'future'`                                                               | `'auto'`               |
+| `precision`    | `precision`      | `'year'|'month'|'day'|'hour'|'minute'|'second'`                                          | `'second'`             |
 | `threshold`    | `threshold`      | `string`                                                                                 | `'P30D'`               |
 | `prefix`       | `prefix`         | `string`                                                                                 | `'on'`                 |
 | `second`       | `second`         | `'numeric'\|'2-digit'\|undefined`                                                        | `undefined`            |
@@ -100,6 +102,39 @@ This is the datetime that the element is meant to represent. This must be a vali
 </script>
 ```
 
+##### format (`'auto'|'micro'|'elapsed'|string`, default: `'auto'`)
+
+The default format is `auto`, but this can be changed to `micro` or `elapsed`.
+
+The default `auto` format will display dates relative to the current time (unless they are past the `threshold` value - see below). The values are rounded to display a single unit, for example if the time between the given `datetime` and the current wall clock time exceeds a day, then the format will _only_ ouput in days, and will not display hours, minutes or seconds.
+
+The `micro` format which will display relative dates (within the threshold) in a more compact format. Similar to `auto`, the `micro` format rounds values to the nearest largest value. Additionally, `micro` format will not round _lower_ than 1 minute, as such a `datetime` which is less than a minute from the current wall clock time will display `'1m'`.
+
+The `elapsed` format will always non-rounded units of time, where any non-zero unit of time is displayed in the compact notation format. This format is also absolute, and so tense does not apply. This can be useful for displaying actively running timers.
+
+| `format=auto` | `format=micro` | `format=elapsed` |
+|:-------------:|:--------------:|:----------------:|
+| in 2 years    | 2y             | 2y 10d 3h 20m 8s |
+| 2 years ago   | 2y             | 2y 10d 3h 20m 8s |
+| in 30 days    | 30d            | 30d 4h 20m 8s    |
+| 21 minutes ago| 21m            | 21m 30s          |
+| 37 seconds ago| 1m             | 37s              |
+
+Additionally, format accepts a [strftime](https://strftime.org/) compatible format. Providing a strftime format will override all other attributes on the element, and the time will be displayed formatted based on the strftime value. This can be useful, for example, to dynamically remove relative formatting based on a user action.
+
+```html
+<relative-time datetime="1970-04-01T16:30:00-08:00" threshold="P100Y" format="micro">
+  <!-- Will display "<N>y" -->
+</relative-time>
+```
+
+```html
+<relative-time datetime="1970-04-01T16:30:00-08:00" format="%Y-%m-%d">
+  <!-- Will display "1970-01-01" -->
+</relative-time>
+```
+
+
 ##### tense (`'auto'|'past'|'future'`, default: `auto`)
 
 If `format` is anything other than `'auto'` or `'micro'` then this value will be ignored.
@@ -117,6 +152,21 @@ Tense can be used to fix relative-time to always display a date's relative tense
   April 1, 2038 <!-- Will display "now" unless you had a time machine and went back to 1970 -->
 </relative-time>
 ```
+
+#### precision (`'year'|'month'|'day'|'hour'|'minute'|'second'`, default: `'second'`)
+
+If `format` is anything other than `'elapsed'` then this value will be ignored.
+
+Precision can be used to limit the display of an `elapsed` formatted time. By default the `elapsed` time will display times down to the `second` level of precision. Changing this value will truncate the display to the respective unit, and smaller units will be elided. Some examples:
+
+| `precision=`  | Display             |
+|:-------------:|:-------------------:|
+| seconds       | 2y 6m 10d 3h 20m 8s |
+| minutes       | 2y 6m 10d 3h 20m    |
+| hours         | 2y 6m 10d 3h        |
+| days          | 2y 6m 10d           |
+| months        | 2y 6m               |
+| years         | 2y                  |
 
 ##### threshold (`string`, default: `P30D`)
 
@@ -153,32 +203,6 @@ When formatting an absolute date (see above `threshold` for more details) it can
 ##### second, minute, hour, weekday, day, month, year, timeZoneName
 
 For dates outside of the specified `threshold`, the formatting of the date can be configured using these attributes. The values for these attributes are passed to [Intl.DateTimeFormat](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat):
-
-##### format (`'auto'|'micro'|string`, default: `'auto'`)
-
-The default format is `auto`, but this can be changed to `micro` which will display relative dates (within the threshold) in a more compact format. Micro format will not display relative times shorter than 1 minute (`'1m'`). Some examples:
-
-| `format=auto` | `format=micro` |
-|:-------------:|:--------------:|
-| in 2 years    | 2y             |
-| 2 yars ago    | 2y             |
-| in 30 days    | 30d            |
-| 21 minutes ago| 21m            |
-| 37 seconds ago| 1m             |
-
-Additionally, format accepts a [strftime](https://strftime.org/) compatible format. Providing a strftime format will override all other attributes on the element, and the time will be displayed formatted based on the strftime value. This can be useful, for example, to dynamically remove relative formatting based on a user action.
-
-```html
-<relative-time datetime="1970-04-01T16:30:00-08:00" threshold="P100Y" format="micro">
-  <!-- Will display "<N>y" -->
-</relative-time>
-```
-
-```html
-<relative-time datetime="1970-04-01T16:30:00-08:00" format="%Y-%m-%d">
-  <!-- Will display "1970-01-01" -->
-</relative-time>
-```
 
 ##### lang
 

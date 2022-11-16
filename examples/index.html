@@ -83,11 +83,28 @@
   <p>
 
   <p>
+    Time until:
+    <time-until datetime="2024-12-31T00:00:00-05:00">
+      Oops! This browser doesn't support Web Components.
+    </time-until>
+  </p>
+
+  <p>
+    Time until (micro format):
+    <time-until format="micro" datetime="2024-12-31T00:00:00-05:00">
+      Oops! This browser doesn't support Web Components.
+    </time-until>
+  </p>
+
+
+  <h2>Dynamic Formats</h2>
+  <p>
     Nearby, dynamic, relative time:
     <relative-time datetime="2019-08-12T20:50:00.000Z" id="dynamic1">
       Oops! This browser doesn't support Web Components.
     </relative-time>
   </p>
+
 
   <p>
     Nearby, dynamic, relative time:
@@ -103,23 +120,22 @@
     </relative-time>
   </p>
 
-
+  <p>
+    How long you've been on this page
+    <relative-time id="dynamic4" format="elapsed">
+      Oops! This browser doesn't support Web Components.
+    </relative-time>
+  </p>
 
   <p>
-    Time until:
-    <time-until datetime="2024-12-31T00:00:00-05:00">
+    Countdown timer until 2038 bug:
+    <relative-time datetime="2038-01-19T03:14:08Z" format="elapsed">
       Oops! This browser doesn't support Web Components.
     </time-until>
   </p>
 
-  <p>
-    Time until (micro format):
-    <time-until format="micro" datetime="2024-12-31T00:00:00-05:00">
-      Oops! This browser doesn't support Web Components.
-    </time-until>
-  </p>
-  <!-- <script type="module" src="../dist/index.js"></script> -->
-  <script type="module" src="https://unpkg.com/@github/time-elements@latest?module"></script>
+  <script type="module" src="../dist/index.js"></script>
+  <!-- <script type="module" src="https://unpkg.com/@github/time-elements@latest?module"></script> -->
   <script>
     document.body.addEventListener('relative-time-updated', event => {
       console.log('event from', event.target, event)
@@ -127,6 +143,7 @@
     document.getElementById('dynamic1').date = new Date()
     document.getElementById('dynamic2').date = new Date(Date.now() - 30000)
     document.getElementById('dynamic3').date = new Date(Date.now() + 5000)
+    document.getElementById('dynamic4').date = new Date()
   </script>
 </body>
 </html>
