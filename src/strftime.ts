@@ -1,3 +1,5 @@
+const supportsIntlDatetime = 'Intl' in window && 'DateTimeFormat' in Intl
+
 const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 const months = [
   'January',
@@ -14,7 +16,7 @@ const months = [
   'December'
 ]
 
-export function strftime(time: Date, formatString: string): string {
+export function strftime(time: Date, formatString: string, lang?: string): string {
   const day = time.getDay()
   const date = time.getDate()
   const month = time.getMonth()
@@ -22,6 +24,9 @@ export function strftime(time: Date, formatString: string): string {
   const hour = time.getHours()
   const minute = time.getMinutes()
   const second = time.getSeconds()
+  const useIntl = lang && supportsIntlDatetime
+  const shortParts = useIntl && new Intl.DateTimeFormat(lang, {weekday: 'short', month: 'short'}).formatToParts(time)
+  const longParts = useIntl && new Intl.DateTimeFormat(lang, {weekday: 'long', month: 'long'}).formatToParts(time)
   return formatString.replace(/%([%aAbBcdeHIlmMpPSwyYZz])/g, function (_arg) {
     let match
     const modifier = _arg[1]
@@ -29,12 +34,28 @@ export function strftime(time: Date, formatString: string): string {
       case '%':
         return '%'
       case 'a':
+        if (shortParts) {
+          const weekdayPart = shortParts.find(part => part.type === 'weekday')
+          if (weekdayPart) return weekdayPart.value
+        }
         return weekdays[day].slice(0, 3)
       case 'A':
+        if (longParts) {
+          const weekdayPart = longParts.find(part => part.type === 'weekday')
+          if (weekdayPart) return weekdayPart.value
+        }
         return weekdays[day]
       case 'b':
+        if (shortParts) {
+          const monthPart = shortParts.find(part => part.type === 'month')
+          if (monthPart) return monthPart.value
+        }
         return months[month].slice(0, 3)
       case 'B':
+        if (longParts) {
+          const monthPart = longParts.find(part => part.type === 'month')
+          if (monthPart) return monthPart.value
+        }
         return months[month]
       case 'c':
         return time.toString()

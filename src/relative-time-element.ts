@@ -129,7 +129,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     if (!date) return
     const format = this.format
     if (format !== 'auto' && format !== 'micro' && format !== 'elapsed') {
-      return strftime(date, format)
+      return strftime(date, format, this.#lang)
     } else if (format === 'elapsed') {
       const precisionIndex = unitNames.indexOf(this.precision) || 0
       const units = elapsedTime(date).filter(unit => unitNames.indexOf(unit[1]) >= precisionIndex)
