@@ -30,4 +30,20 @@ suite('strftime', function () {
       assert.equal(strftime(new Date('2022-10-19T11:31:59.554Z'), `%${k}`), v)
     })
   }
+
+  test('supports multiple languages', () => {
+    assert.equal(strftime(new Date('2022-10-19T11:31:59.554Z'), `%a`, 'es'), 'mié')
+    assert.equal(strftime(new Date('2022-10-19T11:31:59.554Z'), `%A`, 'es'), 'miércoles')
+    assert.equal(strftime(new Date('2022-10-19T11:31:59.554Z'), `%a`, 'nl'), 'wo')
+    assert.equal(strftime(new Date('2022-10-19T11:31:59.554Z'), `%A`, 'nl'), 'woensdag')
+    assert.equal(strftime(new Date('2022-10-19T11:31:59.554Z'), `%a`, 'pl'), 'śr.')
+    assert.equal(strftime(new Date('2022-10-19T11:31:59.554Z'), `%A`, 'pl'), 'środa')
+
+    assert.equal(strftime(new Date('2022-10-19T11:31:59.554Z'), `%b`, 'es'), 'oct')
+    assert.equal(strftime(new Date('2022-10-19T11:31:59.554Z'), `%B`, 'es'), 'octubre')
+    assert.equal(strftime(new Date('2022-10-19T11:31:59.554Z'), `%b`, 'nl'), 'okt.')
+    assert.equal(strftime(new Date('2022-10-19T11:31:59.554Z'), `%B`, 'nl'), 'oktober')
+    assert.equal(strftime(new Date('2022-10-19T11:31:59.554Z'), `%b`, 'pl'), 'paź')
+    assert.equal(strftime(new Date('2022-10-19T11:31:59.554Z'), `%B`, 'pl'), 'październik')
+  })
 })

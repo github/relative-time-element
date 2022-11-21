@@ -649,6 +649,8 @@ suite('relative-time', function () {
       {datetime: '2022-10-24t14:46:00.000z', tense: 'auto', format: 'micro', expected: '1m'},
       {datetime: '2022-10-24t14:46:00.000z', tense: 'auto', format: 'auto', expected: 'now'},
       {datetime: '2022-10-24t14:46:00.000z', tense: 'auto', format: '%Y-%m-%d', expected: '2022-10-24'},
+      {datetime: '2022-10-24t14:46:00.000z', format: '%A %b %d', lang: 'es', expected: 'lunes oct 24'},
+      {datetime: '2022-10-24t14:46:00.000z', format: '%A %b %d', lang: 'pl', expected: 'poniedziałek paź 24'},
 
       // Dates in the past
       {datetime: '2022-09-24T14:46:00.000Z', tense: 'future', format: 'micro', expected: '1m'},
@@ -775,7 +777,7 @@ suite('relative-time', function () {
       }
     ])
 
-    for (const {datetime, expected, tense, format, precision = '', reference = referenceDate} of tests) {
+    for (const {datetime, expected, tense, format, precision = '', lang = null, reference = referenceDate} of tests) {
       test(`<relative-time datetime="${datetime}" tense="${tense}" format="${format}"> => ${expected}`, function () {
         freezeTime(new Date(reference))
         const time = document.createElement('relative-time')
@@ -783,6 +785,7 @@ suite('relative-time', function () {
         time.setAttribute('datetime', datetime)
         time.setAttribute('format', format)
         time.setAttribute('precision', precision)
+        if (lang) time.setAttribute('lang', lang)
         assert.equal(time.shadowRoot.textContent, expected)
       })
     }
