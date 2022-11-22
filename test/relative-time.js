@@ -1,5 +1,5 @@
 import {assert} from '@open-wc/testing'
-import RelativeTimeElement from '../src/relative-time-element.ts'
+import {RelativeTimeElement} from '../src/index.ts'
 
 suite('relative-time', function () {
   let dateNow

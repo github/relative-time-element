@@ -1,5 +1,5 @@
 import {assert} from '@open-wc/testing'
-import '../src/time-until-element.ts'
+import '../src/index.ts'
 
 suite('time-until', function () {
   test('always uses relative dates', function () {

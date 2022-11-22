@@ -1,6 +1,5 @@
 import {assert} from '@open-wc/testing'
-import '../src/local-time-element.ts'
-import '../src/relative-time-element.ts'
+import '../src/index.ts'
 
 suite('constructor', function () {
   test('create local-time from document.createElement', function () {

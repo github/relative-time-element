@@ -6,17 +6,3 @@ export default class TimeUntilElement extends RelativeTimeElement {
     return 'future'
   }
 }
-
-if (!window.customElements.get('time-until')) {
-  window.TimeUntilElement = TimeUntilElement
-  window.customElements.define('time-until', TimeUntilElement)
-}
-
-declare global {
-  interface Window {
-    TimeUntilElement: typeof TimeUntilElement
-  }
-  interface HTMLElementTagNameMap {
-    'time-until': TimeUntilElement
-  }
-}
