@@ -1,4 +1,4 @@
-const supportsIntlDatetime = 'Intl' in window && 'DateTimeFormat' in Intl
+const supportsIntlDatetime = typeof Intl !== 'undefined' && 'DateTimeFormat' in Intl
 
 const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 const months = [

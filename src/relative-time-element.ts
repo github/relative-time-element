@@ -4,10 +4,10 @@ import {RelativeTimeFormat as RelativeTimeFormatPonyfill} from './relative-time-
 import {isDuration, withinDuration} from './duration.js'
 import {strftime} from './strftime.js'
 
-const supportsIntlDatetime = 'Intl' in window && 'DateTimeFormat' in Intl
+const supportsIntlDatetime = typeof Intl !== 'undefined' && 'DateTimeFormat' in Intl
 const DateTimeFormat = supportsIntlDatetime ? Intl.DateTimeFormat : DateTimeFormatPonyFill
 
-const supportsIntlRelativeTime = 'Intl' in window && 'RelativeTimeFormat' in Intl
+const supportsIntlRelativeTime = typeof Intl !== 'undefined' && 'RelativeTimeFormat' in Intl
 const RelativeTimeFormat = supportsIntlRelativeTime ? Intl.RelativeTimeFormat : RelativeTimeFormatPonyfill
 
 export type Format = 'auto' | 'micro' | 'elapsed' | string
