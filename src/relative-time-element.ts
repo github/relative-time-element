@@ -3,6 +3,8 @@ import {DateTimeFormat as DateTimeFormatPonyFill} from './datetimeformat-ponyfil
 import {RelativeTimeFormat as RelativeTimeFormatPonyfill} from './relative-time-ponyfill.js'
 import {isDuration, withinDuration} from './duration.js'
 import {strftime} from './strftime.js'
+const root = (typeof globalThis !== 'undefined' ? globalThis : window) as typeof window
+const HTMLElement = root.HTMLElement || (null as unknown as typeof window['HTMLElement'])
 
 const supportsIntlDatetime = typeof Intl !== 'undefined' && 'DateTimeFormat' in Intl
 const DateTimeFormat = supportsIntlDatetime ? Intl.DateTimeFormat : DateTimeFormatPonyFill
