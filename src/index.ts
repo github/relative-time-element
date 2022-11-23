@@ -1,7 +1,6 @@
 import RelativeTimeElement from './relative-time-element-define.js'
-import TimeAgoElement from './time-ago-element-define.js'
 import TimeUntilElement from './time-until-element-define.js'
 
-export {RelativeTimeElement, TimeAgoElement, TimeUntilElement}
+export {RelativeTimeElement, TimeUntilElement}
 export default RelativeTimeElement
 export * from './relative-time-element-define.js'
