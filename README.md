@@ -69,10 +69,10 @@ So, a relative date phrase is used for up to a month and then the actual date is
 | Property Name  | Attribute Name   | Possible Values                                                                          | Default Value          |
 |:---------------|:-----------------|:-----------------------------------------------------------------------------------------|:-----------------------|
 | `datetime`     | `datetime`       | `string`                                                                                 | -                      |
-| `format`       | `format`         | `'auto'|'micro'|'elapsed'|string`                                                        | 'auto'                 |
+| `format`       | `format`         | `'auto'\|'micro'\|'elapsed'\|string`                                                     | 'auto'                 |
 | `date`         | -                | `Date \| null`                                                                           | -                      |
 | `tense`        | `tense`          | `'auto'\|'past'\|'future'`                                                               | `'auto'`               |
-| `precision`    | `precision`      | `'year'|'month'|'day'|'hour'|'minute'|'second'`                                          | `'second'`             |
+| `precision`    | `precision`      | `'year'\|'month'\|'day'\|'hour'\|'minute'\|'second'`                                     | `'second'`             |
 | `threshold`    | `threshold`      | `string`                                                                                 | `'P30D'`               |
 | `prefix`       | `prefix`         | `string`                                                                                 | `'on'`                 |
 | `second`       | `second`         | `'numeric'\|'2-digit'\|undefined`                                                        | `undefined`            |
