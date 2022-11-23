@@ -20,6 +20,11 @@ declare global {
   interface HTMLElementTagNameMap {
     'time-ago': TimeAgoElement
   }
+  namespace JSX {
+    interface IntrinsicElements {
+      ['time-ago']: TimeAgoElement
+    }
+  }
 }
 
 export default TimeAgoElement

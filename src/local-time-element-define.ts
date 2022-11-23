@@ -20,6 +20,11 @@ declare global {
   interface HTMLElementTagNameMap {
     'local-time': LocalTimeElement
   }
+  namespace JSX {
+    interface IntrinsicElements {
+      ['local-time']: LocalTimeElement
+    }
+  }
 }
 
 export default LocalTimeElement

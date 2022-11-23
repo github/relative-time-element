@@ -20,6 +20,11 @@ declare global {
   interface HTMLElementTagNameMap {
     'time-until': TimeUntilElement
   }
+  namespace JSX {
+    interface IntrinsicElements {
+      ['time-until']: TimeUntilElement
+    }
+  }
 }
 
 export default TimeUntilElement

@@ -20,6 +20,11 @@ declare global {
   interface HTMLElementTagNameMap {
     'relative-time': RelativeTimeElement
   }
+  namespace JSX {
+    interface IntrinsicElements {
+      ['relative-time']: RelativeTimeElement
+    }
+  }
 }
 
 export default RelativeTimeElement
