@@ -1,5 +1,3 @@
-const supportsIntlDatetime = typeof Intl !== 'undefined' && 'DateTimeFormat' in Intl
-
 const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 const months = [
   'January',
@@ -24,9 +22,8 @@ export function strftime(time: Date, formatString: string, lang?: string): strin
   const hour = time.getHours()
   const minute = time.getMinutes()
   const second = time.getSeconds()
-  const useIntl = lang && supportsIntlDatetime
-  const shortParts = useIntl && new Intl.DateTimeFormat(lang, {weekday: 'short', month: 'short'}).formatToParts(time)
-  const longParts = useIntl && new Intl.DateTimeFormat(lang, {weekday: 'long', month: 'long'}).formatToParts(time)
+  const shortParts = lang && new Intl.DateTimeFormat(lang, {weekday: 'short', month: 'short'}).formatToParts(time)
+  const longParts = lang && new Intl.DateTimeFormat(lang, {weekday: 'long', month: 'long'}).formatToParts(time)
   return formatString.replace(/%([%aAbBcdeHIlmMpPSwyYZz])/g, function (_arg) {
     let match
     const modifier = _arg[1]

@@ -30,6 +30,8 @@ Available on [npm](https://www.npmjs.com/) as [**@github/time-elements**](https:
 $ npm install @github/time-elements
 ```
 
+This element uses the `Intl.DateTimeFormat` APIs, which are supported by all modern JS engines. If you need to support an older browser, you may need to introduce a polyfill for `Intl.DateTimeFormat`.
+
 ## Usage
 
 This component provides three custom subtypes of the standard HTML `<time>` element. All custom time elements MUST have a `datetime` attribute set to an ISO 8601 formatted timestamp.

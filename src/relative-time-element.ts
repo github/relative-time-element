@@ -1,13 +1,9 @@
 import {unitNames, Unit, microTimeAgo, microTimeUntil, timeUntil, timeAgo, elapsedTime} from './duration-format.js'
-import {DateTimeFormat as DateTimeFormatPonyFill} from './datetimeformat-ponyfill.js'
 import {RelativeTimeFormat as RelativeTimeFormatPonyfill} from './relative-time-ponyfill.js'
 import {isDuration, withinDuration} from './duration.js'
 import {strftime} from './strftime.js'
 const root = (typeof globalThis !== 'undefined' ? globalThis : window) as typeof window
 const HTMLElement = root.HTMLElement || (null as unknown as typeof window['HTMLElement'])
-
-const supportsIntlDatetime = typeof Intl !== 'undefined' && 'DateTimeFormat' in Intl
-const DateTimeFormat = supportsIntlDatetime ? Intl.DateTimeFormat : DateTimeFormatPonyFill
 
 const supportsIntlRelativeTime = typeof Intl !== 'undefined' && 'RelativeTimeFormat' in Intl
 const RelativeTimeFormat = supportsIntlRelativeTime ? Intl.RelativeTimeFormat : RelativeTimeFormatPonyfill
@@ -117,7 +113,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     const date = this.date
     if (!date) return
 
-    return new DateTimeFormat(this.#lang, {
+    return new Intl.DateTimeFormat(this.#lang, {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
@@ -161,7 +157,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
       if (micro) return `${int}${unit[0]}`
       return relativeFormat.format(int, unit)
     }
-    const formatter = new DateTimeFormat(locale, {
+    const formatter = new Intl.DateTimeFormat(locale, {
       second: this.second,
       minute: this.minute,
       hour: this.hour,
