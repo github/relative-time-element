@@ -7,6 +7,12 @@
   },
   "overrides": [
     {
+      "files": "src/*-define.ts",
+      "rules": {
+        "@typescript-eslint/no-namespace": "off"
+      }
+    },
+    {
       "files": "test/**/*.js",
       "rules": {
         "github/unescaped-html-literal": "off",
