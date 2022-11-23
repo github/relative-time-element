@@ -6,17 +6,3 @@ export default class TimeAgoElement extends RelativeTimeElement {
     return 'past'
   }
 }
-
-if (!window.customElements.get('time-ago')) {
-  window.TimeAgoElement = TimeAgoElement
-  window.customElements.define('time-ago', TimeAgoElement)
-}
-
-declare global {
-  interface Window {
-    TimeAgoElement: typeof TimeAgoElement
-  }
-  interface HTMLElementTagNameMap {
-    'time-ago': TimeAgoElement
-  }
-}

@@ -374,22 +374,3 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     }
   }
 }
-
-// Public: RelativeTimeElement constructor.
-//
-//   var time = new RelativeTimeElement()
-//   # => <relative-time></relative-time>
-//
-if (!window.customElements.get('relative-time')) {
-  window.RelativeTimeElement = RelativeTimeElement
-  window.customElements.define('relative-time', RelativeTimeElement)
-}
-
-declare global {
-  interface Window {
-    RelativeTimeElement: typeof RelativeTimeElement
-  }
-  interface HTMLElementTagNameMap {
-    'relative-time': RelativeTimeElement
-  }
-}

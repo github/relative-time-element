@@ -28,22 +28,3 @@ export default class LocalTimeElement extends RelativeTimeElement {
     if (year === 'numeric' || year === '2-digit') return year
   }
 }
-
-// Public: LocalTimeElement constructor.
-//
-//   var time = new LocalTimeElement()
-//   # => <local-time></local-time>
-//
-if (!window.customElements.get('local-time')) {
-  window.LocalTimeElement = LocalTimeElement
-  window.customElements.define('local-time', LocalTimeElement)
-}
-
-declare global {
-  interface Window {
-    LocalTimeElement: typeof LocalTimeElement
-  }
-  interface HTMLElementTagNameMap {
-    'local-time': LocalTimeElement
-  }
-}
