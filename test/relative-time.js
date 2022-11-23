@@ -78,6 +78,19 @@ suite('relative-time', function () {
     assert.notEqual(nextDisplay, display)
   })
 
+  test('all observedAttributes have getters', async function () {
+    const ALLOWED_PROPERTIES = ['time-zone-name']
+
+    const members = [
+      ...Object.getOwnPropertyNames(RelativeTimeElement.prototype),
+      ...Object.getOwnPropertyNames(HTMLElement.prototype),
+      ...ALLOWED_PROPERTIES
+    ]
+    const observedAttributes = new Set(RelativeTimeElement.observedAttributes)
+    for (const member of members) observedAttributes.delete(member)
+    assert.empty([...observedAttributes], 'observedAttributes that arent class members')
+  })
+
   test("doesn't error when no date is provided", function () {
     const element = document.createElement('relative-time')
     assert.doesNotThrow(() => element.attributeChangedCallback('datetime', null, null))

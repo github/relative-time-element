@@ -97,7 +97,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
       'year',
       'time-zone-name',
       'prefix',
-      'threhsold',
+      'threshold',
       'tense',
       'precision',
       'format',
