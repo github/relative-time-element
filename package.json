@@ -10,6 +10,18 @@
     "dist",
     "custom-elements.json"
   ],
+  "exports": {
+    ".": "./dist/index.js",
+    "./define": "./dist/index.js",
+    "./relative-time": "./dist/relative-time-element.js",
+    "./relative-time/define": "./dist/relative-time-element-define.js",
+    "./local-time": "./dist/local-time-element.js",
+    "./local-time/define": "./dist/local-time-element-define.js",
+    "./time-ago": "./dist/time-ago-element.js",
+    "./time-ago/define": "./dist/time-ago-element-define.js",
+    "./time-until": "./dist/time-until-element.js",
+    "./time-until/define": "./dist/time-until-element-define.js"
+  },
   "scripts": {
     "clean": "rm -rf dist",
     "lint": "eslint . --ext .js,.ts && tsc --noEmit",
