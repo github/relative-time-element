@@ -5,17 +5,17 @@ Formats a timestamp as a localized string or as relative text that auto-updates 
 This allows the server to cache HTML fragments containing dates and lets the browser choose how to localize the displayed time according to the user's preferences. For example, the server may have cached the following generated markup:
 
 ```html
-<local-time datetime="2014-04-01T16:30:00-08:00">
+<relative-time datetime="2014-04-01T16:30:00-08:00">
   April 1, 2014 4:30pm
-</local-time>
+</relative-time>
 ```
 
-Every visitor is served the same markup from the server's cache. When it reaches the browser, the custom `local-time` JavaScript localizes the element's text into the local timezone and formatting.
+Every visitor is served the same markup from the server's cache. When it reaches the browser, the custom `relative-time` JavaScript localizes the element's text into the local timezone and formatting.
 
 ```html
-<local-time datetime="2014-04-01T16:30:00-08:00">
+<relative-time datetime="2014-04-01T16:30:00-08:00">
   1 Apr 2014 21:30
-</local-time>
+</relative-time>
 ```
 
 Dates are displayed before months, and a 24-hour clock is used, according to the user's browser settings.
@@ -267,25 +267,6 @@ The optional `format="micro"` attribute shortens the descriptions to 1m, 1h, 1d,
   April 1, 2014
 </time-ago>
 ```
-
-### local-time
-
-This is a variation of `<relative-time>` with some subtly different formatting. 
-
-This custom time extension is useful for formatting a date and time in the user's preferred locale format.
-
-``` html
-<local-time datetime="2014-04-01T16:30:00-08:00"
-    month="short"
-    day="numeric"
-    year="numeric"
-    hour="numeric"
-    minute="numeric">
-  April 1, 2014 4:30PM PDT
-</local-time>
-```
-
-When this markup is viewed in a CDT timezone, it will show `Apr 1, 2014 6:30PM`. If it's viewed in a browser with European date preferences, it will read `1 Apr 2014 18:30`.
 
 ## Browser Support
 
