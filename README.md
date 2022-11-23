@@ -30,7 +30,7 @@ Available on [npm](https://www.npmjs.com/) as [**@github/time-elements**](https:
 $ npm install @github/time-elements
 ```
 
-This element uses the `Intl.DateTimeFormat` APIs, which are supported by all modern JS engines. If you need to support an older browser, you may need to introduce a polyfill for `Intl.DateTimeFormat`.
+This element uses the `Intl.DateTimeFormat` & `Intl.RelativeTimeFormat` APIs, which are supported by all modern JS engines. If you need to support an older browser, you may need to introduce a polyfill for `Intl.DateTimeFormat` & `Intl.RelativeTimeFormat`.
 
 ## Usage
 

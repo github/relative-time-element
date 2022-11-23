@@ -1,12 +1,8 @@
 import {unitNames, Unit, microTimeAgo, microTimeUntil, timeUntil, timeAgo, elapsedTime} from './duration-format.js'
-import {RelativeTimeFormat as RelativeTimeFormatPonyfill} from './relative-time-ponyfill.js'
 import {isDuration, withinDuration} from './duration.js'
 import {strftime} from './strftime.js'
 const root = (typeof globalThis !== 'undefined' ? globalThis : window) as typeof window
 const HTMLElement = root.HTMLElement || (null as unknown as typeof window['HTMLElement'])
-
-const supportsIntlRelativeTime = typeof Intl !== 'undefined' && 'RelativeTimeFormat' in Intl
-const RelativeTimeFormat = supportsIntlRelativeTime ? Intl.RelativeTimeFormat : RelativeTimeFormatPonyfill
 
 export type Format = 'auto' | 'micro' | 'elapsed'
 export type Tense = 'auto' | 'past' | 'future'
@@ -146,7 +142,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     const inFuture = now.getTime() < date.getTime()
     const within = withinDuration(now, date, this.threshold)
     const locale = this.#lang
-    const relativeFormat = new RelativeTimeFormat(locale, {numeric: 'auto'})
+    const relativeFormat = new Intl.RelativeTimeFormat(locale, {numeric: 'auto'})
 
     if (tense === 'past' || (tense === 'auto' && !inFuture && within)) {
       const [int, unit] = micro ? microTimeAgo(date) : timeAgo(date)
