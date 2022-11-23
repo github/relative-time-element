@@ -210,40 +210,6 @@ For dates outside of the specified `threshold`, the formatting of the date can b
 
 Lang is a [built-in global attribute](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/lang). Relative Time will use this to provide an applicable language to the `Intl` APIs. If the individual element does not have a `lang` attribute then it will traverse upwards in the tree to find the closest element that does, or default the lang to `en`.
 
-## Additional Elements
-
-In addition to `<relative-time>` this package provides convenience elements, which are configurations over `<relative-time>`. These additional elements will be removed in a future major version release.
-
-### time-until
-
-This element is the same as `<relative-time tense="future">`. `.tense` will always return `future`, regardless of the value set in the attribute.
-
-You can use `time-until` to always display a relative date that's in the future. It operates much like `<relative-time>`, except in the reverse, with past events shown as `just now` and future events always showing as relative:
-
-- in 10 years
-- in 20 days
-- in 6 hours
-- in 20 minutes
-- in 30 seconds
-- just now
-
-Add a `<time-until>` element to your markup. Provide a default formatted date as the element's text content (e.g. April 1, 2024).
-
-``` html
-<time-until datetime="2024-04-01T16:30:00-08:00">
-  April 1, 2024
-</time-until>
-```
-#### Micro format
-
-The optional `format="micro"` attribute shortens the descriptions to 1m, 1h, 1d, 1y.
-
-``` html
-<time-until datetime="2012-04-01T16:30:00-08:00" format="micro">
-  April 1, 2014
-</time-until>
-```
-
 ## Browser Support
 
 Browsers without native [custom element support][support] require a [polyfill][].
