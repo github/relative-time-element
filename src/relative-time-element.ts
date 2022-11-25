@@ -79,6 +79,7 @@ const dateObserver = new (class {
 
 export default class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFormatOptions {
   #customTitle = false
+  #updating = false
 
   get #lang() {
     return this.closest('[lang]')?.getAttribute('lang') ?? 'default'
@@ -336,11 +337,16 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
   // Internal: Refresh the time element's formatted date when an attribute changes.
   attributeChangedCallback(attrName: string, oldValue: unknown, newValue: unknown): void {
     if (oldValue === newValue) return
-    if (attrName === 'title') this.#customTitle = true
-    if (!this.#customTitle) this.update()
+    if (attrName === 'title') {
+      this.#customTitle = newValue !== null && this.getFormattedTitle() !== newValue
+    }
+    if (!this.#updating && !(attrName === 'title' && this.#customTitle)) {
+      this.update()
+    }
   }
 
   update() {
+    this.#updating = true
     const oldText: string = this.#renderRoot.textContent || ''
     const oldTitle: string = this.getAttribute('title') || ''
     let newTitle: string = oldTitle
@@ -348,10 +354,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     const now = new Date()
     if (!this.#customTitle) {
       newTitle = this.getFormattedTitle() || ''
-      if (newTitle) {
-        this.setAttribute('title', newTitle)
-        this.#customTitle = false
-      }
+      if (newTitle) this.setAttribute('title', newTitle)
     }
 
     newText = this.getFormattedDate(now) || ''
@@ -374,5 +377,6 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     } else {
       dateObserver.unobserve(this)
     }
+    this.#updating = false
   }
 }
