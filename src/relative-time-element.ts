@@ -79,7 +79,7 @@ const dateObserver = new (class {
 
 export default class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFormatOptions {
   #customTitle = false
-  #updating = false
+  #updating: false | Promise<void> = false
 
   get #lang() {
     return this.closest('[lang]')?.getAttribute('lang') ?? 'default'
@@ -341,12 +341,14 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
       this.#customTitle = newValue !== null && this.getFormattedTitle() !== newValue
     }
     if (!this.#updating && !(attrName === 'title' && this.#customTitle)) {
-      this.update()
+      this.#updating = (async () => {
+        await Promise.resolve()
+        this.update()
+      })()
     }
   }
 
   update() {
-    this.#updating = true
     const oldText: string = this.#renderRoot.textContent || ''
     const oldTitle: string = this.getAttribute('title') || ''
     let newTitle: string = oldTitle

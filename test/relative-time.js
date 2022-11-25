@@ -66,7 +66,7 @@ suite('relative-time', function () {
     el.setAttribute('hour', '2-digit')
     el.setAttribute('minute', '2-digit')
     await Promise.resolve()
-    assert.equal(counter, 3)
+    assert.equal(counter, 1)
   })
 
   test('sets title back to default if removed', async () => {
