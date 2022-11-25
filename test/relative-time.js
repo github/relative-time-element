@@ -56,6 +56,19 @@ suite('relative-time', function () {
     assert.equal(counter, 1)
     el.setAttribute('title', 'another custom')
     assert.equal(counter, 1)
+    el.removeAttribute('title')
+    assert.equal(counter, 2)
+  })
+
+  test('sets title back to default if removed', () => {
+    const el = document.createElement('relative-time')
+    el.setAttribute('datetime', new Date().toISOString())
+    assert.ok(el.getAttribute('title'))
+    const text = el.getAttribute('title')
+    el.setAttribute('title', 'custom')
+    assert.equal(el.getAttribute('title'), 'custom')
+    el.removeAttribute('title')
+    assert.equal(el.getAttribute('title'), text)
   })
 
   test('shadowDOM reflects textContent with invalid date', () => {
