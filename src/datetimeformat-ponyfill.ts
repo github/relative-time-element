@@ -3,6 +3,10 @@ export class DateTimeFormat implements Intl.DateTimeFormat {
   #options: Intl.ResolvedDateTimeFormatOptions
 
   constructor(locale: string, options: Intl.DateTimeFormatOptions) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      `time-elements v5.0.0 will no longer ship with DateTimeFormat ponyfill. It must be polyfilled for continued support in older browsers`
+    )
     this.#options = {
       locale: 'en',
       calendar: 'gregory',

@@ -113,7 +113,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
   // value takes precedence over this custom format.
   //
   // Returns a formatted time String.
-  getFormattedTitle(): string | undefined {
+  #getFormattedTitle(): string | undefined {
     const date = this.date
     if (!date) return
 
@@ -127,7 +127,13 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     }).format(date)
   }
 
-  getFormattedDate(now = new Date()): string | undefined {
+  getFormattedTitle(): string | undefined {
+    // eslint-disable-next-line no-console
+    console.warn(`Calling getFormattedTitle is deprecated and will be removed in v5.0.0`)
+    return this.#getFormattedTitle()
+  }
+
+  #getFormattedDate(now = new Date()): string | undefined {
     const date = this.date
     if (!date) return
     const format = this.format
@@ -166,6 +172,12 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
       timeZoneName: this.timeZoneName
     })
     return `${this.prefix} ${formatter.format(date)}`.trim()
+  }
+
+  getFormattedDate(now = new Date()): string | undefined {
+    // eslint-disable-next-line no-console
+    console.warn(`Calling getFormattedTitle is deprecated and will be removed in v5.0.0`)
+    return this.#getFormattedDate(now)
   }
 
   get second() {
@@ -301,11 +313,23 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     const format = this.getAttribute('format')
     if (format === 'micro') return 'micro'
     if (format === 'elapsed') return 'elapsed'
-    if (format && format.includes('%')) return format
+    if (format && format.includes('%')) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        `srftime formatting is deprecated and will be removed in v5.0.0. stftime formats will default to 'auto'`
+      )
+      return format
+    }
     return 'auto'
   }
 
   set format(value: Format) {
+    if (value && value.includes('%')) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        `srftime formatting is deprecated and will be removed in v5.0.0. stftime formats will default to 'auto'`
+      )
+    }
     this.setAttribute('format', value)
   }
 
@@ -338,7 +362,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
   attributeChangedCallback(attrName: string, oldValue: unknown, newValue: unknown): void {
     if (oldValue === newValue) return
     if (attrName === 'title') {
-      this.#customTitle = newValue !== null && this.getFormattedTitle() !== newValue
+      this.#customTitle = newValue !== null && this.#getFormattedTitle() !== newValue
     }
     if (!this.#updating && !(attrName === 'title' && this.#customTitle)) {
       this.#updating = (async () => {
@@ -355,11 +379,11 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     let newText: string = oldText
     const now = new Date()
     if (!this.#customTitle) {
-      newTitle = this.getFormattedTitle() || ''
+      newTitle = this.#getFormattedTitle() || ''
       if (newTitle) this.setAttribute('title', newTitle)
     }
 
-    newText = this.getFormattedDate(now) || ''
+    newText = this.#getFormattedDate(now) || ''
     if (newText) {
       this.#renderRoot.textContent = newText
     } else if (this.shadowRoot === this.#renderRoot && this.textContent) {
