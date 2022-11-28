@@ -5,3 +5,4 @@ import TimeUntilElement from './time-until-element-define.js'
 
 export {LocalTimeElement, RelativeTimeElement, TimeAgoElement, TimeUntilElement}
 export default RelativeTimeElement
+export * from './relative-time-element-define.js'
