@@ -13,12 +13,20 @@ try {
   }
 }
 
+type JSXBaseElement = JSX.IntrinsicElements extends {span: unknown}
+  ? JSX.IntrinsicElements['span']
+  : Record<string, unknown>
 declare global {
   interface Window {
     RelativeTimeElement: typeof RelativeTimeElement
   }
   interface HTMLElementTagNameMap {
     'relative-time': RelativeTimeElement
+  }
+  namespace JSX {
+    interface IntrinsicElements {
+      ['relative-time']: JSXBaseElement & Partial<Omit<RelativeTimeElement, keyof HTMLElement>>
+    }
   }
 }
 

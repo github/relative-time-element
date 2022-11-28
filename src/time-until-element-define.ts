@@ -13,12 +13,20 @@ try {
   }
 }
 
+type JSXBaseElement = JSX.IntrinsicElements extends {span: unknown}
+  ? JSX.IntrinsicElements['span']
+  : Record<string, unknown>
 declare global {
   interface Window {
     TimeUntilElement: typeof TimeUntilElement
   }
   interface HTMLElementTagNameMap {
     'time-until': TimeUntilElement
+  }
+  namespace JSX {
+    interface IntrinsicElements {
+      ['time-until']: JSXBaseElement & Partial<Omit<TimeUntilElement, keyof HTMLElement>>
+    }
   }
 }
 
