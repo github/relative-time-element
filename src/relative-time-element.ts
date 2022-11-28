@@ -127,7 +127,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     }).format(date)
   }
 
-  getFormattedTitle(): string | undefined {
+  private getFormattedTitle(): string | undefined {
     // eslint-disable-next-line no-console
     console.warn(`Calling getFormattedTitle is deprecated and will be removed in v5.0.0`)
     return this.#getFormattedTitle()
@@ -174,7 +174,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     return `${this.prefix} ${formatter.format(date)}`.trim()
   }
 
-  getFormattedDate(now = new Date()): string | undefined {
+  private getFormattedDate(now = new Date()): string | undefined {
     // eslint-disable-next-line no-console
     console.warn(`Calling getFormattedTitle is deprecated and will be removed in v5.0.0`)
     return this.#getFormattedDate(now)
