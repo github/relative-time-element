@@ -12,7 +12,7 @@ const DateTimeFormat = supportsIntlDatetime ? Intl.DateTimeFormat : DateTimeForm
 const supportsIntlRelativeTime = typeof Intl !== 'undefined' && 'RelativeTimeFormat' in Intl
 const RelativeTimeFormat = supportsIntlRelativeTime ? Intl.RelativeTimeFormat : RelativeTimeFormatPonyfill
 
-export type Format = 'auto' | 'micro' | 'elapsed' | string
+export type Format = 'auto' | 'micro' | 'elapsed'
 export type Tense = 'auto' | 'past' | 'future'
 
 export class RelativeTimeUpdatedEvent extends Event {
@@ -318,7 +318,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
       console.warn(
         `srftime formatting is deprecated and will be removed in v5.0.0. stftime formats will default to 'auto'`
       )
-      return format
+      return format as unknown as Format
     }
     return 'auto'
   }

@@ -13,7 +13,9 @@ export default class LocalTimeElement extends RelativeTimeElement {
 
   get format() {
     if (super.format.includes('%')) return super.format
-    if (!this.day && !this.month && !this.year && !this.timeZoneName && !this.hour && !this.minute) return ''
+    if (!this.day && !this.month && !this.year && !this.timeZoneName && !this.hour && !this.minute) {
+      return '' as unknown as 'auto'
+    }
     return 'auto'
   }
 
