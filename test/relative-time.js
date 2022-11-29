@@ -383,7 +383,8 @@ suite('relative-time', function () {
       const time = document.createElement('relative-time')
       time.setAttribute('datetime', now)
       time.setAttribute('lang', 'es')
-      assert.equal(time.getFormattedDate(), 'hace 3 días')
+      await Promise.resolve()
+      assert.equal(time.shadowRoot.textContent, 'hace 3 días')
     })
 
     test('rewrites given parent lang attribute', async () => {
@@ -393,7 +394,8 @@ suite('relative-time', function () {
       const time = document.createElement('relative-time')
       container.appendChild(time)
       time.setAttribute('datetime', now)
-      assert.equal(time.getFormattedDate(), 'hace 3 días')
+      await Promise.resolve()
+      assert.equal(time.shadowRoot.textContent, 'hace 3 días')
     })
   }
 
@@ -605,7 +607,7 @@ suite('relative-time', function () {
   })
 
   suite('[threshold=0][prefix=""]', () => {
-    test('getFormattedDate with only date attributes', async () => {
+    test('with only date attributes', async () => {
       const time = document.createElement('relative-time')
       time.setAttribute('datetime', '1970-01-01T00:00:00.000Z')
       time.setAttribute('threshold', '0')
@@ -618,7 +620,7 @@ suite('relative-time', function () {
       assert.include(['Dec 31, 1969', '31 Dec 1969', 'Jan 1, 1970', '1 Jan 1970'], time.shadowRoot.textContent)
     })
 
-    test('getFormattedDate with empty year attribute', async () => {
+    test('with empty year attribute', async () => {
       const time = document.createElement('relative-time')
       time.setAttribute('datetime', '1970-01-01T00:00:00.000Z')
       time.setAttribute('threshold', '0')
@@ -631,7 +633,7 @@ suite('relative-time', function () {
       assert.include(['Dec 31', '31 Dec', 'Jan 1', '1 Jan'], time.shadowRoot.textContent)
     })
 
-    test('getFormattedDate with only time attributes', async () => {
+    test('with only time attributes', async () => {
       const time = document.createElement('relative-time')
       time.setAttribute('lang', 'en-US')
       time.setAttribute('datetime', '1970-01-01T00:00:00.000Z')
@@ -642,11 +644,12 @@ suite('relative-time', function () {
       time.setAttribute('day', '')
       time.setAttribute('hour', 'numeric')
       time.setAttribute('minute', '2-digit')
+      await Promise.resolve()
 
       if ('Intl' in window) {
-        assert.match(time.getFormattedDate(), /^\d{1,2}:\d\d (AM|PM)$/)
+        assert.match(time.shadowRoot.textContent, /^\d{1,2}:\d\d (AM|PM)$/)
       } else {
-        assert.match(time.getFormattedDate(), /^\d{2}:\d{2}$/)
+        assert.match(time.shadowRoot.textContent, /^\d{2}:\d{2}$/)
       }
     })
 
