@@ -359,15 +359,6 @@ suite('relative-time', function () {
     assert.equal(root.children[0].shadowRoot.textContent, 'now')
   })
 
-  test('allows for use of custom formats', async () => {
-    const time = document.createElement('relative-time')
-    time.shadowRoot.textContent = 'Jun 30'
-    time.setAttribute('datetime', '2022-01-10T12:00:00')
-    time.setAttribute('format', '%Y')
-    await Promise.resolve()
-    assert.equal(time.shadowRoot.textContent, '2022')
-  })
-
   test('ignores blank formats', async () => {
     const time = document.createElement('relative-time')
     time.shadowRoot.textContent = 'Jun 30'
@@ -749,9 +740,6 @@ suite('relative-time', function () {
       {datetime: '2022-10-24t14:46:00.000z', tense: 'past', format: 'micro', expected: '1m'},
       {datetime: '2022-10-24t14:46:00.000z', tense: 'auto', format: 'micro', expected: '1m'},
       {datetime: '2022-10-24t14:46:00.000z', tense: 'auto', format: 'auto', expected: 'now'},
-      {datetime: '2022-10-24t14:46:00.000z', tense: 'auto', format: '%Y-%m-%d', expected: '2022-10-24'},
-      {datetime: '2022-10-24t14:46:00.000z', format: '%A %b %d', lang: 'es', expected: 'lunes oct 24'},
-      {datetime: '2022-10-24t14:46:00.000z', format: '%A %b %d', lang: 'pl', expected: 'poniedziałek paź 24'},
 
       // Dates in the past
       {datetime: '2022-09-24T14:46:00.000Z', tense: 'future', format: 'micro', expected: '1m'},

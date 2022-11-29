@@ -1,6 +1,5 @@
 import {unitNames, Unit, microTimeAgo, microTimeUntil, timeUntil, timeAgo, elapsedTime} from './duration-format.js'
 import {isDuration, withinDuration} from './duration.js'
-import {strftime} from './strftime.js'
 const root = (typeof globalThis !== 'undefined' ? globalThis : window) as typeof window
 const HTMLElement = root.HTMLElement || (null as unknown as typeof window['HTMLElement'])
 
@@ -130,9 +129,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     const date = this.date
     if (!date) return
     const format = this.format
-    if (format !== 'auto' && format !== 'micro' && format !== 'elapsed') {
-      return strftime(date, format, this.#lang)
-    } else if (format === 'elapsed') {
+    if (format === 'elapsed') {
       const precisionIndex = unitNames.indexOf(this.precision) || 0
       const units = elapsedTime(date).filter(unit => unitNames.indexOf(unit[1]) >= precisionIndex)
       return units.map(([int, unit]) => `${int}${unit[0]}`).join(' ') || `0${this.precision[0]}`
@@ -309,23 +306,10 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     const format = this.getAttribute('format')
     if (format === 'micro') return 'micro'
     if (format === 'elapsed') return 'elapsed'
-    if (format && format.includes('%')) {
-      // eslint-disable-next-line no-console
-      console.warn(
-        `srftime formatting is deprecated and will be removed in v4.0.0. stftime formats will default to 'auto'`
-      )
-      return format as unknown as Format
-    }
     return 'auto'
   }
 
   set format(value: Format) {
-    if (value && value.includes('%')) {
-      // eslint-disable-next-line no-console
-      console.warn(
-        `srftime formatting is deprecated and will be removed in v4.0.0. stftime formats will default to 'auto'`
-      )
-    }
     this.setAttribute('format', value)
   }
 
