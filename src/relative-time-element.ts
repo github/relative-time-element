@@ -1,16 +1,7 @@
 import {unitNames, Unit, microTimeAgo, microTimeUntil, timeUntil, timeAgo, elapsedTime} from './duration-format.js'
-import {DateTimeFormat as DateTimeFormatPonyFill} from './datetimeformat-ponyfill.js'
-import {RelativeTimeFormat as RelativeTimeFormatPonyfill} from './relative-time-ponyfill.js'
 import {isDuration, withinDuration} from './duration.js'
-import {strftime} from './strftime.js'
 const root = (typeof globalThis !== 'undefined' ? globalThis : window) as typeof window
 const HTMLElement = root.HTMLElement || (null as unknown as typeof window['HTMLElement'])
-
-const supportsIntlDatetime = typeof Intl !== 'undefined' && 'DateTimeFormat' in Intl
-const DateTimeFormat = supportsIntlDatetime ? Intl.DateTimeFormat : DateTimeFormatPonyFill
-
-const supportsIntlRelativeTime = typeof Intl !== 'undefined' && 'RelativeTimeFormat' in Intl
-const RelativeTimeFormat = supportsIntlRelativeTime ? Intl.RelativeTimeFormat : RelativeTimeFormatPonyfill
 
 export type Format = 'auto' | 'micro' | 'elapsed'
 export type Tense = 'auto' | 'past' | 'future'
@@ -116,8 +107,9 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
   #getFormattedTitle(): string | undefined {
     const date = this.date
     if (!date) return
+    if (typeof Intl === 'undefined' || !Intl.DateTimeFormat) return
 
-    return new DateTimeFormat(this.#lang, {
+    return new Intl.DateTimeFormat(this.#lang, {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
@@ -127,19 +119,11 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     }).format(date)
   }
 
-  private getFormattedTitle(): string | undefined {
-    // eslint-disable-next-line no-console
-    console.warn(`Calling getFormattedTitle is deprecated and will be removed in v4.0.0`)
-    return this.#getFormattedTitle()
-  }
-
   #getFormattedDate(now = new Date()): string | undefined {
     const date = this.date
     if (!date) return
     const format = this.format
-    if (format !== 'auto' && format !== 'micro' && format !== 'elapsed') {
-      return strftime(date, format, this.#lang)
-    } else if (format === 'elapsed') {
+    if (format === 'elapsed') {
       const precisionIndex = unitNames.indexOf(this.precision) || 0
       const units = elapsedTime(date).filter(unit => unitNames.indexOf(unit[1]) >= precisionIndex)
       return units.map(([int, unit]) => `${int}${unit[0]}`).join(' ') || `0${this.precision[0]}`
@@ -149,19 +133,22 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     const inFuture = now.getTime() < date.getTime()
     const within = withinDuration(now, date, this.threshold)
     const locale = this.#lang
-    const relativeFormat = new RelativeTimeFormat(locale, {numeric: 'auto'})
+    if (typeof Intl !== 'undefined' && Intl.RelativeTimeFormat) {
+      const relativeFormat = new Intl.RelativeTimeFormat(locale, {numeric: 'auto'})
 
-    if (tense === 'past' || (tense === 'auto' && !inFuture && within)) {
-      const [int, unit] = micro ? microTimeAgo(date) : timeAgo(date)
-      if (micro) return `${int}${unit[0]}`
-      return relativeFormat.format(int, unit)
+      if (tense === 'past' || (tense === 'auto' && !inFuture && within)) {
+        const [int, unit] = micro ? microTimeAgo(date) : timeAgo(date)
+        if (micro) return `${int}${unit[0]}`
+        return relativeFormat.format(int, unit)
+      }
+      if (tense === 'future' || (tense === 'auto' && inFuture && within)) {
+        const [int, unit] = micro ? microTimeUntil(date) : timeUntil(date)
+        if (micro) return `${int}${unit[0]}`
+        return relativeFormat.format(int, unit)
+      }
     }
-    if (tense === 'future' || (tense === 'auto' && inFuture && within)) {
-      const [int, unit] = micro ? microTimeUntil(date) : timeUntil(date)
-      if (micro) return `${int}${unit[0]}`
-      return relativeFormat.format(int, unit)
-    }
-    const formatter = new DateTimeFormat(locale, {
+    if (typeof Intl === 'undefined' || !Intl.DateTimeFormat) return
+    const formatter = new Intl.DateTimeFormat(locale, {
       second: this.second,
       minute: this.minute,
       hour: this.hour,
@@ -172,12 +159,6 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
       timeZoneName: this.timeZoneName
     })
     return `${this.prefix} ${formatter.format(date)}`.trim()
-  }
-
-  private getFormattedDate(now = new Date()): string | undefined {
-    // eslint-disable-next-line no-console
-    console.warn(`Calling getFormattedTitle is deprecated and will be removed in v4.0.0`)
-    return this.#getFormattedDate(now)
   }
 
   get second() {
@@ -313,23 +294,10 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     const format = this.getAttribute('format')
     if (format === 'micro') return 'micro'
     if (format === 'elapsed') return 'elapsed'
-    if (format && format.includes('%')) {
-      // eslint-disable-next-line no-console
-      console.warn(
-        `srftime formatting is deprecated and will be removed in v4.0.0. stftime formats will default to 'auto'`
-      )
-      return format as unknown as Format
-    }
     return 'auto'
   }
 
   set format(value: Format) {
-    if (value && value.includes('%')) {
-      // eslint-disable-next-line no-console
-      console.warn(
-        `srftime formatting is deprecated and will be removed in v4.0.0. stftime formats will default to 'auto'`
-      )
-    }
     this.setAttribute('format', value)
   }
 

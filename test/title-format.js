@@ -2,15 +2,16 @@ import {assert} from '@open-wc/testing'
 import '../src/index.ts'
 
 suite('title-format', function () {
-  test('null getFormattedTitle if datetime is missing', async () => {
+  test('null title if datetime is missing', async () => {
     const time = document.createElement('relative-time')
-    assert.isUndefined(time.getFormattedTitle())
+    assert.equal(time.getAttribute('title'), null)
   })
 
-  test('locale-aware getFormattedTitle for datetime value', async () => {
+  test('locale-aware title for datetime value', async () => {
     const time = document.createElement('relative-time')
     time.setAttribute('datetime', '1970-01-01T00:00:00.000Z')
-    assert.match(time.getFormattedTitle(), /\d{4}/)
+    await Promise.resolve()
+    assert.match(time.getAttribute('title'), /\d{4}/)
   })
 
   test('skips setting a title attribute if already provided', async () => {
