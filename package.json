@@ -1,6 +1,6 @@
 {
-  "name": "@github/time-elements",
-  "version": "3.1.2",
+  "name": "@github/relative-time-element",
+  "version": "0.0.0-development",
   "main": "dist/bundle.js",
   "type": "module",
   "module": "dist/index.js",
