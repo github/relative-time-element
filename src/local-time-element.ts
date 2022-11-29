@@ -1,13 +1,21 @@
 import RelativeTimeElement from './relative-time-element.js'
 
 export default class LocalTimeElement extends RelativeTimeElement {
+  constructor() {
+    super()
+    // eslint-disable-next-line no-console
+    console.warn('local-time element is deprecated and will be removed in v5.0.0')
+  }
+
   get prefix() {
     return ''
   }
 
   get format() {
     if (super.format.includes('%')) return super.format
-    if (!this.day && !this.month && !this.year && !this.timeZoneName && !this.hour && !this.minute) return ''
+    if (!this.day && !this.month && !this.year && !this.timeZoneName && !this.hour && !this.minute) {
+      return '' as unknown as 'auto'
+    }
     return 'auto'
   }
 
