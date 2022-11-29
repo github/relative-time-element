@@ -142,17 +142,19 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     const inFuture = now.getTime() < date.getTime()
     const within = withinDuration(now, date, this.threshold)
     const locale = this.#lang
-    const relativeFormat = new Intl.RelativeTimeFormat(locale, {numeric: 'auto'})
+    if (typeof Intl !== 'undefined' && Intl.RelativeTimeFormat) {
+      const relativeFormat = new Intl.RelativeTimeFormat(locale, {numeric: 'auto'})
 
-    if (tense === 'past' || (tense === 'auto' && !inFuture && within)) {
-      const [int, unit] = micro ? microTimeAgo(date) : timeAgo(date)
-      if (micro) return `${int}${unit[0]}`
-      return relativeFormat.format(int, unit)
-    }
-    if (tense === 'future' || (tense === 'auto' && inFuture && within)) {
-      const [int, unit] = micro ? microTimeUntil(date) : timeUntil(date)
-      if (micro) return `${int}${unit[0]}`
-      return relativeFormat.format(int, unit)
+      if (tense === 'past' || (tense === 'auto' && !inFuture && within)) {
+        const [int, unit] = micro ? microTimeAgo(date) : timeAgo(date)
+        if (micro) return `${int}${unit[0]}`
+        return relativeFormat.format(int, unit)
+      }
+      if (tense === 'future' || (tense === 'auto' && inFuture && within)) {
+        const [int, unit] = micro ? microTimeUntil(date) : timeUntil(date)
+        if (micro) return `${int}${unit[0]}`
+        return relativeFormat.format(int, unit)
+      }
     }
     if (typeof Intl === 'undefined' || !Intl.DateTimeFormat) return
     const formatter = new Intl.DateTimeFormat(locale, {
