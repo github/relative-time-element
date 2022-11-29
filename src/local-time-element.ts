@@ -4,7 +4,7 @@ export default class LocalTimeElement extends RelativeTimeElement {
   constructor() {
     super()
     // eslint-disable-next-line no-console
-    console.warn('local-time element is deprecated and will be removed in v5.0.0')
+    console.warn('local-time element is deprecated and will be removed in v4.0.0')
   }
 
   get prefix() {

@@ -5,7 +5,7 @@ export default class TimeAgoElement extends RelativeTimeElement {
   constructor() {
     super()
     // eslint-disable-next-line no-console
-    console.warn('time-ago element is deprecated and will be removed in v5.0.0')
+    console.warn('time-ago element is deprecated and will be removed in v4.0.0')
   }
 
   get tense(): Tense {

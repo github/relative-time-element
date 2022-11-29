@@ -129,7 +129,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
 
   private getFormattedTitle(): string | undefined {
     // eslint-disable-next-line no-console
-    console.warn(`Calling getFormattedTitle is deprecated and will be removed in v5.0.0`)
+    console.warn(`Calling getFormattedTitle is deprecated and will be removed in v4.0.0`)
     return this.#getFormattedTitle()
   }
 
@@ -176,7 +176,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
 
   private getFormattedDate(now = new Date()): string | undefined {
     // eslint-disable-next-line no-console
-    console.warn(`Calling getFormattedTitle is deprecated and will be removed in v5.0.0`)
+    console.warn(`Calling getFormattedTitle is deprecated and will be removed in v4.0.0`)
     return this.#getFormattedDate(now)
   }
 
@@ -316,7 +316,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     if (format && format.includes('%')) {
       // eslint-disable-next-line no-console
       console.warn(
-        `srftime formatting is deprecated and will be removed in v5.0.0. stftime formats will default to 'auto'`
+        `srftime formatting is deprecated and will be removed in v4.0.0. stftime formats will default to 'auto'`
       )
       return format as unknown as Format
     }
@@ -327,7 +327,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     if (value && value.includes('%')) {
       // eslint-disable-next-line no-console
       console.warn(
-        `srftime formatting is deprecated and will be removed in v5.0.0. stftime formats will default to 'auto'`
+        `srftime formatting is deprecated and will be removed in v4.0.0. stftime formats will default to 'auto'`
       )
     }
     this.setAttribute('format', value)
