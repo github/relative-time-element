@@ -206,15 +206,19 @@ Lang is a [built-in global attribute](https://developer.mozilla.org/en-US/docs/W
 
 ## Browser Support
 
-Browsers without native [custom element support][support] require a [polyfill][].
+Browsers without native [custom element support][support] require a [polyfill][ce-polyfill].
+
+Browsers without native support for [`Intl.RelativeTimeFormat`][relativetimeformat] or [`Intl.DateTimeFormat`][datetimeformat] (such as Safari 13 or Edge 18) will also need polyfills.
 
 - Chrome
 - Firefox
-- Safari
-- Microsoft Edge
+- Safari (version 14 and above)
+- Microsoft Edge (version 79 and above)
 
 [support]: https://caniuse.com/custom-elementsv1
-[polyfill]: https://github.com/webcomponents/custom-elements
+[relativetimeformat]: https://caniuse.com/mdn-javascript_builtins_intl_relativetimeformat_format
+[datetimeformat]: https://caniuse.com/mdn-javascript_builtins_intl_datetimeformat_format
+[ce-polyfill]: https://github.com/webcomponents/custom-elements
 
 ## See Also
 
