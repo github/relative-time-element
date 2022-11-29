@@ -112,6 +112,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
   #getFormattedTitle(): string | undefined {
     const date = this.date
     if (!date) return
+    if (typeof Intl === 'undefined' || !Intl.DateTimeFormat) return
 
     return new Intl.DateTimeFormat(this.#lang, {
       day: 'numeric',
@@ -157,6 +158,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
       if (micro) return `${int}${unit[0]}`
       return relativeFormat.format(int, unit)
     }
+    if (typeof Intl === 'undefined' || !Intl.DateTimeFormat) return
     const formatter = new Intl.DateTimeFormat(locale, {
       second: this.second,
       minute: this.minute,
