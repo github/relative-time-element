@@ -119,12 +119,6 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     }).format(date)
   }
 
-  private getFormattedTitle(): string | undefined {
-    // eslint-disable-next-line no-console
-    console.warn(`Calling getFormattedTitle is deprecated and will be removed in v4.0.0`)
-    return this.#getFormattedTitle()
-  }
-
   #getFormattedDate(now = new Date()): string | undefined {
     const date = this.date
     if (!date) return
