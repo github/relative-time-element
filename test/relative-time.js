@@ -110,7 +110,7 @@ suite('relative-time', function () {
     const members = [
       ...Object.getOwnPropertyNames(RelativeTimeElement.prototype),
       ...Object.getOwnPropertyNames(HTMLElement.prototype),
-      ...ALLOWED_PROPERTIES
+      ...ALLOWED_PROPERTIES,
     ]
     const observedAttributes = new Set(RelativeTimeElement.observedAttributes)
     for (const member of members) observedAttributes.delete(member)
@@ -837,36 +837,36 @@ suite('relative-time', function () {
         datetime: '2021-12-31T12:00:00.000Z',
         tense: 'past',
         format: 'auto',
-        expected: 'yesterday'
+        expected: 'yesterday',
       },
       {
         reference: '2022-01-01T12:00:00.000Z',
         datetime: '2021-12-31T12:00:00.000Z',
         tense: 'past',
         format: 'micro',
-        expected: '1d'
+        expected: '1d',
       },
       {
         reference: '2022-12-31T12:00:00.000Z',
         datetime: '2022-01-01T12:00:00.000Z',
         tense: 'past',
         format: 'micro',
-        expected: '364d'
+        expected: '364d',
       },
       {
         reference: '2022-12-31T12:00:00.000Z',
         datetime: '2024-03-01T12:00:00.000Z',
         tense: 'future',
         format: 'auto',
-        expected: 'next year'
+        expected: 'next year',
       },
       {
         reference: '2022-12-31T12:00:00.000Z',
         datetime: '2024-03-01T12:00:00.000Z',
         tense: 'future',
         format: 'micro',
-        expected: '1y'
-      }
+        expected: '1y',
+      },
     ])
 
     for (const {datetime, expected, tense, format, precision = '', lang = null, reference = referenceDate} of tests) {

@@ -47,8 +47,8 @@ suite('duration format', function () {
       method: timeUntil,
       reference: '2022-12-31T12:00:00.000Z',
       datetime: '2024-03-01T12:00:00.000Z',
-      expected: [1, 'year']
-    }
+      expected: [1, 'year'],
+    },
   ])
 
   for (const {method, datetime, expected, reference = referenceDate} of tests) {
