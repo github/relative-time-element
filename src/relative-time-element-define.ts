@@ -13,9 +13,9 @@ try {
   }
 }
 
-type JSXBaseElement = JSX.IntrinsicElements extends {span: unknown}
-  ? JSX.IntrinsicElements['span']
-  : Record<string, unknown>
+type JSXBase = JSX.IntrinsicElements extends {span: unknown}
+  ? JSX.IntrinsicElements
+  : Record<string, Record<string, unknown>>
 declare global {
   interface Window {
     RelativeTimeElement: typeof RelativeTimeElement
@@ -25,7 +25,7 @@ declare global {
   }
   namespace JSX {
     interface IntrinsicElements {
-      ['relative-time']: JSXBaseElement & Partial<Omit<RelativeTimeElement, keyof HTMLElement>>
+      ['relative-time']: JSXBase['span'] & Partial<Omit<RelativeTimeElement, keyof HTMLElement>>
     }
   }
 }
