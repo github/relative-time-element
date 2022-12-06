@@ -10,7 +10,7 @@ export class Duration {
     public days = 0,
     public hours = 0,
     public minutes = 0,
-    public seconds = 0
+    public seconds = 0,
   ) {}
 
   abs() {
@@ -21,7 +21,7 @@ export class Duration {
       Math.abs(this.days),
       Math.abs(this.hours),
       Math.abs(this.minutes),
-      Math.abs(this.seconds)
+      Math.abs(this.seconds),
     )
   }
 

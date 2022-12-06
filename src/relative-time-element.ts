@@ -95,7 +95,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
       'format',
       'datetime',
       'lang',
-      'title'
+      'title',
     ]
   }
 
@@ -115,7 +115,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
       year: 'numeric',
       hour: 'numeric',
       minute: '2-digit',
-      timeZoneName: 'short'
+      timeZoneName: 'short',
     }).format(date)
   }
 
@@ -156,7 +156,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
       day: this.day,
       month: this.month,
       year: this.year,
-      timeZoneName: this.timeZoneName
+      timeZoneName: this.timeZoneName,
     })
     return `${this.prefix} ${formatter.format(date)}`.trim()
   }
@@ -245,7 +245,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
   }
 
   set timeZoneName(
-    value: 'long' | 'short' | 'shortOffset' | 'longOffset' | 'shortGeneric' | 'longGeneric' | undefined
+    value: 'long' | 'short' | 'shortOffset' | 'longOffset' | 'shortGeneric' | 'longGeneric' | undefined,
   ) {
     this.setAttribute('time-zone-name', value || '')
   }

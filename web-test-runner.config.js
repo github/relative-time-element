@@ -5,7 +5,7 @@ const browser = product =>
     product,
     createBrowserContext({browser: context}) {
       return context.newContext({timezoneId: 'Asia/Dubai'})
-    }
+    },
   })
 
 export default {
@@ -16,7 +16,7 @@ export default {
   testFramework: {
     config: {
       ui: 'tdd',
-      timeout: 500
-    }
-  }
+      timeout: 500,
+    },
+  },
 }
