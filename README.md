@@ -191,13 +191,16 @@ When formatting an absolute date (see above `threshold` for more details) it can
 
 ##### formatStyle (`'long'|'short'|'narrow'`, default: `'narrow'|'long'`)
 
-If `'format'` is `auto` then `formatStyle` will be used to determine the length of the unit names. This value is passed to [Intl.DateTimeFormat](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat) as the `style` option. Some examples of how this can be used:
+If `'format'` is `auto` or `elapsed` then `formatStyle` will be used to determine the length of the unit names. This value is passed to [Intl.DateTimeFormat](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat) as the `style` option. Some examples of how this can be used:
 
-| `format=`  | `formatStyle=` | Display             |
-|:----------:|:--------------:|:-------------------:|
-| auto       | long           | in 1 month          |
-| auto       | short          | in 1 mo.            |
-| auto       | narrow         | in 1 mo.            |
+| `format=`  | `formatStyle=` | Display                  |
+|:----------:|:--------------:|:------------------------:|
+| auto       | long           | in 1 month               |
+| auto       | short          | in 1 mo.                 |
+| auto       | narrow         | in 1 mo.                 |
+| elapsed    | long           | 1 month, 2 days, 4 hours |
+| auto       | short          | 1 mth, 2 days, 4 hr      |
+| auto       | narrow         | 1m 2d 4h                 |
 
 ##### second, minute, hour, weekday, day, month, year, timeZoneName
 

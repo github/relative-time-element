@@ -1,4 +1,6 @@
 const durationRe = /^[-+]?P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)W)?(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?$/
+export const unitNames = ['year', 'month', 'day', 'hour', 'minute', 'second', 'millisecond'] as const
+export type Unit = typeof unitNames[number]
 
 export const isDuration = (str: string) => durationRe.test(str)
 
@@ -61,4 +63,25 @@ export function withinDuration(a: Date | number, b: Date | number, str: string):
   const threshold = applyDuration(a, duration)
   if (!threshold) return true
   return Math.abs(Number(threshold) - Number(a)) > Math.abs(Number(a) - Number(b))
+}
+
+export function elapsedTime(date: Date, precision: Unit = 'second', now = Date.now()): Duration {
+  const ms = Math.abs(date.getTime() - now)
+  const sec = Math.floor(ms / 1000)
+  const min = Math.floor(sec / 60)
+  const hr = Math.floor(min / 60)
+  const day = Math.floor(hr / 24)
+  const month = Math.floor(day / 30)
+  const year = Math.floor(month / 12)
+  const i = unitNames.indexOf(precision) || unitNames.length
+  return new Duration(
+    i >= 0 ? year : 0,
+    i >= 1 ? month - year * 12 : 0,
+    0,
+    i >= 2 ? day - month * 30 : 0,
+    i >= 3 ? hr - day * 24 : 0,
+    i >= 4 ? min - hr * 60 : 0,
+    i >= 5 ? sec - min * 60 : 0,
+    i >= 6 ? ms - sec * 1000 : 0,
+  )
 }

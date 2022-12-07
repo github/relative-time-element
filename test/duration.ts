@@ -1,5 +1,5 @@
 import {assert} from '@open-wc/testing'
-import {Duration, applyDuration, withinDuration} from '../src/duration.ts'
+import {Duration, applyDuration, withinDuration, elapsedTime} from '../src/duration.ts'
 import {Temporal} from '@js-temporal/polyfill'
 
 suite('duration', function () {
@@ -75,6 +75,38 @@ suite('duration', function () {
       test(`${inputA} not within ${duration} of ${inputB}`, () => {
         assert.notOk(withinDuration(new Date(inputA), new Date(inputB), duration))
         assert.notOk(withinDuration(new Date(inputB), new Date(inputA), duration))
+      })
+    }
+  })
+
+  suite('elapsedTime', function () {
+    const elapsed = new Set([
+      {now: '2022-01-21T16:48:44.104Z', input: '2022-10-21T16:48:44.104Z', expected: 'P9M3D'},
+      {now: '2022-01-21T16:48:44.104Z', input: '2022-10-21T16:48:45.104Z', expected: 'P9M3DT1S'},
+      {now: '2022-01-21T16:48:44.104Z', input: '2022-10-21T16:48:45.104Z', precision: 'day', expected: 'P9M3D'},
+      {now: '2022-10-21T16:44:44.104Z', input: '2022-10-21T16:48:44.104Z', expected: 'PT4M'},
+      {now: '2022-09-22T16:48:44.104Z', input: '2022-10-21T16:48:44.104Z', expected: 'P29D'},
+      {now: '2022-10-24T14:46:00.000Z', input: '2022-10-24T14:46:10.000Z', expected: 'PT10S'},
+      {now: '2022-10-24T14:46:00.000Z', input: '2022-10-24T14:45:50.000Z', expected: 'PT10S'},
+      {now: '2022-10-24T14:46:00.000Z', input: '2022-10-24T14:45:50.000Z', precision: 'minute', expected: 'PT0M'},
+      {now: '2022-10-24T14:46:00.000Z', input: '2022-10-24T14:47:40.000Z', expected: 'PT1M40S'},
+      {now: '2022-10-24T14:46:00.000Z', input: '2022-10-24T14:44:20.000Z', expected: 'PT1M40S'},
+      {now: '2022-10-24T14:46:00.000Z', input: '2022-10-24T14:44:20.000Z', precision: 'minute', expected: 'PT1M'},
+      {now: '2022-10-24T14:46:00.000Z', input: '2022-10-24T15:51:40.000Z', expected: 'PT1H5M40S'},
+      {now: '2022-10-24T14:46:00.000Z', input: '2022-10-24T15:51:40.000Z', precision: 'minute', expected: 'PT1H5M'},
+      {now: '2022-10-24T14:46:00.000Z', input: '2022-10-24T15:52:00.000Z', expected: 'PT1H6M'},
+      {now: '2022-10-24T14:46:00.000Z', input: '2022-10-24T17:46:00.000Z', expected: 'PT3H'},
+      {now: '2022-10-24T14:46:00.000Z', input: '2022-10-24T10:46:00.000Z', expected: 'PT4H'},
+      {now: '2022-10-24T14:46:00.000Z', input: '2022-10-25T18:46:00.000Z', expected: 'P1DT4H'},
+      {now: '2022-10-24T14:46:00.000Z', input: '2022-10-23T10:46:00.000Z', expected: 'P1DT4H'},
+      {now: '2022-10-24T14:46:00.000Z', input: '2022-10-23T10:46:00.000Z', precision: 'day', expected: 'P1D'},
+      {now: '2022-10-24T14:46:00.000Z', input: '2021-10-30T14:46:00.000Z', expected: 'P11M29D'},
+      {now: '2022-10-24T14:46:00.000Z', input: '2021-10-30T14:46:00.000Z', precision: 'month', expected: 'P11M'},
+      {now: '2022-10-24T14:46:00.000Z', input: '2021-10-29T14:46:00.000Z', expected: 'P1Y'},
+    ])
+    for (const {input, now, precision = 'millisecond', expected} of elapsed) {
+      test(`${input} is ${expected} elapsed from ${now} (precision ${precision})`, () => {
+        assert.deepEqual(elapsedTime(new Date(input), precision, new Date(now).getTime()), Duration.from(expected))
       })
     }
   })
