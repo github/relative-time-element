@@ -1,5 +1,6 @@
-import {unitNames, Unit, microTimeAgo, microTimeUntil, timeUntil, timeAgo, elapsedTime} from './duration-format.js'
-import {isDuration, withinDuration} from './duration.js'
+import {microTimeAgo, microTimeUntil, timeUntil, timeAgo} from './duration-format.js'
+import {unitNames, Unit, isDuration, withinDuration, elapsedTime} from './duration.js'
+import DurationFormat from './duration-format-ponyfill.js'
 const root = (typeof globalThis !== 'undefined' ? globalThis : window) as typeof window
 const HTMLElement = root.HTMLElement || (null as unknown as typeof window['HTMLElement'])
 
