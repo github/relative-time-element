@@ -82,6 +82,6 @@ export function elapsedTime(date: Date, precision: Unit = 'second', now = Date.n
     i >= 3 ? hr - day * 24 : 0,
     i >= 4 ? min - hr * 60 : 0,
     i >= 5 ? sec - min * 60 : 0,
-    i >= 6 ? ms - sec * 1000 : 0
+    i >= 6 ? ms - sec * 1000 : 0,
   )
 }

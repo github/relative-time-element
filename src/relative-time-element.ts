@@ -125,18 +125,17 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
   #getFormattedDate(now = Date.now()): string | undefined {
     const date = this.date
     if (!date) return
+    const locale = this.#lang
     const format = this.format
     const style = this.formatStyle
     if (format === 'elapsed') {
-      const precisionIndex = unitNames.indexOf(this.precision) || 0
-      const units = elapsedTime(date).filter(unit => unitNames.indexOf(unit[1]) >= precisionIndex)
-      return units.map(([int, unit]) => `${int}${unit[0]}`).join(' ') || `0${this.precision[0]}`
+      const durationFormat = new DurationFormat(locale, {style}).format(elapsedTime(date, this.precision, now))
+      return durationFormat || new DurationFormat(locale, {style, minutesDisplay: 'always'}).format('PT0M')
     }
     const tense = this.tense
     const micro = format === 'micro'
     const inFuture = now < date.getTime()
     const within = withinDuration(now, date, this.threshold)
-    const locale = this.#lang
     if (typeof Intl !== 'undefined' && Intl.RelativeTimeFormat) {
       const relativeFormat = new Intl.RelativeTimeFormat(locale, {numeric: 'auto', style})
 
