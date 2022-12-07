@@ -121,7 +121,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     }).format(date)
   }
 
-  #getFormattedDate(now = new Date()): string | undefined {
+  #getFormattedDate(now = Date.now()): string | undefined {
     const date = this.date
     if (!date) return
     const format = this.format
@@ -133,7 +133,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     }
     const tense = this.tense
     const micro = format === 'micro'
-    const inFuture = now.getTime() < date.getTime()
+    const inFuture = now < date.getTime()
     const within = withinDuration(now, date, this.threshold)
     const locale = this.#lang
     if (typeof Intl !== 'undefined' && Intl.RelativeTimeFormat) {
@@ -361,7 +361,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     const oldTitle: string = this.getAttribute('title') || ''
     let newTitle: string = oldTitle
     let newText: string = oldText
-    const now = new Date()
+    const now = Date.now()
     if (!this.#customTitle) {
       newTitle = this.#getFormattedTitle() || ''
       if (newTitle) this.setAttribute('title', newTitle)
