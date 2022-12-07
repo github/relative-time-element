@@ -11,6 +11,7 @@ export class Duration {
     public hours = 0,
     public minutes = 0,
     public seconds = 0,
+    public milliseconds = 0,
   ) {}
 
   abs() {
@@ -22,6 +23,7 @@ export class Duration {
       Math.abs(this.hours),
       Math.abs(this.minutes),
       Math.abs(this.seconds),
+      Math.abs(this.milliseconds),
     )
   }
 
@@ -36,8 +38,8 @@ export class Duration {
       if (!parsed) return new Duration()
       return new Duration(...parsed)
     } else if (typeof durationLike === 'object') {
-      const {years, months, weeks, days, hours, minutes, seconds} = durationLike as Record<string, number>
-      return new Duration(years, months, weeks, days, hours, minutes, seconds)
+      const {years, months, weeks, days, hours, minutes, seconds, milliseconds} = durationLike as Record<string, number>
+      return new Duration(years, months, weeks, days, hours, minutes, seconds, milliseconds)
     }
     throw new RangeError('invalid duration')
   }
