@@ -43,7 +43,7 @@ export class Duration {
   }
 }
 
-export function applyDuration(date: Date, duration: Duration): Date | null {
+export function applyDuration(date: Date | number, duration: Duration): Date | null {
   const r = new Date(date)
   r.setFullYear(r.getFullYear() + duration.years)
   r.setMonth(r.getMonth() + duration.months)
@@ -54,7 +54,7 @@ export function applyDuration(date: Date, duration: Duration): Date | null {
   return r
 }
 
-export function withinDuration(a: Date, b: Date, str: string): boolean {
+export function withinDuration(a: Date | number, b: Date | number, str: string): boolean {
   const duration = Duration.from(str).abs()
   const threshold = applyDuration(a, duration)
   if (!threshold) return true
