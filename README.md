@@ -62,25 +62,27 @@ So, a relative date phrase is used for up to a month and then the actual date is
 
 #### Attributes
 
-| Property Name  | Attribute Name   | Possible Values                                                                             | Default Value          |
-|:---------------|:-----------------|:--------------------------------------------------------------------------------------------|:-----------------------|
-| `datetime`     | `datetime`       | `string`                                                                                    | -                      |
-| `format`       | `format`         | `'auto'\|'micro'\|'elapsed'`                                                                | 'auto'                 |
-| `date`         | -                | `Date \| null`                                                                              | -                      |
-| `tense`        | `tense`          | `'auto'\|'past'\|'future'`                                                                  | `'auto'`               |
-| `precision`    | `precision`      | `'year'\|'month'\|'day'\|'hour'\|'minute'\|'second'`                                        | `'second'`             |
-| `threshold`    | `threshold`      | `string`                                                                                    | `'P30D'`               |
-| `prefix`       | `prefix`         | `string`                                                                                    | `'on'`                 |
-| `second`       | `second`         | `'numeric'\|'2-digit'\|undefined`                                                           | `undefined`            |
-| `minute`       | `minute`         | `'numeric'\|'2-digit'\|undefined`                                                           | `undefined`            |
-| `hour`         | `hour`           | `'numeric'\|'2-digit'\|undefined`                                                           | `undefined`            |
-| `weekday`      | `weekday`        | `'short'\|'long'\|'narrow'\|undefined`                                                      | `undefined`            |
-| `day`          | `day`            | `'numeric'\|'2-digit'\|undefined`                                                           | `'numeric'`            |
-| `month`        | `month`          | `'numeric'\|'2-digit'\|'short'\|'long'\|'narrow'\|undefined`                                | `'short'`              |
-| `year`         | `year`           | `'numeric'\|'2-digit'\|undefined`                                                           | `'numeric'`<sup>*</sup>|
-| `timeZoneName` | `time-zone-name` | `'long'\|'short'\|'shortOffset'\|'longOffset'` `\|'shortGeneric'\|'longGeneric'\|undefined` | `undefined`            |
+| Property Name  | Attribute Name   | Possible Values                                                                             | Default Value                    |
+|:---------------|:-----------------|:--------------------------------------------------------------------------------------------|:---------------------------------|
+| `datetime`     | `datetime`       | `string`                                                                                    | -                                |
+| `format`       | `format`         | `'auto'\|'micro'\|'elapsed'`                                                                | 'auto'                           |
+| `date`         | -                | `Date \| null`                                                                              | -                                |
+| `tense`        | `tense`          | `'auto'\|'past'\|'future'`                                                                  | `'auto'`                         |
+| `precision`    | `precision`      | `'year'\|'month'\|'day'\|'hour'\|'minute'\|'second'`                                        | `'second'`                       |
+| `threshold`    | `threshold`      | `string`                                                                                    | `'P30D'`                         |
+| `prefix`       | `prefix`         | `string`                                                                                    | `'on'`                           |
+| `formatStyle`  | `format-style`   | `'long'\|'short'\|'narrow'`                                                                 | `'long'|'narrow'`<sup>**</sup>   |
+| `second`       | `second`         | `'numeric'\|'2-digit'\|undefined`                                                           | `undefined`                      |
+| `minute`       | `minute`         | `'numeric'\|'2-digit'\|undefined`                                                           | `undefined`                      |
+| `hour`         | `hour`           | `'numeric'\|'2-digit'\|undefined`                                                           | `undefined`                      |
+| `weekday`      | `weekday`        | `'short'\|'long'\|'narrow'\|undefined`                                                      | `undefined`                      |
+| `day`          | `day`            | `'numeric'\|'2-digit'\|undefined`                                                           | `'numeric'`                      |
+| `month`        | `month`          | `'numeric'\|'2-digit'\|'short'\|'long'\|'narrow'\|undefined`                                | `'short'`                        |
+| `year`         | `year`           | `'numeric'\|'2-digit'\|undefined`                                                           | `'numeric'|undefined`<sup>*</sup>|
+| `timeZoneName` | `time-zone-name` | `'long'\|'short'\|'shortOffset'\|'longOffset'` `\|'shortGeneric'\|'longGeneric'\|undefined` | `undefined`                      |
 
 <sup>*</sup>: If unspecified, `year` will return `'numeric'` if `datetime` represents the same year as the current year. It will return `undefined` if unspecified and if `datetime` represents a different year to the current year.
+<sup>**</sup>: If unspecified, `formatStyle` will return `'narrow'` if `format` is `'elapsed'`, or `'long'` otherwise.
 
 ##### datetime (`string`)
 
@@ -186,6 +188,16 @@ When formatting an absolute date (see above `threshold` for more details) it can
   <!-- Will always display "this happened on April 1, 1970" -->
 </relative-time>
 ```
+
+##### formatStyle (`'long'|'short'|'narrow'`, default: `'narrow'|'long'`)
+
+If `'format'` is `auto` then `formatStyle` will be used to determine the length of the unit names. This value is passed to [Intl.DateTimeFormat](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat) as the `style` option. Some examples of how this can be used:
+
+| `format=`  | `formatStyle=` | Display             |
+|:----------:|:--------------:|:-------------------:|
+| auto       | long           | in 1 month          |
+| auto       | short          | in 1 mo.            |
+| auto       | narrow         | in 1 mo.            |
 
 ##### second, minute, hour, weekday, day, month, year, timeZoneName
 

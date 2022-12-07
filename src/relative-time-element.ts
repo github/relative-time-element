@@ -4,6 +4,7 @@ const root = (typeof globalThis !== 'undefined' ? globalThis : window) as typeof
 const HTMLElement = root.HTMLElement || (null as unknown as typeof window['HTMLElement'])
 
 export type Format = 'auto' | 'micro' | 'elapsed'
+export type FormatStyle = 'long' | 'short' | 'narrow'
 export type Tense = 'auto' | 'past' | 'future'
 
 export class RelativeTimeUpdatedEvent extends Event {
@@ -93,6 +94,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
       'tense',
       'precision',
       'format',
+      'formatStyle',
       'datetime',
       'lang',
       'title',
@@ -123,6 +125,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     const date = this.date
     if (!date) return
     const format = this.format
+    const style = this.formatStyle
     if (format === 'elapsed') {
       const precisionIndex = unitNames.indexOf(this.precision) || 0
       const units = elapsedTime(date).filter(unit => unitNames.indexOf(unit[1]) >= precisionIndex)
@@ -134,7 +137,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     const within = withinDuration(now, date, this.threshold)
     const locale = this.#lang
     if (typeof Intl !== 'undefined' && Intl.RelativeTimeFormat) {
-      const relativeFormat = new Intl.RelativeTimeFormat(locale, {numeric: 'auto'})
+      const relativeFormat = new Intl.RelativeTimeFormat(locale, {numeric: 'auto', style})
 
       if (tense === 'past' || (tense === 'auto' && !inFuture && within)) {
         const [int, unit] = micro ? microTimeAgo(date) : timeAgo(date)
@@ -299,6 +302,19 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
 
   set format(value: Format) {
     this.setAttribute('format', value)
+  }
+
+  get formatStyle(): FormatStyle {
+    const formatStyle = this.getAttribute('format-style')
+    if (formatStyle === 'long') return 'long'
+    if (formatStyle === 'short') return 'short'
+    if (formatStyle === 'narrow') return 'narrow'
+    if (this.format === 'elapsed') return 'narrow'
+    return 'long'
+  }
+
+  set formatStyle(value: FormatStyle) {
+    this.setAttribute('format-style', value)
   }
 
   get datetime() {
