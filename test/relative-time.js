@@ -813,6 +813,16 @@ suite('relative-time', function () {
       {datetime: '2023-10-24T14:46:00.000Z', tense: 'future', format: 'auto', expected: 'next year'},
       {datetime: '2024-03-31T14:46:00.000Z', tense: 'future', format: 'auto', expected: 'next year'},
       {datetime: '2024-04-01T14:46:00.000Z', tense: 'future', format: 'auto', expected: 'in 2 years'},
+      {datetime: '2022-10-24T15:46:00.000Z', lang: 'en', tense: 'future', formatStyle: 'narrow', expected: 'in 1 hr.'},
+      {datetime: '2022-10-24T16:00:00.000Z', lang: 'en', tense: 'future', formatStyle: 'narrow', expected: 'in 1 hr.'},
+      {datetime: '2022-10-24T16:15:00.000Z', lang: 'en', tense: 'future', formatStyle: 'narrow', expected: 'in 1 hr.'},
+      {datetime: '2022-10-24T16:31:00.000Z', lang: 'en', tense: 'future', formatStyle: 'narrow', expected: 'in 2 hr.'},
+      {datetime: '2022-10-30T14:46:00.000Z', lang: 'en', tense: 'future', formatStyle: 'narrow', expected: 'in 6 days'},
+      {datetime: '2022-11-24T14:46:00.000Z', lang: 'en', tense: 'future', formatStyle: 'narrow', expected: 'next mo.'},
+      {datetime: '2023-10-23T14:46:00.000Z', lang: 'en', tense: 'future', formatStyle: 'narrow', expected: 'next yr.'},
+      {datetime: '2023-10-24T14:46:00.000Z', lang: 'en', tense: 'future', formatStyle: 'narrow', expected: 'next yr.'},
+      {datetime: '2024-03-31T14:46:00.000Z', lang: 'en', tense: 'future', formatStyle: 'narrow', expected: 'next yr.'},
+      {datetime: '2024-04-01T14:46:00.000Z', lang: 'en', tense: 'future', formatStyle: 'narrow', expected: 'in 2 yr.'},
 
       // Dates in the future
       {datetime: '2022-11-24T14:46:00.000Z', tense: 'past', format: 'auto', expected: 'now'},
@@ -830,6 +840,16 @@ suite('relative-time', function () {
       {datetime: '2021-10-24T14:46:00.000Z', tense: 'past', format: 'auto', expected: '12 months ago'},
       {datetime: '2021-05-18T14:46:00.000Z', tense: 'past', format: 'auto', expected: '17 months ago'},
       {datetime: '2021-05-17T14:46:00.000Z', tense: 'past', format: 'auto', expected: '2 years ago'},
+      {datetime: '2022-10-24T13:46:00.000Z', lang: 'en', tense: 'past', formatStyle: 'narrow', expected: '1 hr. ago'},
+      {datetime: '2022-10-24T13:30:00.000Z', lang: 'en', tense: 'past', formatStyle: 'narrow', expected: '1 hr. ago'},
+      {datetime: '2022-10-24T13:17:00.000Z', lang: 'en', tense: 'past', formatStyle: 'narrow', expected: '1 hr. ago'},
+      {datetime: '2022-10-24T13:01:00.000Z', lang: 'en', tense: 'past', formatStyle: 'narrow', expected: '2 hr. ago'},
+      {datetime: '2022-10-18T14:46:00.000Z', lang: 'en', tense: 'past', formatStyle: 'narrow', expected: '6 days ago'},
+      {datetime: '2022-09-23T14:46:00.000Z', lang: 'en', tense: 'past', formatStyle: 'narrow', expected: 'last mo.'},
+      {datetime: '2021-10-25T14:46:00.000Z', lang: 'en', tense: 'past', formatStyle: 'narrow', expected: '12 mo. ago'},
+      {datetime: '2021-10-24T14:46:00.000Z', lang: 'en', tense: 'past', formatStyle: 'narrow', expected: '12 mo. ago'},
+      {datetime: '2021-05-18T14:46:00.000Z', lang: 'en', tense: 'past', formatStyle: 'narrow', expected: '17 mo. ago'},
+      {datetime: '2021-05-17T14:46:00.000Z', lang: 'en', tense: 'past', formatStyle: 'narrow', expected: '2 yr. ago'},
 
       // Edge case dates
       {
@@ -869,15 +889,28 @@ suite('relative-time', function () {
       },
     ])
 
-    for (const {datetime, expected, tense, format, precision = '', lang = null, reference = referenceDate} of tests) {
-      test(`<relative-time datetime="${datetime}" tense="${tense}" format="${format}"> => ${expected}`, async () => {
+    for (const {
+      datetime,
+      expected,
+      tense,
+      format,
+      formatStyle,
+      precision = '',
+      lang,
+      reference = referenceDate,
+    } of tests) {
+      const attrs = Object.entries({datetime, tense, format, formatStyle, precision}).map(([k, v]) =>
+        v ? `${k}="${v}"` : '',
+      )
+      test(`<relative-time ${attrs.join(' ')}> => ${expected}`, async () => {
         freezeTime(new Date(reference))
         const time = document.createElement('relative-time')
-        time.setAttribute('tense', tense)
         time.setAttribute('datetime', datetime)
-        time.setAttribute('format', format)
-        time.setAttribute('precision', precision)
+        if (tense) time.setAttribute('tense', tense)
+        if (format) time.setAttribute('format', format)
+        if (precision) time.setAttribute('precision', precision)
         if (lang) time.setAttribute('lang', lang)
+        if (formatStyle) time.formatStyle = formatStyle
         await Promise.resolve()
         assert.equal(time.shadowRoot.textContent, expected)
       })
