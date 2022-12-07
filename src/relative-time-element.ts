@@ -95,7 +95,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
       'tense',
       'precision',
       'format',
-      'formatStyle',
+      'format-style',
       'datetime',
       'lang',
       'title',
