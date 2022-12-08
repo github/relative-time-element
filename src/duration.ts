@@ -11,14 +11,14 @@ export class Duration {
   readonly blank: boolean
 
   constructor(
-    public years = 0,
-    public months = 0,
-    public weeks = 0,
-    public days = 0,
-    public hours = 0,
-    public minutes = 0,
-    public seconds = 0,
-    public milliseconds = 0,
+    public readonly years = 0,
+    public readonly months = 0,
+    public readonly weeks = 0,
+    public readonly days = 0,
+    public readonly hours = 0,
+    public readonly minutes = 0,
+    public readonly seconds = 0,
+    public readonly milliseconds = 0,
   ) {
     // Account for -0
     this.years ||= 0
