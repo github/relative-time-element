@@ -130,6 +130,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     const style = this.formatStyle
     if (format === 'elapsed') {
       const durationFormat = new DurationFormat(locale, {style}).format(elapsedTime(date, this.precision, now))
+      const durationFormat = new DurationFormat(locale, {style}).format(elapsedTime(date, this.precision, now).abs())
       return durationFormat || new DurationFormat(locale, {style, minutesDisplay: 'always'}).format('PT0M')
     }
     const tense = this.tense

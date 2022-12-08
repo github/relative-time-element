@@ -90,7 +90,10 @@ export function withinDuration(a: Date | number, b: Date | number, str: string):
 }
 
 export function elapsedTime(date: Date, precision: Unit = 'second', now = Date.now()): Duration {
-  const ms = Math.abs(date.getTime() - now)
+  const delta = date.getTime() - now
+  if (delta === 0) return new Duration()
+  const sign = Math.sign(delta)
+  const ms = Math.abs(delta)
   const sec = Math.floor(ms / 1000)
   const min = Math.floor(sec / 60)
   const hr = Math.floor(min / 60)
@@ -99,13 +102,13 @@ export function elapsedTime(date: Date, precision: Unit = 'second', now = Date.n
   const year = Math.floor(month / 12)
   const i = unitNames.indexOf(precision) || unitNames.length
   return new Duration(
-    i >= 0 ? year : 0,
-    i >= 1 ? month - year * 12 : 0,
+    i >= 0 ? year * sign : 0,
+    i >= 1 ? (month - year * 12) * sign : 0,
     0,
-    i >= 2 ? day - month * 30 : 0,
-    i >= 3 ? hr - day * 24 : 0,
-    i >= 4 ? min - hr * 60 : 0,
-    i >= 5 ? sec - min * 60 : 0,
-    i >= 6 ? ms - sec * 1000 : 0,
+    i >= 2 ? (day - month * 30) * sign : 0,
+    i >= 3 ? (hr - day * 24) * sign : 0,
+    i >= 4 ? (min - hr * 60) * sign : 0,
+    i >= 5 ? (sec - min * 60) * sign : 0,
+    i >= 6 ? (ms - sec * 1000) * sign : 0,
   )
 }
