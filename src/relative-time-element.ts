@@ -1,5 +1,5 @@
 import {microTimeAgo, microTimeUntil, timeUntil, timeAgo} from './duration-format.js'
-import {unitNames, Unit, isDuration, withinDuration, elapsedTime} from './duration.js'
+import {Duration, unitNames, Unit, isDuration, withinDuration, elapsedTime} from './duration.js'
 import DurationFormat from './duration-format-ponyfill.js'
 const root = (typeof globalThis !== 'undefined' ? globalThis : window) as typeof window
 const HTMLElement = root.HTMLElement || (null as unknown as typeof window['HTMLElement'])
@@ -129,9 +129,10 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     const format = this.format
     const style = this.formatStyle
     if (format === 'elapsed') {
-      const durationFormat = new DurationFormat(locale, {style}).format(elapsedTime(date, this.precision, now))
       const durationFormat = new DurationFormat(locale, {style}).format(elapsedTime(date, this.precision, now).abs())
-      return durationFormat || new DurationFormat(locale, {style, minutesDisplay: 'always'}).format('PT0M')
+      return (
+        durationFormat || new DurationFormat(locale, {style, minutesDisplay: 'always'}).format(Duration.from('PT0M'))
+      )
     }
     const tense = this.tense
     const micro = format === 'micro'
