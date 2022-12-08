@@ -177,14 +177,6 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     return `${this.prefix} ${formatter.format(date)}`.trim()
   }
 
-  #getFormattedDate(now = Date.now()): string | undefined {
-    const date = this.date
-    if (!date) return
-    const format = this.#resolveFormat()
-    if (format === 'duration') return this.#getDurationFormat(elapsedTime(date, this.precision, now))
-    return this.#getRelativeFormat(date, now) || this.#getDateTimeFormat(date)
-  }
-
   get second() {
     const second = this.getAttribute('second')
     if (second === 'numeric' || second === '2-digit') return second
