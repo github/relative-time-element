@@ -13,6 +13,7 @@ class ListFormatPonyFill {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ListFormat = (typeof Intl !== 'undefined' && (Intl as any).ListFormat) || ListFormatPonyFill
 
+// https://tc39.es/proposal-intl-duration-format/
 interface DurationFormatResolvedOptions {
   locale: string
   style: 'long' | 'short' | 'narrow' | 'digital'
