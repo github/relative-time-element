@@ -124,6 +124,22 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     }).format(date)
   }
 
+  #getRelativeFormat(date: Date, now: number): string | undefined {
+    if (typeof Intl === 'undefined' || !Intl.RelativeTimeFormat) return
+    const tense = this.tense
+    const inFuture = now < date.getTime()
+    const within = withinDuration(now, date, this.threshold)
+    const relativeFormat = new Intl.RelativeTimeFormat(this.#lang, {numeric: 'auto', style: this.formatStyle})
+    if (tense === 'past' || (tense === 'auto' && !inFuture && within)) {
+      const [int, unit] = timeAgo(date)
+      return relativeFormat.format(int, unit)
+    }
+    if (tense === 'future' || (tense === 'auto' && inFuture && within)) {
+      const [int, unit] = timeUntil(date)
+      return relativeFormat.format(int, unit)
+    }
+  }
+
   #getDateTimeFormat(date: Date): string | undefined {
     if (typeof Intl === 'undefined' || !Intl.DateTimeFormat) return
     const formatter = new Intl.DateTimeFormat(this.#lang, {
@@ -158,21 +174,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
       if (duration.blank) return empty.toLocaleString(locale, {style, minutesDisplay: 'always'})
       return duration.abs().toLocaleString(locale, {style})
     }
-    if (typeof Intl !== 'undefined' && Intl.RelativeTimeFormat) {
-      const tense = this.tense
-      const inFuture = now < date.getTime()
-      const within = withinDuration(now, date, this.threshold)
-      const relativeFormat = new Intl.RelativeTimeFormat(locale, {numeric: 'auto', style})
-      if (tense === 'past' || (tense === 'auto' && !inFuture && within)) {
-        const [int, unit] = timeAgo(date)
-        return relativeFormat.format(int, unit)
-      }
-      if (tense === 'future' || (tense === 'auto' && inFuture && within)) {
-        const [int, unit] = timeUntil(date)
-        return relativeFormat.format(int, unit)
-      }
-    }
-    return this.#getDateTimeFormat(date)
+    return this.#getRelativeFormat(date, now) || this.#getDateTimeFormat(date)
   }
 
   get second() {
