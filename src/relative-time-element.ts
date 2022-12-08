@@ -1,9 +1,9 @@
-import {timeUntil, timeAgo} from './duration-format.js'
-import {Duration, unitNames, Unit, isDuration, withinDuration, elapsedTime, roundToSingleUnit} from './duration.js'
+import {Duration, unitNames, Unit, isDuration, elapsedTime, roundToSingleUnit, getRelativeTimeUnit} from './duration.js'
 const root = (typeof globalThis !== 'undefined' ? globalThis : window) as typeof window
 const HTMLElement = root.HTMLElement || (null as unknown as typeof window['HTMLElement'])
 
 export type Format = 'auto' | 'micro' | 'elapsed'
+export type ResolvedFormat = 'duration' | 'relative' | 'datetime'
 export type FormatStyle = 'long' | 'short' | 'narrow'
 export type Tense = 'auto' | 'past' | 'future'
 
@@ -109,11 +109,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
   // value takes precedence over this custom format.
   //
   // Returns a formatted time String.
-  #getFormattedTitle(): string | undefined {
-    const date = this.date
-    if (!date) return
-    if (typeof Intl === 'undefined' || !Intl.DateTimeFormat) return
-
+  #getFormattedTitle(date: Date): string | undefined {
     return new Intl.DateTimeFormat(this.#lang, {
       day: 'numeric',
       month: 'short',
@@ -124,41 +120,50 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     }).format(date)
   }
 
-  #getFormattedDate(now = Date.now()): string | undefined {
-    const date = this.date
-    if (!date) return
+  #resolveFormat(duration: Duration): ResolvedFormat {
+    const format: string = this.format
+    // elapsed is an alias for 'duration'
+    if (format === 'elapsed') return 'duration'
+    // 'micro' is an alias for 'duration'
+    if (format === 'micro') return 'duration'
+
+    // 'auto' is an alias for 'relative'
+    if ((format === 'auto' || format === 'relative') && typeof Intl !== 'undefined' && Intl.RelativeTimeFormat) {
+      const tense = this.tense
+      if (tense === 'past' || tense === 'future') return 'relative'
+      if (Duration.compare(duration, this.threshold) === 1) return 'relative'
+    }
+    return 'datetime'
+  }
+
+  #getDurationFormat(duration: Duration): string {
     const locale = this.#lang
     const format = this.format
     const style = this.formatStyle
     let empty = emptyDuration
-    if (format === 'elapsed' || format === 'micro') {
-      let duration = elapsedTime(date, this.precision, now)
-      if (format === 'micro') {
-        duration = roundToSingleUnit(duration)
-        empty = microEmptyDuration
-        if ((this.tense === 'past' && duration.sign !== -1) || (this.tense === 'future' && duration.sign !== 1)) {
-          duration = microEmptyDuration
-        }
-      }
-      if (duration.blank) return empty.toLocaleString(locale, {style, minutesDisplay: 'always'})
-      return duration.abs().toLocaleString(locale, {style})
-    }
-    if (typeof Intl !== 'undefined' && Intl.RelativeTimeFormat) {
-      const tense = this.tense
-      const inFuture = now < date.getTime()
-      const within = withinDuration(now, date, this.threshold)
-      const relativeFormat = new Intl.RelativeTimeFormat(locale, {numeric: 'auto', style})
-      if (tense === 'past' || (tense === 'auto' && !inFuture && within)) {
-        const [int, unit] = timeAgo(date)
-        return relativeFormat.format(int, unit)
-      }
-      if (tense === 'future' || (tense === 'auto' && inFuture && within)) {
-        const [int, unit] = timeUntil(date)
-        return relativeFormat.format(int, unit)
+    if (format === 'micro') {
+      duration = roundToSingleUnit(duration)
+      empty = microEmptyDuration
+      if ((this.tense === 'past' && duration.sign !== -1) || (this.tense === 'future' && duration.sign !== 1)) {
+        duration = microEmptyDuration
       }
     }
-    if (typeof Intl === 'undefined' || !Intl.DateTimeFormat) return
-    const formatter = new Intl.DateTimeFormat(locale, {
+    if (duration.blank) return empty.toLocaleString(locale, {style, minutesDisplay: 'always'})
+    return duration.abs().toLocaleString(locale, {style})
+  }
+
+  #getRelativeFormat(duration: Duration): string {
+    const relativeFormat = new Intl.RelativeTimeFormat(this.#lang, {numeric: 'auto', style: this.formatStyle})
+    const tense = this.tense
+    if (tense === 'future' && duration.sign !== 1) duration = emptyDuration
+    if (tense === 'past' && duration.sign !== -1) duration = emptyDuration
+    const [int, unit] = getRelativeTimeUnit(duration)
+    if (unit === 'second' && int < 10) return relativeFormat.format(0, 'second')
+    return relativeFormat.format(int, unit)
+  }
+
+  #getDateTimeFormat(date: Date): string {
+    const formatter = new Intl.DateTimeFormat(this.#lang, {
       second: this.second,
       minute: this.minute,
       hour: this.hour,
@@ -355,7 +360,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
   attributeChangedCallback(attrName: string, oldValue: unknown, newValue: unknown): void {
     if (oldValue === newValue) return
     if (attrName === 'title') {
-      this.#customTitle = newValue !== null && this.#getFormattedTitle() !== newValue
+      this.#customTitle = newValue !== null && (this.date && this.#getFormattedTitle(this.date)) !== newValue
     }
     if (!this.#updating && !(attrName === 'title' && this.#customTitle)) {
       this.#updating = (async () => {
@@ -366,17 +371,31 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
   }
 
   update() {
-    const oldText: string = this.#renderRoot.textContent || ''
+    const oldText: string = this.#renderRoot.textContent || this.textContent || ''
     const oldTitle: string = this.getAttribute('title') || ''
     let newTitle: string = oldTitle
-    let newText: string = oldText
+    const date = this.date
+    if (typeof Intl === 'undefined' || !Intl.DateTimeFormat || !date) {
+      this.#renderRoot.textContent = oldText
+      return
+    }
     const now = Date.now()
     if (!this.#customTitle) {
-      newTitle = this.#getFormattedTitle() || ''
+      newTitle = this.#getFormattedTitle(date) || ''
       if (newTitle) this.setAttribute('title', newTitle)
     }
 
-    newText = this.#getFormattedDate(now) || ''
+    const duration = elapsedTime(date, this.precision, now)
+    const format = this.#resolveFormat(duration)
+    let newText = oldText
+    if (format === 'duration') {
+      newText = this.#getDurationFormat(duration)
+    } else if (format === 'relative') {
+      newText = this.#getRelativeFormat(duration)
+    } else {
+      newText = this.#getDateTimeFormat(date)
+    }
+
     if (newText) {
       this.#renderRoot.textContent = newText
     } else if (this.shadowRoot === this.#renderRoot && this.textContent) {
@@ -388,10 +407,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
       this.dispatchEvent(new RelativeTimeUpdatedEvent(oldText, newText, oldTitle, newTitle))
     }
 
-    const date = this.date
-    const format = this.format
-    const isRelative = (format === 'auto' || format === 'micro') && date && withinDuration(now, date, this.threshold)
-    if (format === 'elapsed' || isRelative) {
+    if (format === 'relative' || format === 'duration') {
       dateObserver.observe(this)
     } else {
       dateObserver.unobserve(this)

@@ -1,5 +1,5 @@
 import {assert} from '@open-wc/testing'
-import {Duration, applyDuration, withinDuration, elapsedTime, roundToSingleUnit} from '../src/duration.ts'
+import {Duration, applyDuration, elapsedTime, roundToSingleUnit, getRelativeTimeUnit} from '../src/duration.ts'
 import {Temporal} from '@js-temporal/polyfill'
 
 suite('duration', function () {
@@ -46,6 +46,28 @@ suite('duration', function () {
       assert.propertyVal(Duration.from('PT0S'), 'blank', true)
       assert.propertyVal(Duration.from('PT1S'), 'blank', false)
     })
+
+    suite('compare', () => {
+      const compareTests = new Set([
+        ['P1Y', 'P6M', -1],
+        ['P1Y', 'P18M', 1],
+        ['P2Y', 'P18M', -1],
+        ['PT60S', 'PT60S', 0],
+        ['PT1M', 'PT60S', 0],
+        ['PT1M', 'PT61S', 1],
+        ['PT1M1S', 'PT60S', -1],
+        ['P31D', 'P30D', -1],
+        ['-P31D', 'P30D', -1],
+        ['P55Y', 'P30D', -1],
+        ['-P55Y', 'P30D', -1],
+      ])
+
+      for (const [one, two, expected] of compareTests) {
+        test(`Duraiton.compare("${one}", "${two}") === ${expected}`, () => {
+          assert.equal(Duration.compare(one, two), expected)
+        })
+      }
+    })
   })
 
   suite('applyDuration', function () {
@@ -61,31 +83,6 @@ suite('duration', function () {
     for (const {input, expected} of tests) {
       test(`${referenceDate} -> ${input} -> ${expected}`, () => {
         assert.equal(applyDuration(new Date(referenceDate), Duration.from(input))?.toISOString(), expected)
-      })
-    }
-  })
-
-  suite('withinDuration', function () {
-    const within = new Set([
-      {inputA: '2022-10-21T16:48:44.104Z', inputB: '2022-01-21T16:48:44.104Z', duration: 'P1Y'},
-      {inputA: '2022-10-21T16:48:44.104Z', inputB: '2022-10-21T16:44:44.104Z', duration: 'PT5M'},
-      {inputA: '2022-10-21T16:48:44.104Z', inputB: '2022-09-22T16:48:44.104Z', duration: 'P30D'},
-    ])
-    const exceeds = new Set([
-      {inputA: '2022-10-21T16:48:44.104Z', inputB: '2021-09-21T16:48:44.104Z', duration: 'P1Y'},
-      {inputA: '2022-10-21T16:48:44.104Z', inputB: '2022-10-21T16:42:44.104Z', duration: 'PT5M'},
-      {inputA: '2022-10-21T16:48:44.104Z', inputB: '2022-09-12T16:48:44.104Z', duration: 'P30D'},
-    ])
-    for (const {inputA, inputB, duration} of within) {
-      test(`${inputA} within ${duration} of ${inputB}`, () => {
-        assert.ok(withinDuration(new Date(inputA), new Date(inputB), duration))
-        assert.ok(withinDuration(new Date(inputB), new Date(inputA), duration))
-      })
-    }
-    for (const {inputA, inputB, duration} of exceeds) {
-      test(`${inputA} not within ${duration} of ${inputB}`, () => {
-        assert.notOk(withinDuration(new Date(inputA), new Date(inputB), duration))
-        assert.notOk(withinDuration(new Date(inputB), new Date(inputA), duration))
       })
     }
   })
@@ -123,7 +120,7 @@ suite('duration', function () {
   })
 
   suite('roundToSingleUnit', function () {
-    const elapsed = new Set([
+    const roundTests = new Set([
       ['PT20S', 'PT20S'],
       ['PT31S', 'PT1M'],
       ['PT1H', 'PT1H'],
@@ -139,12 +136,39 @@ suite('duration', function () {
       ['P1Y5M20D', 'P2Y'],
       ['P1Y6M', 'P2Y'],
     ])
-    for (const [input, expected] of elapsed) {
+    for (const [input, expected] of roundTests) {
       test(`roundToSingleUnit(${input}) === ${expected}`, () => {
         assert.deepEqual(roundToSingleUnit(Duration.from(input)), Duration.from(expected))
       })
       test(`roundToSingleUnit(-${input}) === -${expected}`, () => {
         assert.deepEqual(roundToSingleUnit(Duration.from(`-${input}`)), Duration.from(`-${expected}`))
+      })
+    }
+  })
+
+  suite('getRelativeTimeUnit', function () {
+    const relativeTests = new Set([
+      ['PT20S', [20, 'second']],
+      ['PT31S', [1, 'minute']],
+      ['PT1H', [1, 'hour']],
+      ['PT1H14M', [1, 'hour']],
+      ['PT1H29M', [1, 'hour']],
+      ['PT1H31M', [2, 'hour']],
+      ['PT1H45M', [2, 'hour']],
+      ['P6D', [1, 'week']],
+      ['P1M1D', [1, 'month']],
+      ['P1Y4D', [1, 'year']],
+      ['P1Y5M13D', [1, 'year']],
+      ['P1Y5M15D', [2, 'year']],
+      ['P1Y5M20D', [2, 'year']],
+      ['P1Y6M', [2, 'year']],
+    ])
+    for (const [input, [val, unit]] of relativeTests) {
+      test(`roundToSingleUnit(${input}) === [${val}, ${unit}]`, () => {
+        assert.deepEqual(getRelativeTimeUnit(Duration.from(input)), [val, unit])
+      })
+      test(`roundToSingleUnit(-${input}) === [-${val}, ${unit}]`, () => {
+        assert.deepEqual(getRelativeTimeUnit(Duration.from(`-${input}`)), [-val, unit])
       })
     }
   })

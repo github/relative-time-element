@@ -1,7 +1,7 @@
 import DurationFormat from './duration-format-ponyfill.js'
 import type {DurationFormatOptions} from './duration-format-ponyfill.js'
 const durationRe = /^[-+]?P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)W)?(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?$/
-export const unitNames = ['year', 'month', 'day', 'hour', 'minute', 'second', 'millisecond'] as const
+export const unitNames = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second', 'millisecond'] as const
 export type Unit = typeof unitNames[number]
 
 export const isDuration = (str: string) => durationRe.test(str)
@@ -72,12 +72,19 @@ export class Duration {
     throw new RangeError('invalid duration')
   }
 
+  static compare(one: unknown, two: unknown): -1 | 0 | 1 {
+    const now = Date.now()
+    const oneApplied = Math.abs(applyDuration(now, Duration.from(one)).getTime() - now)
+    const twoApplied = Math.abs(applyDuration(now, Duration.from(two)).getTime() - now)
+    return oneApplied > twoApplied ? -1 : oneApplied < twoApplied ? 1 : 0
+  }
+
   toLocaleString(locale: string, opts: DurationFormatOptions) {
     return new DurationFormat(locale, opts).format(this)
   }
 }
 
-export function applyDuration(date: Date | number, duration: Duration): Date | null {
+export function applyDuration(date: Date | number, duration: Duration): Date {
   const r = new Date(date)
   r.setFullYear(r.getFullYear() + duration.years)
   r.setMonth(r.getMonth() + duration.months)
@@ -86,13 +93,6 @@ export function applyDuration(date: Date | number, duration: Duration): Date | n
   r.setMinutes(r.getMinutes() + duration.minutes)
   r.setSeconds(r.getSeconds() + duration.seconds)
   return r
-}
-
-export function withinDuration(a: Date | number, b: Date | number, str: string): boolean {
-  const duration = Duration.from(str).abs()
-  const threshold = applyDuration(a, duration)
-  if (!threshold) return true
-  return Math.abs(Number(threshold) - Number(a)) > Math.abs(Number(a) - Number(b))
 }
 
 export function elapsedTime(date: Date, precision: Unit = 'second', now = Date.now()): Duration {
@@ -111,15 +111,16 @@ export function elapsedTime(date: Date, precision: Unit = 'second', now = Date.n
     i >= 0 ? year * sign : 0,
     i >= 1 ? (month - year * 12) * sign : 0,
     0,
-    i >= 2 ? (day - month * 30) * sign : 0,
-    i >= 3 ? (hr - day * 24) * sign : 0,
-    i >= 4 ? (min - hr * 60) * sign : 0,
-    i >= 5 ? (sec - min * 60) * sign : 0,
-    i >= 6 ? (ms - sec * 1000) * sign : 0,
+    i >= 3 ? (day - month * 30) * sign : 0,
+    i >= 4 ? (hr - day * 24) * sign : 0,
+    i >= 5 ? (min - hr * 60) * sign : 0,
+    i >= 6 ? (sec - min * 60) * sign : 0,
+    i >= 7 ? (ms - sec * 1000) * sign : 0,
   )
 }
 
 export function roundToSingleUnit(duration: Duration): Duration {
+  if (duration.blank) return duration
   let years = Math.abs(duration.years)
   let months = Math.abs(duration.months)
   let weeks = Math.abs(duration.weeks)
@@ -164,4 +165,15 @@ export function roundToSingleUnit(duration: Duration): Duration {
     seconds * sign,
     milliseconds * sign,
   )
+}
+
+export function getRelativeTimeUnit(duration: Duration): [number, Intl.RelativeTimeFormatUnit] {
+  const rounded = roundToSingleUnit(duration)
+  if (rounded.blank) return [0, 'second']
+  for (const unit of unitNames) {
+    if (unit === 'millisecond') continue
+    const val = rounded[`${unit}s` as keyof Duration] as number
+    if (val) return [val, unit]
+  }
+  return [0, 'second']
 }
