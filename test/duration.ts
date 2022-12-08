@@ -1,5 +1,5 @@
 import {assert} from '@open-wc/testing'
-import {Duration, applyDuration, withinDuration, elapsedTime} from '../src/duration.ts'
+import {Duration, applyDuration, withinDuration, elapsedTime, roundToSingleUnit} from '../src/duration.ts'
 import {Temporal} from '@js-temporal/polyfill'
 
 suite('duration', function () {
@@ -118,6 +118,33 @@ suite('duration', function () {
     for (const {input, now, precision = 'millisecond', expected} of elapsed) {
       test(`${input} is ${expected} elapsed from ${now} (precision ${precision})`, () => {
         assert.deepEqual(elapsedTime(new Date(input), precision, new Date(now).getTime()), Duration.from(expected))
+      })
+    }
+  })
+
+  suite('roundToSingleUnit', function () {
+    const elapsed = new Set([
+      ['PT20S', 'PT20S'],
+      ['PT31S', 'PT1M'],
+      ['PT1H', 'PT1H'],
+      ['PT1H14M', 'PT1H'],
+      ['PT1H29M', 'PT1H'],
+      ['PT1H31M', 'PT2H'],
+      ['PT1H45M', 'PT2H'],
+      ['P6D', 'P1W'],
+      ['P1M1D', 'P1M'],
+      ['P1Y4D', 'P1Y'],
+      ['P1Y5M13D', 'P1Y'],
+      ['P1Y5M15D', 'P2Y'],
+      ['P1Y5M20D', 'P2Y'],
+      ['P1Y6M', 'P2Y'],
+    ])
+    for (const [input, expected] of elapsed) {
+      test(`roundToSingleUnit(${input}) === ${expected}`, () => {
+        assert.deepEqual(roundToSingleUnit(Duration.from(input)), Duration.from(expected))
+      })
+      test(`roundToSingleUnit(-${input}) === -${expected}`, () => {
+        assert.deepEqual(roundToSingleUnit(Duration.from(`-${input}`)), Duration.from(`-${expected}`))
       })
     }
   })
