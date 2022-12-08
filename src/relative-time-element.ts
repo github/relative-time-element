@@ -121,12 +121,19 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     }).format(date)
   }
 
-  #resolveFormat(): ResolvedFormat {
+  #resolveFormat(duration: Duration): ResolvedFormat {
     const format: string = this.format
     // elapsed is an alias for 'duration'
     if (format === 'elapsed') return 'duration'
     // 'micro' is an alias for 'duration'
     if (format === 'micro') return 'duration'
+
+    // 'auto' is an alias for 'relative'
+    if ((format === 'auto' || format === 'relative') && typeof Intl !== 'undefined' && Intl.RelativeTimeFormat) {
+      const tense = this.tense
+      if (tense === 'past' || tense === 'future') return 'relative'
+      if (Duration.compare(duration, this.threshold) === 1) return 'relative'
+    }
     return 'datetime'
   }
 
@@ -393,7 +400,17 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
       if (newTitle) this.setAttribute('title', newTitle)
     }
 
-    newText = this.#getFormattedDate(now) || ''
+    const duration = elapsedTime(date, this.precision, now)
+    const format = this.#resolveFormat(duration)
+    let newText = oldText
+    if (format === 'duration') {
+      newText = this.#getDurationFormat(duration)
+    } else if (format === 'relative') {
+      newText = this.#getRelativeFormat(duration)
+    } else {
+      newText = this.#getDateTimeFormat(date)
+    }
+
     if (newText) {
       this.#renderRoot.textContent = newText
     } else if (this.shadowRoot === this.#renderRoot && this.textContent) {
@@ -405,10 +422,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
       this.dispatchEvent(new RelativeTimeUpdatedEvent(oldText, newText, oldTitle, newTitle))
     }
 
-    const date = this.date
-    const format = this.format
-    const isRelative = (format === 'auto' || format === 'micro') && date && withinDuration(now, date, this.threshold)
-    if (format === 'elapsed' || isRelative) {
+    if (format === 'relative' || format === 'duration') {
       dateObserver.observe(this)
     } else {
       dateObserver.unobserve(this)
