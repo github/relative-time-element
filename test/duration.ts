@@ -1,5 +1,5 @@
 import {assert} from '@open-wc/testing'
-import {Duration, applyDuration, withinDuration, elapsedTime, roundToSingleUnit} from '../src/duration.ts'
+import {Duration, applyDuration, withinDuration, elapsedTime, roundToSingleUnit, getRelativeTimeUnit} from '../src/duration.ts'
 import {Temporal} from '@js-temporal/polyfill'
 
 suite('duration', function () {
@@ -167,6 +167,33 @@ suite('duration', function () {
       })
       test(`roundToSingleUnit(-${input}) === -${expected}`, () => {
         assert.deepEqual(roundToSingleUnit(Duration.from(`-${input}`)), Duration.from(`-${expected}`))
+      })
+    }
+  })
+
+  suite('getRelativeTimeUnit', function () {
+    const relativeTests = new Set([
+      ['PT20S', [20, 'second']],
+      ['PT31S', [1, 'minute']],
+      ['PT1H', [1, 'hour']],
+      ['PT1H14M', [1, 'hour']],
+      ['PT1H29M', [1, 'hour']],
+      ['PT1H31M', [2, 'hour']],
+      ['PT1H45M', [2, 'hour']],
+      ['P6D', [1, 'week']],
+      ['P1M1D', [1, 'month']],
+      ['P1Y4D', [1, 'year']],
+      ['P1Y5M13D', [1, 'year']],
+      ['P1Y5M15D', [2, 'year']],
+      ['P1Y5M20D', [2, 'year']],
+      ['P1Y6M', [2, 'year']],
+    ])
+    for (const [input, [val, unit]] of relativeTests) {
+      test(`roundToSingleUnit(${input}) === [${val}, ${unit}]`, () => {
+        assert.deepEqual(getRelativeTimeUnit(Duration.from(input)), [val, unit])
+      })
+      test(`roundToSingleUnit(-${input}) === [-${val}, ${unit}]`, () => {
+        assert.deepEqual(getRelativeTimeUnit(Duration.from(`-${input}`)), [-val, unit])
       })
     }
   })

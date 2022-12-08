@@ -173,3 +173,14 @@ export function roundToSingleUnit(duration: Duration): Duration {
     milliseconds * sign,
   )
 }
+
+export function getRelativeTimeUnit(duration: Duration): [number, Intl.RelativeTimeFormatUnit] {
+  const rounded = roundToSingleUnit(duration)
+  if (rounded.blank) return [0, 'second']
+  for (const unit of unitNames) {
+    if (unit === 'millisecond') continue
+    const val = rounded[`${unit}s` as keyof Duration] as number
+    if (val) return [val, unit]
+  }
+  return [0, 'second']
+}
