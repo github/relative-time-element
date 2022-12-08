@@ -4,6 +4,7 @@ export type Unit = typeof unitNames[number]
 
 export const isDuration = (str: string) => durationRe.test(str)
 
+// https://tc39.es/proposal-temporal/docs/duration.html
 export class Duration {
   constructor(
     public years = 0,
