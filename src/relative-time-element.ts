@@ -110,11 +110,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
   // value takes precedence over this custom format.
   //
   // Returns a formatted time String.
-  #getFormattedTitle(): string | undefined {
-    const date = this.date
-    if (!date) return
-    if (typeof Intl === 'undefined' || !Intl.DateTimeFormat) return
-
+  #getFormattedTitle(date: Date): string | undefined {
     return new Intl.DateTimeFormat(this.#lang, {
       day: 'numeric',
       month: 'short',
@@ -167,7 +163,6 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
   }
 
   #getDateTimeFormat(date: Date): string | undefined {
-    if (typeof Intl === 'undefined' || !Intl.DateTimeFormat) return
     const formatter = new Intl.DateTimeFormat(this.#lang, {
       second: this.second,
       minute: this.minute,
@@ -373,7 +368,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
   attributeChangedCallback(attrName: string, oldValue: unknown, newValue: unknown): void {
     if (oldValue === newValue) return
     if (attrName === 'title') {
-      this.#customTitle = newValue !== null && this.#getFormattedTitle() !== newValue
+      this.#customTitle = newValue !== null && (this.date && this.#getFormattedTitle(this.date)) !== newValue
     }
     if (!this.#updating && !(attrName === 'title' && this.#customTitle)) {
       this.#updating = (async () => {
@@ -384,13 +379,17 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
   }
 
   update() {
-    const oldText: string = this.#renderRoot.textContent || ''
+    const oldText: string = this.#renderRoot.textContent || this.textContent || ''
     const oldTitle: string = this.getAttribute('title') || ''
     let newTitle: string = oldTitle
-    let newText: string = oldText
+    const date = this.date
+    if (typeof Intl === 'undefined' || !Intl.DateTimeFormat || !date) {
+      this.#renderRoot.textContent = oldText
+      return
+    }
     const now = Date.now()
     if (!this.#customTitle) {
-      newTitle = this.#getFormattedTitle() || ''
+      newTitle = this.#getFormattedTitle(date) || ''
       if (newTitle) this.setAttribute('title', newTitle)
     }
 
