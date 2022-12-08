@@ -1,7 +1,7 @@
 import DurationFormat from './duration-format-ponyfill.js'
 import type {DurationFormatOptions} from './duration-format-ponyfill.js'
 const durationRe = /^[-+]?P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)W)?(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?$/
-export const unitNames = ['year', 'month', 'day', 'hour', 'minute', 'second', 'millisecond'] as const
+export const unitNames = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second', 'millisecond'] as const
 export type Unit = typeof unitNames[number]
 
 export const isDuration = (str: string) => durationRe.test(str)
@@ -111,11 +111,11 @@ export function elapsedTime(date: Date, precision: Unit = 'second', now = Date.n
     i >= 0 ? year * sign : 0,
     i >= 1 ? (month - year * 12) * sign : 0,
     0,
-    i >= 2 ? (day - month * 30) * sign : 0,
-    i >= 3 ? (hr - day * 24) * sign : 0,
-    i >= 4 ? (min - hr * 60) * sign : 0,
-    i >= 5 ? (sec - min * 60) * sign : 0,
-    i >= 6 ? (ms - sec * 1000) * sign : 0,
+    i >= 3 ? (day - month * 30) * sign : 0,
+    i >= 4 ? (hr - day * 24) * sign : 0,
+    i >= 5 ? (min - hr * 60) * sign : 0,
+    i >= 6 ? (sec - min * 60) * sign : 0,
+    i >= 7 ? (ms - sec * 1000) * sign : 0,
   )
 }
 
