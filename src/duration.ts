@@ -3,9 +3,12 @@ export const unitNames = ['year', 'month', 'day', 'hour', 'minute', 'second', 'm
 export type Unit = typeof unitNames[number]
 
 export const isDuration = (str: string) => durationRe.test(str)
+type Sign = -1 | 0 | 1
 
 // https://tc39.es/proposal-temporal/docs/duration.html
 export class Duration {
+  readonly sign: Sign
+
   constructor(
     public years = 0,
     public months = 0,
@@ -15,7 +18,25 @@ export class Duration {
     public minutes = 0,
     public seconds = 0,
     public milliseconds = 0,
-  ) {}
+  ) {
+    // Account for -0
+    this.years ||= 0
+    this.sign ||= Math.sign(this.years) as Sign
+    this.months ||= 0
+    this.sign ||= Math.sign(this.months) as Sign
+    this.weeks ||= 0
+    this.sign ||= Math.sign(this.weeks) as Sign
+    this.days ||= 0
+    this.sign ||= Math.sign(this.days) as Sign
+    this.hours ||= 0
+    this.sign ||= Math.sign(this.hours) as Sign
+    this.minutes ||= 0
+    this.sign ||= Math.sign(this.minutes) as Sign
+    this.seconds ||= 0
+    this.sign ||= Math.sign(this.seconds) as Sign
+    this.milliseconds ||= 0
+    this.sign ||= Math.sign(this.milliseconds) as Sign
+  }
 
   abs() {
     return new Duration(

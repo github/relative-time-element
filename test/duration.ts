@@ -35,6 +35,12 @@ suite('duration', function () {
         assert.deepEqual(temporalAbs, abs)
       })
     }
+
+    test('has `sign` property representing the sign of the duration', () => {
+      assert.propertyVal(new Duration(-1), 'sign', -1)
+      assert.propertyVal(new Duration(1), 'sign', 1)
+      assert.propertyVal(new Duration(), 'sign', 0)
+    })
   })
 
   suite('applyDuration', function () {
