@@ -72,6 +72,13 @@ export class Duration {
     throw new RangeError('invalid duration')
   }
 
+  static compare(one: unknown, two: unknown): -1 | 0 | 1 {
+    const now = Date.now()
+    const oneApplied = Math.abs(applyDuration(now, Duration.from(one)).getTime() - now)
+    const twoApplied = Math.abs(applyDuration(now, Duration.from(two)).getTime() - now)
+    return oneApplied > twoApplied ? -1 : oneApplied < twoApplied ? 1 : 0
+  }
+
   toLocaleString(locale: string, opts: DurationFormatOptions) {
     return new DurationFormat(locale, opts).format(this)
   }

@@ -46,6 +46,28 @@ suite('duration', function () {
       assert.propertyVal(Duration.from('PT0S'), 'blank', true)
       assert.propertyVal(Duration.from('PT1S'), 'blank', false)
     })
+
+    suite('compare', () => {
+      const compareTests = new Set([
+        ['P1Y', 'P6M', -1],
+        ['P1Y', 'P18M', 1],
+        ['P2Y', 'P18M', -1],
+        ['PT60S', 'PT60S', 0],
+        ['PT1M', 'PT60S', 0],
+        ['PT1M', 'PT61S', 1],
+        ['PT1M1S', 'PT60S', -1],
+        ['P31D', 'P30D', -1],
+        ['-P31D', 'P30D', -1],
+        ['P55Y', 'P30D', -1],
+        ['-P55Y', 'P30D', -1],
+      ])
+
+      for (const [one, two, expected] of compareTests) {
+        test(`Duraiton.compare("${one}", "${two}") === ${expected}`, () => {
+          assert.equal(Duration.compare(one, two), expected)
+        })
+      }
+    })
   })
 
   suite('applyDuration', function () {
