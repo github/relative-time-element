@@ -130,7 +130,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     return 'datetime'
   }
 
-  #getDurationFormat(duration: Duration) {
+  #getDurationFormat(duration: Duration): string {
     const locale = this.#lang
     const format = this.format
     const style = this.formatStyle
