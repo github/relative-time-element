@@ -153,20 +153,14 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     return duration.abs().toLocaleString(locale, {style})
   }
 
-  #getRelativeFormat(date: Date, now: number): string | undefined {
-    if (typeof Intl === 'undefined' || !Intl.RelativeTimeFormat) return
-    const tense = this.tense
-    const inFuture = now < date.getTime()
-    const within = withinDuration(now, date, this.threshold)
+  #getRelativeFormat(duration: Duration): string {
     const relativeFormat = new Intl.RelativeTimeFormat(this.#lang, {numeric: 'auto', style: this.formatStyle})
-    if (tense === 'past' || (tense === 'auto' && !inFuture && within)) {
-      const [int, unit] = timeAgo(date)
-      return relativeFormat.format(int, unit)
-    }
-    if (tense === 'future' || (tense === 'auto' && inFuture && within)) {
-      const [int, unit] = timeUntil(date)
-      return relativeFormat.format(int, unit)
-    }
+    const tense = this.tense
+    if (tense === 'future' && duration.sign !== 1) duration = emptyDuration
+    if (tense === 'past' && duration.sign !== -1) duration = emptyDuration
+    const [int, unit] = getRelativeTimeUnit(duration)
+    if (unit === 'second' && int < 10) return relativeFormat.format(0, 'second')
+    return relativeFormat.format(int, unit)
   }
 
   #getDateTimeFormat(date: Date): string {
