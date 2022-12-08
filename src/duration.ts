@@ -1,3 +1,5 @@
+import DurationFormat from './duration-format-ponyfill.js'
+import type {DurationFormatOptions} from './duration-format-ponyfill.js'
 const durationRe = /^[-+]?P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)W)?(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?$/
 export const unitNames = ['year', 'month', 'day', 'hour', 'minute', 'second', 'millisecond'] as const
 export type Unit = typeof unitNames[number]
@@ -68,6 +70,10 @@ export class Duration {
       return new Duration(years, months, weeks, days, hours, minutes, seconds, milliseconds)
     }
     throw new RangeError('invalid duration')
+  }
+
+  toLocaleString(locale: string, opts: DurationFormatOptions) {
+    return new DurationFormat(locale, opts).format(this)
   }
 }
 
