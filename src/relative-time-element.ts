@@ -134,12 +134,11 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     return 'datetime'
   }
 
-  #getDurationFormat(date: Date, now: number) {
+  #getDurationFormat(duration: Duration) {
     const locale = this.#lang
     const format = this.format
     const style = this.formatStyle
     let empty = emptyDuration
-    let duration = elapsedTime(date, this.precision, now)
     if (format === 'micro') {
       duration = roundToSingleUnit(duration)
       empty = microEmptyDuration
@@ -186,7 +185,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     const date = this.date
     if (!date) return
     const format = this.#resolveFormat()
-    if (format === 'duration') return this.#getDurationFormat(date, now)
+    if (format === 'duration') return this.#getDurationFormat(elapsedTime(date, this.precision, now))
     return this.#getRelativeFormat(date, now) || this.#getDateTimeFormat(date)
   }
 
