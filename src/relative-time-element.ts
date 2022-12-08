@@ -124,6 +124,21 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     }).format(date)
   }
 
+  #getDateTimeFormat(date: Date): string | undefined {
+    if (typeof Intl === 'undefined' || !Intl.DateTimeFormat) return
+    const formatter = new Intl.DateTimeFormat(this.#lang, {
+      second: this.second,
+      minute: this.minute,
+      hour: this.hour,
+      weekday: this.weekday,
+      day: this.day,
+      month: this.month,
+      year: this.year,
+      timeZoneName: this.timeZoneName,
+    })
+    return `${this.prefix} ${formatter.format(date)}`.trim()
+  }
+
   #getFormattedDate(now = Date.now()): string | undefined {
     const date = this.date
     if (!date) return
@@ -157,18 +172,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
         return relativeFormat.format(int, unit)
       }
     }
-    if (typeof Intl === 'undefined' || !Intl.DateTimeFormat) return
-    const formatter = new Intl.DateTimeFormat(locale, {
-      second: this.second,
-      minute: this.minute,
-      hour: this.hour,
-      weekday: this.weekday,
-      day: this.day,
-      month: this.month,
-      year: this.year,
-      timeZoneName: this.timeZoneName,
-    })
-    return `${this.prefix} ${formatter.format(date)}`.trim()
+    return this.#getDateTimeFormat(date)
   }
 
   get second() {
