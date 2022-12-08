@@ -169,7 +169,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     }
   }
 
-  #getDateTimeFormat(date: Date): string | undefined {
+  #getDateTimeFormat(date: Date): string {
     const formatter = new Intl.DateTimeFormat(this.#lang, {
       second: this.second,
       minute: this.minute,
