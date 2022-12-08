@@ -8,6 +8,7 @@ type Sign = -1 | 0 | 1
 // https://tc39.es/proposal-temporal/docs/duration.html
 export class Duration {
   readonly sign: Sign
+  readonly blank: boolean
 
   constructor(
     public years = 0,
@@ -36,6 +37,7 @@ export class Duration {
     this.sign ||= Math.sign(this.seconds) as Sign
     this.milliseconds ||= 0
     this.sign ||= Math.sign(this.milliseconds) as Sign
+    this.blank = this.sign === 0
   }
 
   abs() {

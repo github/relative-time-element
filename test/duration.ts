@@ -41,6 +41,11 @@ suite('duration', function () {
       assert.propertyVal(new Duration(1), 'sign', 1)
       assert.propertyVal(new Duration(), 'sign', 0)
     })
+
+    test('has `blank` property which is true when the duration is 0', () => {
+      assert.propertyVal(Duration.from('PT0S'), 'blank', true)
+      assert.propertyVal(Duration.from('PT1S'), 'blank', false)
+    })
   })
 
   suite('applyDuration', function () {
