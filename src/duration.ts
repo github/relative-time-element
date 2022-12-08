@@ -77,7 +77,7 @@ export class Duration {
   }
 }
 
-export function applyDuration(date: Date | number, duration: Duration): Date | null {
+export function applyDuration(date: Date | number, duration: Duration): Date {
   const r = new Date(date)
   r.setFullYear(r.getFullYear() + duration.years)
   r.setMonth(r.getMonth() + duration.months)
