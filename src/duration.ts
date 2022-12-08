@@ -1,20 +1,46 @@
+import DurationFormat from './duration-format-ponyfill.js'
+import type {DurationFormatOptions} from './duration-format-ponyfill.js'
 const durationRe = /^[-+]?P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)W)?(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?$/
 export const unitNames = ['year', 'month', 'day', 'hour', 'minute', 'second', 'millisecond'] as const
 export type Unit = typeof unitNames[number]
 
 export const isDuration = (str: string) => durationRe.test(str)
+type Sign = -1 | 0 | 1
 
+// https://tc39.es/proposal-temporal/docs/duration.html
 export class Duration {
+  readonly sign: Sign
+  readonly blank: boolean
+
   constructor(
-    public years = 0,
-    public months = 0,
-    public weeks = 0,
-    public days = 0,
-    public hours = 0,
-    public minutes = 0,
-    public seconds = 0,
-    public milliseconds = 0,
-  ) {}
+    public readonly years = 0,
+    public readonly months = 0,
+    public readonly weeks = 0,
+    public readonly days = 0,
+    public readonly hours = 0,
+    public readonly minutes = 0,
+    public readonly seconds = 0,
+    public readonly milliseconds = 0,
+  ) {
+    // Account for -0
+    this.years ||= 0
+    this.sign ||= Math.sign(this.years) as Sign
+    this.months ||= 0
+    this.sign ||= Math.sign(this.months) as Sign
+    this.weeks ||= 0
+    this.sign ||= Math.sign(this.weeks) as Sign
+    this.days ||= 0
+    this.sign ||= Math.sign(this.days) as Sign
+    this.hours ||= 0
+    this.sign ||= Math.sign(this.hours) as Sign
+    this.minutes ||= 0
+    this.sign ||= Math.sign(this.minutes) as Sign
+    this.seconds ||= 0
+    this.sign ||= Math.sign(this.seconds) as Sign
+    this.milliseconds ||= 0
+    this.sign ||= Math.sign(this.milliseconds) as Sign
+    this.blank = this.sign === 0
+  }
 
   abs() {
     return new Duration(
@@ -45,6 +71,10 @@ export class Duration {
     }
     throw new RangeError('invalid duration')
   }
+
+  toLocaleString(locale: string, opts: DurationFormatOptions) {
+    return new DurationFormat(locale, opts).format(this)
+  }
 }
 
 export function applyDuration(date: Date | number, duration: Duration): Date | null {
@@ -66,7 +96,10 @@ export function withinDuration(a: Date | number, b: Date | number, str: string):
 }
 
 export function elapsedTime(date: Date, precision: Unit = 'second', now = Date.now()): Duration {
-  const ms = Math.abs(date.getTime() - now)
+  const delta = date.getTime() - now
+  if (delta === 0) return new Duration()
+  const sign = Math.sign(delta)
+  const ms = Math.abs(delta)
   const sec = Math.floor(ms / 1000)
   const min = Math.floor(sec / 60)
   const hr = Math.floor(min / 60)
@@ -75,13 +108,60 @@ export function elapsedTime(date: Date, precision: Unit = 'second', now = Date.n
   const year = Math.floor(month / 12)
   const i = unitNames.indexOf(precision) || unitNames.length
   return new Duration(
-    i >= 0 ? year : 0,
-    i >= 1 ? month - year * 12 : 0,
+    i >= 0 ? year * sign : 0,
+    i >= 1 ? (month - year * 12) * sign : 0,
     0,
-    i >= 2 ? day - month * 30 : 0,
-    i >= 3 ? hr - day * 24 : 0,
-    i >= 4 ? min - hr * 60 : 0,
-    i >= 5 ? sec - min * 60 : 0,
-    i >= 6 ? ms - sec * 1000 : 0,
+    i >= 2 ? (day - month * 30) * sign : 0,
+    i >= 3 ? (hr - day * 24) * sign : 0,
+    i >= 4 ? (min - hr * 60) * sign : 0,
+    i >= 5 ? (sec - min * 60) * sign : 0,
+    i >= 6 ? (ms - sec * 1000) * sign : 0,
+  )
+}
+
+export function roundToSingleUnit(duration: Duration): Duration {
+  let years = Math.abs(duration.years)
+  let months = Math.abs(duration.months)
+  let weeks = Math.abs(duration.weeks)
+  let days = Math.abs(duration.days)
+  let hours = Math.abs(duration.hours)
+  let minutes = Math.abs(duration.minutes)
+  let seconds = Math.abs(duration.seconds)
+  let milliseconds = Math.abs(duration.milliseconds)
+
+  if (milliseconds >= 500) seconds += Math.round(milliseconds / 1000)
+  if (seconds || minutes || hours || days || weeks || months || years) milliseconds = 0
+
+  if (seconds >= 30) minutes += Math.round(seconds / 60)
+  if (minutes || hours || days || weeks || months || years) seconds = 0
+
+  if (minutes >= 30) hours += Math.round(minutes / 60)
+  if (hours || days || weeks || months || years) minutes = 0
+
+  if (hours >= 12) days += Math.round(hours / 24)
+  if (days || weeks || months || years) hours = 0
+
+  if (days >= 15) months += Math.round(days / 30)
+  if (weeks || months || years) days = 0
+
+  if (days >= 4) weeks += Math.round(days / 7)
+  if (weeks || months || years) days = 0
+
+  if (weeks >= 2) months += Math.round(weeks / 4)
+  if (months || years) weeks = 0
+
+  if (months >= 6) years += Math.round(months / 12)
+  if (years) months = 0
+
+  const sign = duration.sign
+  return new Duration(
+    years * sign,
+    months * sign,
+    weeks * sign,
+    days * sign,
+    hours * sign,
+    minutes * sign,
+    seconds * sign,
+    milliseconds * sign,
   )
 }

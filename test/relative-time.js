@@ -739,10 +739,10 @@ suite('relative-time', function () {
     const referenceDate = '2022-10-24T14:46:00.000Z'
     const tests = new Set([
       // Same as the current time
-      {datetime: '2022-10-24t14:46:00.000z', tense: 'future', format: 'micro', expected: '1m'},
-      {datetime: '2022-10-24t14:46:00.000z', tense: 'past', format: 'micro', expected: '1m'},
-      {datetime: '2022-10-24t14:46:00.000z', tense: 'auto', format: 'micro', expected: '1m'},
-      {datetime: '2022-10-24t14:46:00.000z', tense: 'auto', format: 'auto', expected: 'now'},
+      {datetime: '2022-10-24T14:46:00.000z', tense: 'future', format: 'micro', expected: '1m'},
+      {datetime: '2022-10-24T14:46:00.000z', tense: 'past', format: 'micro', expected: '1m'},
+      {datetime: '2022-10-24T14:46:00.000z', tense: 'auto', format: 'micro', expected: '1m'},
+      {datetime: '2022-10-24T14:46:00.000z', tense: 'auto', format: 'auto', expected: 'now'},
 
       // Dates in the past
       {datetime: '2022-09-24T14:46:00.000Z', tense: 'future', format: 'micro', expected: '1m'},
@@ -754,9 +754,9 @@ suite('relative-time', function () {
       {datetime: '2022-10-24T16:00:00.000Z', tense: 'future', format: 'micro', expected: '1h'},
       {datetime: '2022-10-24T16:15:00.000Z', tense: 'future', format: 'micro', expected: '1h'},
       {datetime: '2022-10-24T16:31:00.000Z', tense: 'future', format: 'micro', expected: '2h'},
-      {datetime: '2022-10-30T14:46:00.000Z', tense: 'future', format: 'micro', expected: '6d'},
-      {datetime: '2022-11-24T14:46:00.000Z', tense: 'future', format: 'micro', expected: '31d'},
-      {datetime: '2023-10-23T14:46:00.000Z', tense: 'future', format: 'micro', expected: '364d'},
+      {datetime: '2022-10-30T14:46:00.000Z', tense: 'future', format: 'micro', expected: '1w'},
+      {datetime: '2022-11-24T14:46:00.000Z', tense: 'future', format: 'micro', expected: '1m'},
+      {datetime: '2023-10-23T14:46:00.000Z', tense: 'future', format: 'micro', expected: '1y'},
       {datetime: '2023-10-24T14:46:00.000Z', tense: 'future', format: 'micro', expected: '1y'},
       {datetime: '2024-03-31T14:46:00.000Z', tense: 'future', format: 'micro', expected: '1y'},
       {datetime: '2024-04-01T14:46:00.000Z', tense: 'future', format: 'micro', expected: '2y'},
@@ -771,9 +771,9 @@ suite('relative-time', function () {
       {datetime: '2022-10-24T13:30:00.000Z', tense: 'past', format: 'micro', expected: '1h'},
       {datetime: '2022-10-24T13:17:00.000Z', tense: 'past', format: 'micro', expected: '1h'},
       {datetime: '2022-10-24T13:01:00.000Z', tense: 'past', format: 'micro', expected: '2h'},
-      {datetime: '2022-10-18T14:46:00.000Z', tense: 'past', format: 'micro', expected: '6d'},
-      {datetime: '2022-09-23T14:46:00.000Z', tense: 'past', format: 'micro', expected: '31d'},
-      {datetime: '2021-10-25T14:46:00.000Z', tense: 'past', format: 'micro', expected: '364d'},
+      {datetime: '2022-10-18T14:46:00.000Z', tense: 'past', format: 'micro', expected: '1w'},
+      {datetime: '2022-09-23T14:46:00.000Z', tense: 'past', format: 'micro', expected: '1m'},
+      {datetime: '2021-10-25T14:46:00.000Z', tense: 'past', format: 'micro', expected: '1y'},
       {datetime: '2021-10-24T14:46:00.000Z', tense: 'past', format: 'micro', expected: '1y'},
       {datetime: '2021-05-18T14:46:00.000Z', tense: 'past', format: 'micro', expected: '1y'},
       {datetime: '2021-05-17T14:46:00.000Z', tense: 'past', format: 'micro', expected: '2y'},
@@ -871,7 +871,7 @@ suite('relative-time', function () {
         datetime: '2022-01-01T12:00:00.000Z',
         tense: 'past',
         format: 'micro',
-        expected: '364d',
+        expected: '1y',
       },
       {
         reference: '2022-12-31T12:00:00.000Z',

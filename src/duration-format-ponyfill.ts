@@ -1,4 +1,4 @@
-import {Duration} from './duration.js'
+import type {Duration} from './duration.js'
 
 class ListFormatPonyFill {
   formatToParts(members: Iterable<string>) {
@@ -13,6 +13,7 @@ class ListFormatPonyFill {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ListFormat = (typeof Intl !== 'undefined' && (Intl as any).ListFormat) || ListFormatPonyFill
 
+// https://tc39.es/proposal-intl-duration-format/
 interface DurationFormatResolvedOptions {
   locale: string
   style: 'long' | 'short' | 'narrow' | 'digital'
@@ -94,12 +95,11 @@ export default class DurationFormat {
     return this.#options
   }
 
-  formatToParts(opts: unknown): DurationPart[] {
+  formatToParts(duration: Duration): DurationPart[] {
     const list: string[] = []
     const options = this.#options
     const style = options.style
     const locale = options.locale
-    const duration = Duration.from(opts)
     for (const [unit, nfUnit] of partsTable) {
       const value = duration[unit]
       if (options[`${unit}Display`] === 'auto' && !value) continue
@@ -118,8 +118,8 @@ export default class DurationFormat {
     }).formatToParts(list)
   }
 
-  format(opts: unknown) {
-    return this.formatToParts(opts)
+  format(duration: Duration) {
+    return this.formatToParts(duration)
       .map(p => p.value)
       .join('')
   }

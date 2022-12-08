@@ -1,5 +1,6 @@
 import {assert} from '@open-wc/testing'
 
+import {Duration} from '../src/duration.js'
 import DurationFormat from '../src/duration-format-ponyfill.js'
 import type {DurationFormatOptions} from '../src/duration-format-ponyfill.js'
 
@@ -98,7 +99,7 @@ suite('duration format ponyfill', function () {
       duration,
     )}) === ${JSON.stringify(parts)}`, function () {
       assert.deepEqual(
-        new DurationFormat(locale, opts as unknown as DurationFormatOptions).formatToParts(duration),
+        new DurationFormat(locale, opts as unknown as DurationFormatOptions).formatToParts(Duration.from(duration)),
         parts,
       )
     })

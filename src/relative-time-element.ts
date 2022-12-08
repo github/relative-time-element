@@ -1,12 +1,14 @@
-import {microTimeAgo, microTimeUntil, timeUntil, timeAgo} from './duration-format.js'
-import {unitNames, Unit, isDuration, withinDuration, elapsedTime} from './duration.js'
-import DurationFormat from './duration-format-ponyfill.js'
+import {timeUntil, timeAgo} from './duration-format.js'
+import {Duration, unitNames, Unit, isDuration, withinDuration, elapsedTime, roundToSingleUnit} from './duration.js'
 const root = (typeof globalThis !== 'undefined' ? globalThis : window) as typeof window
 const HTMLElement = root.HTMLElement || (null as unknown as typeof window['HTMLElement'])
 
 export type Format = 'auto' | 'micro' | 'elapsed'
 export type FormatStyle = 'long' | 'short' | 'narrow'
 export type Tense = 'auto' | 'past' | 'future'
+
+const emptyDuration = new Duration()
+const microEmptyDuration = new Duration(0, 0, 0, 0, 0, 1)
 
 export class RelativeTimeUpdatedEvent extends Event {
   constructor(public oldText: string, public newText: string, public oldTitle: string, public newTitle: string) {
@@ -128,25 +130,30 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     const locale = this.#lang
     const format = this.format
     const style = this.formatStyle
-    if (format === 'elapsed') {
-      const durationFormat = new DurationFormat(locale, {style}).format(elapsedTime(date, this.precision, now))
-      return durationFormat || new DurationFormat(locale, {style, minutesDisplay: 'always'}).format('PT0M')
+    let empty = emptyDuration
+    if (format === 'elapsed' || format === 'micro') {
+      let duration = elapsedTime(date, this.precision, now)
+      if (format === 'micro') {
+        duration = roundToSingleUnit(duration)
+        empty = microEmptyDuration
+        if ((this.tense === 'past' && duration.sign !== -1) || (this.tense === 'future' && duration.sign !== 1)) {
+          duration = microEmptyDuration
+        }
+      }
+      if (duration.blank) return empty.toLocaleString(locale, {style, minutesDisplay: 'always'})
+      return duration.abs().toLocaleString(locale, {style})
     }
-    const tense = this.tense
-    const micro = format === 'micro'
-    const inFuture = now < date.getTime()
-    const within = withinDuration(now, date, this.threshold)
     if (typeof Intl !== 'undefined' && Intl.RelativeTimeFormat) {
+      const tense = this.tense
+      const inFuture = now < date.getTime()
+      const within = withinDuration(now, date, this.threshold)
       const relativeFormat = new Intl.RelativeTimeFormat(locale, {numeric: 'auto', style})
-
       if (tense === 'past' || (tense === 'auto' && !inFuture && within)) {
-        const [int, unit] = micro ? microTimeAgo(date) : timeAgo(date)
-        if (micro) return `${int}${unit[0]}`
+        const [int, unit] = timeAgo(date)
         return relativeFormat.format(int, unit)
       }
       if (tense === 'future' || (tense === 'auto' && inFuture && within)) {
-        const [int, unit] = micro ? microTimeUntil(date) : timeUntil(date)
-        if (micro) return `${int}${unit[0]}`
+        const [int, unit] = timeUntil(date)
         return relativeFormat.format(int, unit)
       }
     }
@@ -286,6 +293,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
   get precision(): Unit {
     const precision = this.getAttribute('precision') as unknown as Unit
     if (unitNames.includes(precision)) return precision
+    if (this.format === 'micro') return 'minute'
     return 'second'
   }
 
@@ -309,7 +317,8 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     if (formatStyle === 'long') return 'long'
     if (formatStyle === 'short') return 'short'
     if (formatStyle === 'narrow') return 'narrow'
-    if (this.format === 'elapsed') return 'narrow'
+    const format = this.format
+    if (format === 'elapsed' || format === 'micro') return 'narrow'
     return 'long'
   }
 

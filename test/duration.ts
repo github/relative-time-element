@@ -1,5 +1,5 @@
 import {assert} from '@open-wc/testing'
-import {Duration, applyDuration, withinDuration, elapsedTime} from '../src/duration.ts'
+import {Duration, applyDuration, withinDuration, elapsedTime, roundToSingleUnit} from '../src/duration.ts'
 import {Temporal} from '@js-temporal/polyfill'
 
 suite('duration', function () {
@@ -35,6 +35,17 @@ suite('duration', function () {
         assert.deepEqual(temporalAbs, abs)
       })
     }
+
+    test('has `sign` property representing the sign of the duration', () => {
+      assert.propertyVal(new Duration(-1), 'sign', -1)
+      assert.propertyVal(new Duration(1), 'sign', 1)
+      assert.propertyVal(new Duration(), 'sign', 0)
+    })
+
+    test('has `blank` property which is true when the duration is 0', () => {
+      assert.propertyVal(Duration.from('PT0S'), 'blank', true)
+      assert.propertyVal(Duration.from('PT1S'), 'blank', false)
+    })
   })
 
   suite('applyDuration', function () {
@@ -87,26 +98,53 @@ suite('duration', function () {
       {now: '2022-10-21T16:44:44.104Z', input: '2022-10-21T16:48:44.104Z', expected: 'PT4M'},
       {now: '2022-09-22T16:48:44.104Z', input: '2022-10-21T16:48:44.104Z', expected: 'P29D'},
       {now: '2022-10-24T14:46:00.000Z', input: '2022-10-24T14:46:10.000Z', expected: 'PT10S'},
-      {now: '2022-10-24T14:46:00.000Z', input: '2022-10-24T14:45:50.000Z', expected: 'PT10S'},
+      {now: '2022-10-24T14:46:00.000Z', input: '2022-10-24T14:45:50.000Z', expected: '-PT10S'},
       {now: '2022-10-24T14:46:00.000Z', input: '2022-10-24T14:45:50.000Z', precision: 'minute', expected: 'PT0M'},
       {now: '2022-10-24T14:46:00.000Z', input: '2022-10-24T14:47:40.000Z', expected: 'PT1M40S'},
-      {now: '2022-10-24T14:46:00.000Z', input: '2022-10-24T14:44:20.000Z', expected: 'PT1M40S'},
-      {now: '2022-10-24T14:46:00.000Z', input: '2022-10-24T14:44:20.000Z', precision: 'minute', expected: 'PT1M'},
+      {now: '2022-10-24T14:46:00.000Z', input: '2022-10-24T14:44:20.000Z', expected: '-PT1M40S'},
+      {now: '2022-10-24T14:46:00.000Z', input: '2022-10-24T14:44:20.000Z', precision: 'minute', expected: '-PT1M'},
       {now: '2022-10-24T14:46:00.000Z', input: '2022-10-24T15:51:40.000Z', expected: 'PT1H5M40S'},
       {now: '2022-10-24T14:46:00.000Z', input: '2022-10-24T15:51:40.000Z', precision: 'minute', expected: 'PT1H5M'},
       {now: '2022-10-24T14:46:00.000Z', input: '2022-10-24T15:52:00.000Z', expected: 'PT1H6M'},
       {now: '2022-10-24T14:46:00.000Z', input: '2022-10-24T17:46:00.000Z', expected: 'PT3H'},
-      {now: '2022-10-24T14:46:00.000Z', input: '2022-10-24T10:46:00.000Z', expected: 'PT4H'},
+      {now: '2022-10-24T14:46:00.000Z', input: '2022-10-24T10:46:00.000Z', expected: '-PT4H'},
       {now: '2022-10-24T14:46:00.000Z', input: '2022-10-25T18:46:00.000Z', expected: 'P1DT4H'},
-      {now: '2022-10-24T14:46:00.000Z', input: '2022-10-23T10:46:00.000Z', expected: 'P1DT4H'},
-      {now: '2022-10-24T14:46:00.000Z', input: '2022-10-23T10:46:00.000Z', precision: 'day', expected: 'P1D'},
-      {now: '2022-10-24T14:46:00.000Z', input: '2021-10-30T14:46:00.000Z', expected: 'P11M29D'},
-      {now: '2022-10-24T14:46:00.000Z', input: '2021-10-30T14:46:00.000Z', precision: 'month', expected: 'P11M'},
-      {now: '2022-10-24T14:46:00.000Z', input: '2021-10-29T14:46:00.000Z', expected: 'P1Y'},
+      {now: '2022-10-24T14:46:00.000Z', input: '2022-10-23T10:46:00.000Z', expected: '-P1DT4H'},
+      {now: '2022-10-24T14:46:00.000Z', input: '2022-10-23T10:46:00.000Z', precision: 'day', expected: '-P1D'},
+      {now: '2022-10-24T14:46:00.000Z', input: '2021-10-30T14:46:00.000Z', expected: '-P11M29D'},
+      {now: '2022-10-24T14:46:00.000Z', input: '2021-10-30T14:46:00.000Z', precision: 'month', expected: '-P11M'},
+      {now: '2022-10-24T14:46:00.000Z', input: '2021-10-29T14:46:00.000Z', expected: '-P1Y'},
     ])
     for (const {input, now, precision = 'millisecond', expected} of elapsed) {
       test(`${input} is ${expected} elapsed from ${now} (precision ${precision})`, () => {
         assert.deepEqual(elapsedTime(new Date(input), precision, new Date(now).getTime()), Duration.from(expected))
+      })
+    }
+  })
+
+  suite('roundToSingleUnit', function () {
+    const elapsed = new Set([
+      ['PT20S', 'PT20S'],
+      ['PT31S', 'PT1M'],
+      ['PT1H', 'PT1H'],
+      ['PT1H14M', 'PT1H'],
+      ['PT1H29M', 'PT1H'],
+      ['PT1H31M', 'PT2H'],
+      ['PT1H45M', 'PT2H'],
+      ['P6D', 'P1W'],
+      ['P1M1D', 'P1M'],
+      ['P1Y4D', 'P1Y'],
+      ['P1Y5M13D', 'P1Y'],
+      ['P1Y5M15D', 'P2Y'],
+      ['P1Y5M20D', 'P2Y'],
+      ['P1Y6M', 'P2Y'],
+    ])
+    for (const [input, expected] of elapsed) {
+      test(`roundToSingleUnit(${input}) === ${expected}`, () => {
+        assert.deepEqual(roundToSingleUnit(Duration.from(input)), Duration.from(expected))
+      })
+      test(`roundToSingleUnit(-${input}) === -${expected}`, () => {
+        assert.deepEqual(roundToSingleUnit(Duration.from(`-${input}`)), Duration.from(`-${expected}`))
       })
     }
   })
