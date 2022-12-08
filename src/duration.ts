@@ -127,6 +127,7 @@ export function elapsedTime(date: Date, precision: Unit = 'second', now = Date.n
 }
 
 export function roundToSingleUnit(duration: Duration): Duration {
+  if (duration.blank) return duration
   let years = Math.abs(duration.years)
   let months = Math.abs(duration.months)
   let weeks = Math.abs(duration.weeks)
