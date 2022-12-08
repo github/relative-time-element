@@ -145,7 +145,7 @@ suite('duration', function () {
   })
 
   suite('roundToSingleUnit', function () {
-    const elapsed = new Set([
+    const roundTests = new Set([
       ['PT20S', 'PT20S'],
       ['PT31S', 'PT1M'],
       ['PT1H', 'PT1H'],
@@ -161,7 +161,7 @@ suite('duration', function () {
       ['P1Y5M20D', 'P2Y'],
       ['P1Y6M', 'P2Y'],
     ])
-    for (const [input, expected] of elapsed) {
+    for (const [input, expected] of roundTests) {
       test(`roundToSingleUnit(${input}) === ${expected}`, () => {
         assert.deepEqual(roundToSingleUnit(Duration.from(input)), Duration.from(expected))
       })
