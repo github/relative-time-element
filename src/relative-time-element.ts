@@ -1,5 +1,4 @@
-import {timeUntil, timeAgo} from './duration-format.js'
-import {Duration, unitNames, Unit, isDuration, withinDuration, elapsedTime, roundToSingleUnit} from './duration.js'
+import {Duration, unitNames, Unit, isDuration, elapsedTime, roundToSingleUnit, getRelativeTimeUnit} from './duration.js'
 const root = (typeof globalThis !== 'undefined' ? globalThis : window) as typeof window
 const HTMLElement = root.HTMLElement || (null as unknown as typeof window['HTMLElement'])
 

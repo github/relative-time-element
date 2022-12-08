@@ -1,5 +1,5 @@
 import {assert} from '@open-wc/testing'
-import {Duration, applyDuration, withinDuration, elapsedTime, roundToSingleUnit, getRelativeTimeUnit} from '../src/duration.ts'
+import {Duration, applyDuration, elapsedTime, roundToSingleUnit, getRelativeTimeUnit} from '../src/duration.ts'
 import {Temporal} from '@js-temporal/polyfill'
 
 suite('duration', function () {
@@ -83,31 +83,6 @@ suite('duration', function () {
     for (const {input, expected} of tests) {
       test(`${referenceDate} -> ${input} -> ${expected}`, () => {
         assert.equal(applyDuration(new Date(referenceDate), Duration.from(input))?.toISOString(), expected)
-      })
-    }
-  })
-
-  suite('withinDuration', function () {
-    const within = new Set([
-      {inputA: '2022-10-21T16:48:44.104Z', inputB: '2022-01-21T16:48:44.104Z', duration: 'P1Y'},
-      {inputA: '2022-10-21T16:48:44.104Z', inputB: '2022-10-21T16:44:44.104Z', duration: 'PT5M'},
-      {inputA: '2022-10-21T16:48:44.104Z', inputB: '2022-09-22T16:48:44.104Z', duration: 'P30D'},
-    ])
-    const exceeds = new Set([
-      {inputA: '2022-10-21T16:48:44.104Z', inputB: '2021-09-21T16:48:44.104Z', duration: 'P1Y'},
-      {inputA: '2022-10-21T16:48:44.104Z', inputB: '2022-10-21T16:42:44.104Z', duration: 'PT5M'},
-      {inputA: '2022-10-21T16:48:44.104Z', inputB: '2022-09-12T16:48:44.104Z', duration: 'P30D'},
-    ])
-    for (const {inputA, inputB, duration} of within) {
-      test(`${inputA} within ${duration} of ${inputB}`, () => {
-        assert.ok(withinDuration(new Date(inputA), new Date(inputB), duration))
-        assert.ok(withinDuration(new Date(inputB), new Date(inputA), duration))
-      })
-    }
-    for (const {inputA, inputB, duration} of exceeds) {
-      test(`${inputA} not within ${duration} of ${inputB}`, () => {
-        assert.notOk(withinDuration(new Date(inputA), new Date(inputB), duration))
-        assert.notOk(withinDuration(new Date(inputB), new Date(inputA), duration))
       })
     }
   })

@@ -95,13 +95,6 @@ export function applyDuration(date: Date | number, duration: Duration): Date {
   return r
 }
 
-export function withinDuration(a: Date | number, b: Date | number, str: string): boolean {
-  const duration = Duration.from(str).abs()
-  const threshold = applyDuration(a, duration)
-  if (!threshold) return true
-  return Math.abs(Number(threshold) - Number(a)) > Math.abs(Number(a) - Number(b))
-}
-
 export function elapsedTime(date: Date, precision: Unit = 'second', now = Date.now()): Duration {
   const delta = date.getTime() - now
   if (delta === 0) return new Duration()
