@@ -124,6 +124,25 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     }).format(date)
   }
 
+  #getDurationFormat(date: Date, now: number) {
+    const locale = this.#lang
+    const format = this.format
+    const style = this.formatStyle
+    let empty = emptyDuration
+    if (format === 'elapsed' || format === 'micro') {
+      let duration = elapsedTime(date, this.precision, now)
+      if (format === 'micro') {
+        duration = roundToSingleUnit(duration)
+        empty = microEmptyDuration
+        if ((this.tense === 'past' && duration.sign !== -1) || (this.tense === 'future' && duration.sign !== 1)) {
+          duration = microEmptyDuration
+        }
+      }
+      if (duration.blank) return empty.toLocaleString(locale, {style, minutesDisplay: 'always'})
+      return duration.abs().toLocaleString(locale, {style})
+    }
+  }
+
   #getRelativeFormat(date: Date, now: number): string | undefined {
     if (typeof Intl === 'undefined' || !Intl.RelativeTimeFormat) return
     const tense = this.tense
@@ -158,23 +177,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
   #getFormattedDate(now = Date.now()): string | undefined {
     const date = this.date
     if (!date) return
-    const locale = this.#lang
-    const format = this.format
-    const style = this.formatStyle
-    let empty = emptyDuration
-    if (format === 'elapsed' || format === 'micro') {
-      let duration = elapsedTime(date, this.precision, now)
-      if (format === 'micro') {
-        duration = roundToSingleUnit(duration)
-        empty = microEmptyDuration
-        if ((this.tense === 'past' && duration.sign !== -1) || (this.tense === 'future' && duration.sign !== 1)) {
-          duration = microEmptyDuration
-        }
-      }
-      if (duration.blank) return empty.toLocaleString(locale, {style, minutesDisplay: 'always'})
-      return duration.abs().toLocaleString(locale, {style})
-    }
-    return this.#getRelativeFormat(date, now) || this.#getDateTimeFormat(date)
+    return this.#getDurationFormat(date, now) || this.#getRelativeFormat(date, now) || this.#getDateTimeFormat(date)
   }
 
   get second() {
