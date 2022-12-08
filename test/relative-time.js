@@ -106,8 +106,10 @@ suite('relative-time', function () {
 
   test('all observedAttributes have getters', async () => {
     const members = [
-      ...Object.getOwnPropertyNames(RelativeTimeElement.prototype).map(n => n.replace(/([A-Z])/g, c => `-${c.toLowerCase()}`)),
-      ...Object.getOwnPropertyNames(HTMLElement.prototype)
+      ...Object.getOwnPropertyNames(RelativeTimeElement.prototype).map(n =>
+        n.replace(/([A-Z])/g, c => `-${c.toLowerCase()}`),
+      ),
+      ...Object.getOwnPropertyNames(HTMLElement.prototype),
     ]
     const observedAttributes = new Set(RelativeTimeElement.observedAttributes)
     for (const member of members) observedAttributes.delete(member)
