@@ -24,10 +24,10 @@ If the browser's JavaScript is disabled, the default text served in the cached m
 
 ## Installation
 
-Available on [npm](https://www.npmjs.com/) as [**@github/time-elements**](https://www.npmjs.com/package/@github/time-elements).
+Available on [npm](https://www.npmjs.com/) as [**@github/relative-time-element**](https://www.npmjs.com/package/@github/relative-time-element).
 
 ```
-$ npm install @github/time-elements
+$ npm install @github/relative-time-element
 ```
 
 This element uses the `Intl.DateTimeFormat` & `Intl.RelativeTimeFormat` APIs, which are supported by all modern JS engines. If you need to support an older browser, you may need to introduce a polyfill for `Intl.DateTimeFormat` & `Intl.RelativeTimeFormat`.
@@ -65,24 +65,29 @@ So, a relative date phrase is used for up to a month and then the actual date is
 | Property Name  | Attribute Name   | Possible Values                                                                             | Default Value                    |
 |:---------------|:-----------------|:--------------------------------------------------------------------------------------------|:---------------------------------|
 | `datetime`     | `datetime`       | `string`                                                                                    | -                                |
-| `format`       | `format`         | `'auto'\|'micro'\|'elapsed'`                                                                | 'auto'                           |
+| `format`       | `format`         | `'datetime'\|'relative'\|'duration'`                                                        | 'auto'                           |
 | `date`         | -                | `Date \| null`                                                                              | -                                |
 | `tense`        | `tense`          | `'auto'\|'past'\|'future'`                                                                  | `'auto'`                         |
 | `precision`    | `precision`      | `'year'\|'month'\|'day'\|'hour'\|'minute'\|'second'`                                        | `'second'`                       |
 | `threshold`    | `threshold`      | `string`                                                                                    | `'P30D'`                         |
 | `prefix`       | `prefix`         | `string`                                                                                    | `'on'`                           |
-| `formatStyle`  | `format-style`   | `'long'\|'short'\|'narrow'`                                                                 | `'long'|'narrow'`<sup>**</sup>   |
+| `formatStyle`  | `format-style`   | `'long'\|'short'\|'narrow'`                                                                 | <sup>*</sup>                     |
 | `second`       | `second`         | `'numeric'\|'2-digit'\|undefined`                                                           | `undefined`                      |
 | `minute`       | `minute`         | `'numeric'\|'2-digit'\|undefined`                                                           | `undefined`                      |
 | `hour`         | `hour`           | `'numeric'\|'2-digit'\|undefined`                                                           | `undefined`                      |
-| `weekday`      | `weekday`        | `'short'\|'long'\|'narrow'\|undefined`                                                      | `undefined`                      |
+| `weekday`      | `weekday`        | `'short'\|'long'\|'narrow'\|undefined`                                                      | <sup>**</sup>                    |
 | `day`          | `day`            | `'numeric'\|'2-digit'\|undefined`                                                           | `'numeric'`                      |
-| `month`        | `month`          | `'numeric'\|'2-digit'\|'short'\|'long'\|'narrow'\|undefined`                                | `'short'`                        |
-| `year`         | `year`           | `'numeric'\|'2-digit'\|undefined`                                                           | `'numeric'|undefined`<sup>*</sup>|
+| `month`        | `month`          | `'numeric'\|'2-digit'\|'short'\|'long'\|'narrow'\|undefined`                                | <sup>***</sup>                   |
+| `year`         | `year`           | `'numeric'\|'2-digit'\|undefined`                                                           | <sup>****</sup>                  |
 | `timeZoneName` | `time-zone-name` | `'long'\|'short'\|'shortOffset'\|'longOffset'` `\|'shortGeneric'\|'longGeneric'\|undefined` | `undefined`                      |
 
-<sup>*</sup>: If unspecified, `year` will return `'numeric'` if `datetime` represents the same year as the current year. It will return `undefined` if unspecified and if `datetime` represents a different year to the current year.
-<sup>**</sup>: If unspecified, `formatStyle` will return `'narrow'` if `format` is `'elapsed'`, or `'long'` otherwise.
+<sup>*</sup>: If unspecified, `formatStyle` will return `'narrow'` if `format` is `'elapsed'` or `'micro'`, `'short'` if the format is `'relative'` or `'datetime'`, otherwise it will be `'long'`.
+
+<sup>**</sup>: If unspecified, `month` will return the same value as `formatStyle` whenever `format` is `'datetime'`, otherwise it wil be `'short'`.
+
+<sup>***</sup>: If unspecified, `weekday` will return the same value as `formatStyle` whenever `format` is `'datetime'`, otherwise it will be `undefined`.
+
+<sup>****</sup>: If unspecified, `year` will return `'numeric'` if `datetime` represents the same year as the current year. It will return `undefined` if unspecified and if `datetime` represents a different year to the current year.
 
 ##### datetime (`string`)
 
@@ -100,35 +105,78 @@ This is the datetime that the element is meant to represent. This must be a vali
 </script>
 ```
 
-##### format (`'auto'|'micro'|'elapsed'|string`)
+##### format (`'datetime'|'relative'|'duration'|'auto'|'micro'|'elapsed'`)
 
-The default format is `auto`, but this can be changed to `micro` or `elapsed`.
+Format can be either `'datetime'`, `'relative'`, or `'duration'`. It can also be one of several deprecated formats of `'auto'`, `'micro'`, or `'elapsed'`.
 
-The default `auto` format will display dates relative to the current time (unless they are past the `threshold` value - see below). The values are rounded to display a single unit, for example if the time between the given `datetime` and the current wall clock time exceeds a day, then the format will _only_ ouput in days, and will not display hours, minutes or seconds.
+The default format is `auto`, which is an alias for `relative`. In the next major version this will be `relative`.
 
-The `micro` format which will display relative dates (within the threshold) in a more compact format. Similar to `auto`, the `micro` format rounds values to the nearest largest value. Additionally, `micro` format will not round _lower_ than 1 minute, as such a `datetime` which is less than a minute from the current wall clock time will display `'1m'`.
+###### `format=datetime`
 
-The `elapsed` format will always non-rounded units of time, where any non-zero unit of time is displayed in the compact notation format. This format is also absolute, and so tense does not apply. This can be useful for displaying actively running timers.
+The `datetime` format will display a localised datetime, based on the other properties of the element. It uses `Intl.DateTimeFormat` to display the `datetime` in a localised format.
 
-| `format=auto` | `format=micro` | `format=elapsed` |
-|:-------------:|:--------------:|:----------------:|
-| in 2 years    | 2y             | 2y 10d 3h 20m 8s |
-| 2 years ago   | 2y             | 2y 10d 3h 20m 8s |
-| in 30 days    | 30d            | 30d 4h 20m 8s    |
-| 21 minutes ago| 21m            | 21m 30s          |
-| 37 seconds ago| 1m             | 37s              |
+Unless specified, it will consider `weekday` to be `'long'`, `month` to be `'long'`, and `'year'` to be `numeric` if the `datetime` is the same as the given year. Overriding `formatStyle` will change both `weekday` and `month` default values. Examples of this format with the default options and an `en` locale:
 
-```html
-<relative-time datetime="1970-04-01T16:30:00-08:00" threshold="P100Y" format="micro">
-  <!-- Will display "<N>y" -->
-</relative-time>
-```
+ - `Wed, 26 Aug 2021` 
+ - `Sat, 31 Dec` (assuming the `datetime` is same year as the current year)
+
+###### `format=relative`
+
+The default `relative` format will display dates relative to the current time (unless they are past the `threshold` value - see below). The values are rounded to display a single unit, for example if the time between the given `datetime` and the current wall clock time exceeds a day, then the format will _only_ ouput in days, and will not display hours, minutes or seconds. Some examples of this format with the default options and an `en` locale:
+
+ - `in 20 days`
+ - `20 days ago`
+ - `in 1 minute`
+ - `on 31 Aug` (assuming the current date is the same year as the current year, and is more than 30 days away from 31 Aug)
+ - `on 26 Aug 2021` (assuming the current date is more than 30 days away from 26 Aug 2021)
+
+###### `format=duration`
+
+The `duration` format will display the time remaining (or elapsed time) from the given datetime, counting down the number of years, months, weeks, days, hours, minutes, and seconds. Any value that is `0` will be omitted from the display by default. Examples of this format with the default options and an `en` locale:
+
+- `4 hours, 2 minutes, 30 seconds`
+- `4 hours`
+- `8 days, 30 minutes, 1 second`
+
+###### Deprecated Formats
+
+###### `format=elapsed`
+
+This is similar to the `format=duration`, except the `formatStyle` defaults to `narrow`. Code that  uses `format=elapsed` should migrate to `format=duration formatStyle=narrow`, as it will be removed in a later version.
+
+###### `format=auto`
+
+This is identical to `format=relative`. Code that uses `format=auto` should migrae to `format=relative` as this will be the new default in a later version.
+
+###### `format=micro`
+
+The `micro` format which will display relative dates (within the threshold) in a more compact format. Similar to `relative`, the `micro` format rounds values to the nearest largest value. Additionally, `micro` format will not round _lower_ than 1 minute, as such a `datetime` which is less than a minute from the current wall clock time will display `'1m'`.
+
+Code that uses `format=micro` should consider migrating to `format=relative` (perhaps with `formatStyle=narrow`), as `format=micro` can be difficult for users to understand, and can cause issues with assistive technologies. For example some screen readers (such as VoiceOver for mac) will read out `1m` as `1 meter`.
+
+###### Cheatsheet
+
+| `format=datetime` | `format=relative` | `format=duration`                                | `format=micro`    | `format=elapsed` |
+|:-----------------:|:-----------------:|:------------------------------------------------:|:-----------------:|:----------------:|
+| Wed 26 May 2024   |  in 2 years       | 2 years, 10 days, 3 hours, 20 minutes, 8 seconds | 2y                | 2y 10d 3h 20m 8s |
+| Wed 26 Aug 2021   |  2 years ago      | 2 years, 10 days, 3 hours, 8 seconds             | 2y                | 2y 10d 3h 8s    |
+| Jan 15 2023       |  in 30 days       | 30 days, 4 hours, 20 minutes, 8 seconds          | 30d               | 30d 4h 20m 8s    |
+| Dec 15 2022       |  21 minutes ago   | 21 minutes, 30 seconds                           | 21m               | 21m 30s          |
+| Dec 15 2022       |  37 seconds ago   | 37 seconds                                       | 1m                | 37s              |
 
 ##### tense (`'auto'|'past'|'future'`, default: `auto`)
 
-If `format` is anything other than `'auto'` or `'micro'` then this value will be ignored.
+If `format` is `'datetime'` then this value will be ignored.
 
-Tense can be used to fix relative-time to always display a date's relative tense in the future or the past. Setting `tense=past` will always display future dates as `now`, while setting it to `future` will always display past dates as `now`.
+Tense can be used to prevent `duration` or `relative` formatted dates displaying dates in a tense other than the one specified. Setting `tense=past` will always display future `relative` dates as `now` and `duration` dates as `0 seconds`, while setting it to `future` will always display past dates `relative` as `now` and past `duration` dates as `0 seconds`.
+
+For example when the given `datetime` is 40 seconds behind of the current date:
+
+| `tense=`| format=duration  | format=relative |
+|:-------:|:----------------:|:---------------:|
+| future  | 0s               | now             |
+| past    | 40s              | 40s ago         |
+| auto    | 40s              | 40s ago         |
 
 ```html
 <relative-time datetime="2038-04-01T16:30:00-08:00" tense="past">
@@ -144,11 +192,11 @@ Tense can be used to fix relative-time to always display a date's relative tense
 
 #### precision (`'year'|'month'|'day'|'hour'|'minute'|'second'`, default: `'second'`)
 
-If `format` is anything other than `'elapsed'` then this value will be ignored.
+If `format` is `datetime` then this value will be ignored.
 
-Precision can be used to limit the display of an `elapsed` formatted time. By default the `elapsed` time will display times down to the `second` level of precision. Changing this value will truncate the display to the respective unit, and smaller units will be elided. Some examples:
+Precision can be used to limit the display of an `relative` or `duration` formatted time. By default times will display down to the `second` level of precision. Changing this value will truncate the display by zeroing out any unit lower than the given unit, as such units smaller than the given unit won't be displayed during `duration`, and `relative` will display `now` if the time away from the current time is less than the given precision unit.
 
-| `precision=`  | Display             |
+| `precision=`  | format=duration     |
 |:-------------:|:-------------------:|
 | seconds       | 2y 6m 10d 3h 20m 8s |
 | minutes       | 2y 6m 10d 3h 20m    |
@@ -157,9 +205,19 @@ Precision can be used to limit the display of an `elapsed` formatted time. By de
 | months        | 2y 6m               |
 | years         | 2y                  |
 
+| `precision=`  | format=relative     |
+|:-------------:|:-------------------:|
+| seconds       | 25 seconds          |
+| minutes       | now                 |
+| hours         | now                 |
+| days          | nwo                 |
+| months        | now                 |
+| years         | now                 |
+
+
 ##### threshold (`string`, default: `P30D`)
 
-If `tense` is anything other than `'auto'` or `format` is anything other than `'auto'` or `'micro'` then this value will be ignored.
+If `tense` is anything other than `'auto'`, or `format` is `'relative'` (or the deprecated `'auto'` or `'micro'` values), then this value will be ignored.
 
 Threshold can be used to specify when a relative display (e.g. "5 days ago") should turn into an absolute display (i.e. the full date). This should be a valid [ISO8601 Time Duration](https://en.wikipedia.org/wiki/ISO_8601#Durations). If the difference between the current time and the specified `datetime` is _more_ than the duration, then the date will be displayed as an absolute value (i.e. the full date), otherwise it will be formatted to a relative display (e.g. "5 days ago").
 
@@ -179,7 +237,7 @@ The default value for this is `P30D`, meaning if the current time is more than 3
 
 ##### prefix (`string`, default: `'on'`)
 
-If `tense` is anything other than `'auto'` or `format` is anything other than `'auto'` or `'micro'` then this value will be ignored.
+If `tense` is anything other than `'auto'`, or `format` is anything other than `'relative'` (or the deprecated `'auto'` or `'micro'` values), then this value will be ignored.
 
 When formatting an absolute date (see above `threshold` for more details) it can be useful to prefix the date with some text. The default value for this is `on` but it can be any string value, an will be prepended to the date.
 
@@ -191,16 +249,16 @@ When formatting an absolute date (see above `threshold` for more details) it can
 
 ##### formatStyle (`'long'|'short'|'narrow'`, default: `'narrow'|'long'`)
 
-If `'format'` is `auto` or `elapsed` then `formatStyle` will be used to determine the length of the unit names. This value is passed to [Intl.DateTimeFormat](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat) as the `style` option. Some examples of how this can be used:
+This will used to determine the length of the unit names. This value is passed to the `Intl` objects as the `style` option. Some examples of how this can be used:
 
 | `format=`  | `formatStyle=` | Display                  |
 |:----------:|:--------------:|:------------------------:|
-| auto       | long           | in 1 month               |
-| auto       | short          | in 1 mo.                 |
-| auto       | narrow         | in 1 mo.                 |
-| elapsed    | long           | 1 month, 2 days, 4 hours |
-| auto       | short          | 1 mth, 2 days, 4 hr      |
-| auto       | narrow         | 1m 2d 4h                 |
+| relative   | long           | in 1 month               |
+| relative   | short          | in 1 mo.                 |
+| relative   | narrow         | in 1 mo.                 |
+| duration   | long           | 1 month, 2 days, 4 hours |
+| duration   | short          | 1 mth, 2 days, 4 hr      |
+| duration   | narrow         | 1m 2d 4h                 |
 
 ##### second, minute, hour, weekday, day, month, year, timeZoneName
 

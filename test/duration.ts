@@ -60,6 +60,8 @@ suite('duration', function () {
         ['-P31D', 'P30D', -1],
         ['P55Y', 'P30D', -1],
         ['-P55Y', 'P30D', -1],
+        ['PT1S', 'PT0S', -1],
+        ['PT0S', 'PT0S', 0],
       ])
 
       for (const [one, two, expected] of compareTests) {
