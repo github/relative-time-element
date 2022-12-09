@@ -2,8 +2,9 @@ import {Duration, unitNames, Unit, isDuration, elapsedTime, roundToSingleUnit, g
 const root = (typeof globalThis !== 'undefined' ? globalThis : window) as typeof window
 const HTMLElement = root.HTMLElement || (null as unknown as typeof window['HTMLElement'])
 
-export type Format = 'auto' | 'micro' | 'elapsed'
+export type DeprecatedFormat = 'auto' | 'micro' | 'elapsed'
 export type ResolvedFormat = 'duration' | 'relative' | 'datetime'
+export type Format = DeprecatedFormat | ResolvedFormat
 export type FormatStyle = 'long' | 'short' | 'narrow'
 export type Tense = 'auto' | 'past' | 'future'
 
@@ -122,6 +123,9 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
 
   #resolveFormat(duration: Duration): ResolvedFormat {
     const format: string = this.format
+    if (format === 'datetime') return 'datetime'
+    if (format === 'duration') return 'duration'
+
     // elapsed is an alias for 'duration'
     if (format === 'elapsed') return 'duration'
     // 'micro' is an alias for 'duration'
@@ -140,6 +144,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     const locale = this.#lang
     const format = this.format
     const style = this.formatStyle
+    const tense = this.tense
     let empty = emptyDuration
     if (format === 'micro') {
       duration = roundToSingleUnit(duration)
@@ -147,8 +152,11 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
       if ((this.tense === 'past' && duration.sign !== -1) || (this.tense === 'future' && duration.sign !== 1)) {
         duration = microEmptyDuration
       }
+    } else if ((tense === 'past' && duration.sign !== -1) || (tense === 'future' && duration.sign !== 1)) {
+      duration = empty
     }
-    if (duration.blank) return empty.toLocaleString(locale, {style, minutesDisplay: 'always'})
+    const display = `${this.precision}sDisplay`
+    if (duration.blank) return empty.toLocaleString(locale, {style, [display]: 'always'})
     return duration.abs().toLocaleString(locale, {style})
   }
 
@@ -206,6 +214,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
   get weekday() {
     const weekday = this.getAttribute('weekday')
     if (weekday === 'long' || weekday === 'short' || weekday === 'narrow') return weekday
+    if (this.format === 'datetime') return this.formatStyle
   }
 
   set weekday(value: 'short' | 'long' | 'narrow' | undefined) {
@@ -222,7 +231,9 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
   }
 
   get month() {
-    const month = this.getAttribute('month') ?? 'short'
+    const format = this.format
+    const defaultFormatStyle = format === 'datetime' ? this.formatStyle : 'short'
+    const month = this.getAttribute('month') ?? defaultFormatStyle
     if (month === 'numeric' || month === '2-digit' || month === 'short' || month === 'long' || month === 'narrow') {
       return month
     }
@@ -267,7 +278,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
 
   /** @deprecated */
   get prefix(): string {
-    return this.getAttribute('prefix') ?? 'on'
+    return this.getAttribute('prefix') ?? (this.format === 'datetime' ? '' : 'on')
   }
 
   /** @deprecated */
@@ -308,6 +319,9 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
 
   get format(): Format {
     const format = this.getAttribute('format')
+    if (format === 'datetime') return 'datetime'
+    if (format === 'relative') return 'relative'
+    if (format === 'duration') return 'duration'
     if (format === 'micro') return 'micro'
     if (format === 'elapsed') return 'elapsed'
     return 'auto'
@@ -324,6 +338,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     if (formatStyle === 'narrow') return 'narrow'
     const format = this.format
     if (format === 'elapsed' || format === 'micro') return 'narrow'
+    if (format === 'datetime') return 'short'
     return 'long'
   }
 
