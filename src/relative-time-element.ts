@@ -19,7 +19,7 @@ export class RelativeTimeUpdatedEvent extends Event {
 
 function getUnitFactor(el: RelativeTimeElement): number {
   if (!el.date) return Infinity
-  if (el.format === 'elapsed') {
+  if (el.format === 'duration' || el.format === 'elapsed') {
     const precision = el.precision
     if (precision === 'second') {
       return 1000
