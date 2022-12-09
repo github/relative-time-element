@@ -6,94 +6,123 @@
 </head>
 <body>
   <h2>Past Date</h2>
+  <h3>Format DateTime</h3>
   <p>
-    Local date:
-    <local-time datetime="1970-01-01T00:00:00.000Z" weekday="short" year="numeric" month="short" day="numeric">
+    Default:
+    <relative-time datetime="1970-01-01T00:00:00.000Z" format="datetime">
       Jan 1 1970
-    </local-time>
+    </relative-time>
   </p>
 
   <p>
-    Local time:
-    <local-time datetime="1970-01-01T00:00:00.000Z" hour="numeric" minute="2-digit" second="2-digit">
+    With time:
+    <relative-time datetime="1970-01-01T00:00:00.000Z" format="datetime" hour="numeric" minute="2-digit" second="2-digit">
       Jan 1 1970
-    </local-time>
+    </relative-time>
   </p>
 
   <p>
-    Local date and time:
-    <local-time datetime="1970-01-01T00:00:00.000Z" weekday="short" year="numeric" month="short" day="numeric" hour="numeric" minute="2-digit" second="2-digit">
+    Customised options:
+    <relative-time datetime="1970-01-01T00:00:00.000Z" format="datetime" weekday="narrow" year="2-digit" month="narrow" day="numeric" hour="numeric" minute="2-digit" second="2-digit">
       Jan 1 1970
-    </local-time>
+    </relative-time>
   </p>
 
+  <h3>Format Relative</h3>
   <p>
-    Relative time:
-    <relative-time datetime="1970-01-01T00:00:00.000Z">
+    Default:
+    <relative-time datetime="1970-01-01T00:00:00.000Z" format="relative">
       Oops! This browser doesn't support Web Components.
     </relative-time>
   </p>
 
   <p>
-    Time ago:
-    <time-ago datetime="1970-01-01T00:00:00.000Z">
+    Fixed to future tense:
+    <relative-time datetime="1970-01-01T00:00:00.000Z" format="relative" tense="future">
       Oops! This browser doesn't support Web Components.
-    </time-ago>
+    </relative-time>
+  </p>
+
+  <h3>Format Duration</h3>
+  <p>
+    Default:
+    <relative-time datetime="1970-01-01T00:00:00.000Z" format="duration">
+      Oops! This browser doesn't support Web Components.
+    </relative-time>
   </p>
 
   <p>
-    Time ago (micro format):
-    <time-ago format="micro" datetime="1970-01-01T00:00:00.000Z">
+    Month precision:
+    <relative-time datetime="1970-01-01T00:00:00.000Z" format="duration" precision="month">
       Oops! This browser doesn't support Web Components.
-    </time-ago>
+    </relative-time>
+  </p>
+
+  <p>
+    Fixed to future tense:
+    <relative-time datetime="1970-01-01T00:00:00.000Z" format="duration" tense="future">
+      Oops! This browser doesn't support Web Components.
+    </relative-time>
   </p>
 
   <h2>Future Date</h2>
+  <h3>Format DateTime</h3>
   <p>
-    Local date:
-    <local-time datetime="2023-01-01T00:00:00.000Z" weekday="short" year="numeric" month="short" day="numeric">
+    Default:
+    <relative-time datetime="2038-01-01T00:00:00.000Z" format="datetime">
       Jan 1 2023
-    </local-time>
+    </relative-time>
   </p>
 
   <p>
-    Local time:
-    <local-time datetime="2023-01-01T00:00:00.000Z" hour="numeric" minute="2-digit" second="2-digit">
+    With time:
+    <relative-time datetime="2038-01-01T00:00:00.000Z" format="datetime" hour="numeric" minute="2-digit" second="2-digit">
       Jan 1 2023
-    </local-time>
+    </relative-time>
   </p>
 
   <p>
-    Local date and time:
-    <local-time datetime="2023-01-01T00:00:00.000Z" weekday="short" year="numeric" month="short" day="numeric" hour="numeric" minute="2-digit" second="2-digit">
+    Customised options:
+    <relative-time datetime="2038-01-01T00:00:00.000Z" format="datetime" weekday="narrow" year="2-digit" month="narrow" day="numeric" hour="numeric" minute="2-digit" second="2-digit">
       Jan 1 2023
-    </local-time>
+    </relative-time>
   </p>
 
+  <h3>Format Relative</h3>
   <p>
-    Relative time:
-    <relative-time datetime="2023-01-01T00:00:00.000Z">
+    Default:
+    <relative-time datetime="2038-01-01T00:00:00.000Z" format="relative">
       Oops! This browser doesn't support Web Components.
     </relative-time>
   </p>
 
   <p>
-    Relative time with custom format:
-    <relative-time datetime="2017-01-01T00:00:00.000Z" format="%Y-%m-%d">
+    Fixed to past tense:
+    <relative-time datetime="2038-01-01T00:00:00.000Z" format="relative" tense="past">
+      Oops! This browser doesn't support Web Components.
+    </relative-time>
   <p>
 
+  <h3>Format Duration</h3>
   <p>
-    Time until:
-    <time-until datetime="2024-12-31T00:00:00-05:00">
+    Default:
+    <relative-time datetime="2038-01-01T00:00:00.000Z" format="duration">
       Oops! This browser doesn't support Web Components.
-    </time-until>
+    </relative-time>
   </p>
 
   <p>
-    Time until (micro format):
-    <time-until format="micro" datetime="2024-12-31T00:00:00-05:00">
+    Month precision:
+    <relative-time datetime="2038-01-01T00:00:00.000Z" format="duration" precision="month">
       Oops! This browser doesn't support Web Components.
-    </time-until>
+    </relative-time>
+  </p>
+
+  <p>
+    Fixed to future tense:
+    <relative-time datetime="2038-01-01T00:00:00.000Z" format="duration" tense="future">
+      Oops! This browser doesn't support Web Components.
+    </relative-time>
   </p>
 
 
@@ -136,16 +165,22 @@
 
   <h2>Localised Dates</h2>
   <p>
-    Dates localised to Polish:
+    Localised to Polish:
     <relative-time datetime="2019-08-12T20:50:00.000Z" lang="pl" prefix="">
       Oops! This browser doesn't support Web Components.
     </relative-time>
   </p>
 
+  <p>
+    Localised to Hebrew with Format=DateTime
+    <relative-time datetime="2019-08-12T20:50:00.000Z" format="datetime" lang="he">
+      Oops! This browser doesn't support Web Components.
+    </relative-time>
+  </p>
 
   <p>
-    Localised with custom format:
-    <relative-time datetime="2019-08-12T20:50:00.000Z" format="%a %B %d" lang="pl">
+    Localised to French with Format=Duration
+    <relative-time datetime="2019-08-12T20:50:00.000Z" format="duration" lang="fr">
       Oops! This browser doesn't support Web Components.
     </relative-time>
   </p>
