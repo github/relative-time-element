@@ -49,6 +49,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [bump-version, create-release]
     permissions:
+      contents: read
       packages: write
     steps:
       - name: Checkout ref
