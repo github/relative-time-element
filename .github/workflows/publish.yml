@@ -46,8 +46,8 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
   publish-github:
     name: Publish to GitHub Packages
-    runs-on: ubuntu-latest
-    permissions:
+    runs-on: ubuntu-latest 
+    permissions: 
       contents: read
       packages: write
     steps:
@@ -55,13 +55,14 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-          registry-url: https://registry.npmjs.org/
+          registry-url: https://npm.pkg.github.com
           cache: npm
+          scope: '@github'
       - run: npm ci
       - run: npm test
       - run: npm version ${TAG_NAME} --git-tag-version=false
         env:
           TAG_NAME: ${{ github.event.release.tag_name }}
-      - run: npm whoami --registry=https://npm.pkg.github.com; npm --ignore-scripts publish --access public --registry=https://npm.pkg.github.com
+      - run: npm --ignore-scripts publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
