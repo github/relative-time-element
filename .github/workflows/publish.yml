@@ -55,13 +55,13 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-          registry-url: https://npm.pkg.github.com
+          registry-url: https://registry.npmjs.org/
           cache: npm
       - run: npm ci
       - run: npm test
       - run: npm version ${TAG_NAME} --git-tag-version=false
         env:
           TAG_NAME: ${{ github.event.release.tag_name }}
-      - run: npm whoami; npm --ignore-scripts publish --access public
+      - run: npm whoami; npm --ignore-scripts publish --access public --registry=https://npm.pkg.github.com
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
