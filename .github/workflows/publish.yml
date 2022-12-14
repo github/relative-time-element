@@ -62,6 +62,6 @@ jobs:
       - run: npm version ${TAG_NAME} --git-tag-version=false
         env:
           TAG_NAME: ${{ github.event.release.tag_name }}
-      - run: npm whoami; npm --ignore-scripts publish --access public --registry=https://npm.pkg.github.com
+      - run: npm whoami --registry=https://npm.pkg.github.com; npm --ignore-scripts publish --access public --registry=https://npm.pkg.github.com
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
