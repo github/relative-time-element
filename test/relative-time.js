@@ -763,6 +763,7 @@ suite('relative-time', function () {
       {datetime: '2022-10-24T14:46:00.000Z', format: 'relative', precision: 'hour', expected: 'now'},
       {datetime: '2022-10-24T14:46:00.000Z', format: 'relative', threshold: 'PT0S', expected: 'on Oct 24'},
       {datetime: '2022-10-24T14:46:00.000Z', format: 'datetime', expected: 'Mon, Oct 24'},
+      {datetime: '2022-10-24T14:46:00.000Z', format: 'datetime', weekday: '', month: '', expected: '24'},
       {datetime: '2022-10-24T14:46:00.000Z', format: 'duration', expected: '0 seconds'},
       {datetime: '2022-10-24T14:46:00.000Z', format: 'duration', precision: 'minute', expected: '0 minutes'},
       {datetime: '2022-10-24T14:46:00.000Z', format: 'duration', precision: 'day', expected: '0 days'},
@@ -774,6 +775,7 @@ suite('relative-time', function () {
       {datetime: '2022-10-24T14:46:08.000Z', format: 'relative', precision: 'hour', expected: 'now'},
       {datetime: '2022-10-24T14:46:08.000Z', format: 'relative', threshold: 'PT0S', expected: 'on Oct 24'},
       {datetime: '2022-10-24T14:46:08.000Z', format: 'datetime', expected: 'Mon, Oct 24'},
+      {datetime: '2022-10-24T14:46:00.000Z', format: 'datetime', weekday: '', month: '', expected: '24'},
       {datetime: '2022-10-24T14:46:08.000Z', format: 'duration', expected: '8 seconds'},
       {datetime: '2022-10-24T14:46:08.000Z', format: 'duration', precision: 'minute', expected: '0 minutes'},
       {datetime: '2022-10-24T14:46:08.000Z', format: 'duration', precision: 'day', expected: '0 days'},
@@ -787,6 +789,7 @@ suite('relative-time', function () {
       {datetime: '2022-10-24T14:46:50.000Z', format: 'relative', precision: 'hour', expected: 'now'},
       {datetime: '2022-10-24T14:46:50.000Z', format: 'relative', threshold: 'PT0S', expected: 'on Oct 24'},
       {datetime: '2022-10-24T14:46:50.000Z', format: 'datetime', expected: 'Mon, Oct 24'},
+      {datetime: '2022-10-24T14:46:50.000Z', format: 'datetime', weekday: '', month: '', expected: '24'},
       {datetime: '2022-10-24T14:46:50.000Z', format: 'duration', expected: '50 seconds'},
       {datetime: '2022-10-24T14:46:50.000Z', format: 'duration', precision: 'minute', expected: '0 minutes'},
       {datetime: '2022-10-24T14:46:50.000Z', format: 'duration', precision: 'day', expected: '0 days'},
@@ -800,6 +803,7 @@ suite('relative-time', function () {
       {datetime: '2022-10-24T14:47:30.000Z', format: 'relative', precision: 'hour', expected: 'now'},
       {datetime: '2022-10-24T14:47:30.000Z', format: 'relative', threshold: 'PT0S', expected: 'on Oct 24'},
       {datetime: '2022-10-24T14:47:30.000Z', format: 'datetime', expected: 'Mon, Oct 24'},
+      {datetime: '2022-10-24T14:47:30.000Z', format: 'datetime', weekday: '', month: '', expected: '24'},
       {datetime: '2022-10-24T14:47:30.000Z', format: 'duration', expected: '1 minute, 30 seconds'},
       {datetime: '2022-10-24T14:47:30.000Z', format: 'duration', precision: 'minute', expected: '1 minute'},
       {datetime: '2022-10-24T14:47:30.000Z', format: 'duration', precision: 'day', expected: '0 days'},
@@ -813,6 +817,7 @@ suite('relative-time', function () {
       {datetime: '2022-11-13T15:46:00.000Z', format: 'relative', precision: 'hour', expected: 'in 3 weeks'},
       {datetime: '2022-11-13T15:46:00.000Z', format: 'relative', threshold: 'PT0S', expected: 'on Nov 13'},
       {datetime: '2022-11-13T15:46:00.000Z', format: 'datetime', expected: 'Sun, Nov 13'},
+      {datetime: '2022-11-13T15:46:00.000Z', format: 'datetime', weekday: '', month: '', expected: '13'},
       {datetime: '2022-11-13T15:46:00.000Z', format: 'duration', expected: '20 days, 1 hour'},
       {datetime: '2022-11-13T15:46:00.000Z', format: 'duration', precision: 'minute', expected: '20 days, 1 hour'},
       {datetime: '2022-11-13T15:46:00.000Z', format: 'duration', precision: 'day', expected: '20 days'},
@@ -826,6 +831,7 @@ suite('relative-time', function () {
       {datetime: '2022-12-03T15:46:00.000Z', format: 'relative', precision: 'hour', expected: 'on Dec 3'},
       {datetime: '2022-12-03T15:46:00.000Z', format: 'relative', threshold: 'PT0S', expected: 'on Dec 3'},
       {datetime: '2022-12-03T15:46:00.000Z', format: 'datetime', expected: 'Sat, Dec 3'},
+      {datetime: '2022-12-03T15:46:00.000Z', format: 'datetime', weekday: '', month: '', expected: '3'},
       {datetime: '2022-12-03T15:46:00.000Z', format: 'duration', expected: '1 month, 10 days, 1 hour'},
       {
         datetime: '2022-12-03T15:46:00.000Z',
@@ -844,6 +850,7 @@ suite('relative-time', function () {
       {datetime: '2024-10-24T14:46:00.000Z', format: 'relative', precision: 'hour', expected: 'on Oct 24, 2024'},
       {datetime: '2024-10-24T14:46:00.000Z', format: 'relative', threshold: 'PT0S', expected: 'on Oct 24, 2024'},
       {datetime: '2024-10-24T14:46:00.000Z', format: 'datetime', expected: 'Thu, Oct 24, 2024'},
+      {datetime: '2024-10-24T14:46:00.000Z', format: 'datetime', weekday: '', month: '', expected: '2024 (day: 24)'},
       {datetime: '2024-10-24T14:46:00.000Z', format: 'duration', expected: '2 years, 11 days'},
       {datetime: '2024-10-24T14:46:00.000Z', format: 'duration', precision: 'minute', expected: '2 years, 11 days'},
       {datetime: '2024-10-24T14:46:00.000Z', format: 'duration', precision: 'day', expected: '2 years, 11 days'},
@@ -857,6 +864,7 @@ suite('relative-time', function () {
       {datetime: '2022-10-24T14:45:52.000Z', format: 'relative', precision: 'hour', expected: 'now'},
       {datetime: '2022-10-24T14:45:52.000Z', format: 'relative', threshold: 'PT0S', expected: 'on Oct 24'},
       {datetime: '2022-10-24T14:45:52.000Z', format: 'datetime', expected: 'Mon, Oct 24'},
+      {datetime: '2022-10-24T14:45:52.000Z', format: 'datetime', weekday: '', month: '', expected: '24'},
       {datetime: '2022-10-24T14:45:52.000Z', format: 'duration', expected: '8 seconds'},
       {datetime: '2022-10-24T14:45:52.000Z', format: 'duration', precision: 'minute', expected: '0 minutes'},
       {datetime: '2022-10-24T14:45:52.000Z', format: 'duration', precision: 'day', expected: '0 days'},
@@ -870,6 +878,7 @@ suite('relative-time', function () {
       {datetime: '2022-10-24T14:45:10.000Z', format: 'relative', precision: 'hour', expected: 'now'},
       {datetime: '2022-10-24T14:45:10.000Z', format: 'relative', threshold: 'PT0S', expected: 'on Oct 24'},
       {datetime: '2022-10-24T14:45:10.000Z', format: 'datetime', expected: 'Mon, Oct 24'},
+      {datetime: '2022-10-24T14:45:10.000Z', format: 'datetime', weekday: '', month: '', expected: '24'},
       {datetime: '2022-10-24T14:45:10.000Z', format: 'duration', expected: '50 seconds'},
       {datetime: '2022-10-24T14:45:10.000Z', format: 'duration', precision: 'minute', expected: '0 minutes'},
       {datetime: '2022-10-24T14:45:10.000Z', format: 'duration', precision: 'day', expected: '0 days'},
@@ -883,6 +892,7 @@ suite('relative-time', function () {
       {datetime: '2022-10-24T14:44:30.000Z', format: 'relative', precision: 'hour', expected: 'now'},
       {datetime: '2022-10-24T14:44:30.000Z', format: 'relative', threshold: 'PT0S', expected: 'on Oct 24'},
       {datetime: '2022-10-24T14:44:30.000Z', format: 'datetime', expected: 'Mon, Oct 24'},
+      {datetime: '2022-10-24T14:44:30.000Z', format: 'datetime', weekday: '', month: '', expected: '24'},
       {datetime: '2022-10-24T14:44:30.000Z', format: 'duration', expected: '1 minute, 30 seconds'},
       {datetime: '2022-10-24T14:44:30.000Z', format: 'duration', precision: 'minute', expected: '1 minute'},
       {datetime: '2022-10-24T14:44:30.000Z', format: 'duration', precision: 'day', expected: '0 days'},
@@ -896,6 +906,7 @@ suite('relative-time', function () {
       {datetime: '2022-10-04T14:46:00.000Z', format: 'relative', precision: 'hour', expected: '3 weeks ago'},
       {datetime: '2022-10-04T14:46:00.000Z', format: 'relative', threshold: 'PT0S', expected: 'on Oct 4'},
       {datetime: '2022-10-04T14:46:00.000Z', format: 'datetime', expected: 'Tue, Oct 4'},
+      {datetime: '2022-10-04T14:46:00.000Z', format: 'datetime', weekday: '', month: '', expected: '4'},
       {datetime: '2022-10-04T14:46:00.000Z', format: 'duration', expected: '20 days'},
       {datetime: '2022-10-04T14:46:00.000Z', format: 'duration', precision: 'minute', expected: '20 days'},
       {datetime: '2022-10-04T14:46:00.000Z', format: 'duration', precision: 'day', expected: '20 days'},
@@ -909,6 +920,7 @@ suite('relative-time', function () {
       {datetime: '2022-09-14T14:46:00.000Z', format: 'relative', precision: 'hour', expected: 'on Sep 14'},
       {datetime: '2022-09-14T14:46:00.000Z', format: 'relative', threshold: 'PT0S', expected: 'on Sep 14'},
       {datetime: '2022-09-14T14:46:00.000Z', format: 'datetime', expected: 'Wed, Sep 14'},
+      {datetime: '2022-09-14T14:46:00.000Z', format: 'datetime', weekday: '', month: '', expected: '14'},
       {datetime: '2022-09-14T14:46:00.000Z', format: 'duration', expected: '1 month, 10 days'},
       {datetime: '2022-09-14T14:46:00.000Z', format: 'duration', precision: 'minute', expected: '1 month, 10 days'},
       {datetime: '2022-09-14T14:46:00.000Z', format: 'duration', precision: 'day', expected: '1 month, 10 days'},
@@ -922,6 +934,7 @@ suite('relative-time', function () {
       {datetime: '2020-10-24T14:46:00.000Z', format: 'relative', precision: 'hour', expected: 'on Oct 24, 2020'},
       {datetime: '2020-10-24T14:46:00.000Z', format: 'relative', threshold: 'PT0S', expected: 'on Oct 24, 2020'},
       {datetime: '2020-10-24T14:46:00.000Z', format: 'datetime', expected: 'Sat, Oct 24, 2020'},
+      {datetime: '2020-10-24T14:46:00.000Z', format: 'datetime', weekday: '', month: '', expected: '2020 (day: 24)'},
       {datetime: '2020-10-24T14:46:00.000Z', format: 'duration', expected: '2 years, 10 days'},
       {datetime: '2020-10-24T14:46:00.000Z', format: 'duration', precision: 'minute', expected: '2 years, 10 days'},
       {datetime: '2020-10-24T14:46:00.000Z', format: 'duration', precision: 'day', expected: '2 years, 10 days'},
@@ -937,6 +950,8 @@ suite('relative-time', function () {
       formatStyle,
       threshold,
       precision = '',
+      weekday,
+      month,
       lang = 'en',
       reference = referenceDate,
     } of tests) {
@@ -951,6 +966,8 @@ suite('relative-time', function () {
         if (format) time.setAttribute('format', format)
         if (threshold) time.setAttribute('threshold', threshold)
         if (precision) time.setAttribute('precision', precision)
+        if (weekday != null) time.setAttribute('weekday', weekday)
+        if (month != null) time.setAttribute('month', month)
         if (lang) time.setAttribute('lang', lang)
         if (formatStyle) time.formatStyle = formatStyle
         await Promise.resolve()
