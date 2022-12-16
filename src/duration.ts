@@ -130,28 +130,25 @@ export function roundToSingleUnit(duration: Duration): Duration {
   let seconds = Math.abs(duration.seconds)
   let milliseconds = Math.abs(duration.milliseconds)
 
-  if (milliseconds >= 500) seconds += Math.round(milliseconds / 1000)
+  if (milliseconds >= 900) seconds += Math.round(milliseconds / 1000)
   if (seconds || minutes || hours || days || weeks || months || years) milliseconds = 0
 
-  if (seconds >= 30) minutes += Math.round(seconds / 60)
+  if (seconds >= 55) minutes += Math.round(seconds / 60)
   if (minutes || hours || days || weeks || months || years) seconds = 0
 
-  if (minutes >= 30) hours += Math.round(minutes / 60)
+  if (minutes >= 55) hours += Math.round(minutes / 60)
   if (hours || days || weeks || months || years) minutes = 0
 
-  if (hours >= 12) days += Math.round(hours / 24)
+  if (hours >= 21) days += Math.round(hours / 24)
   if (days || weeks || months || years) hours = 0
 
-  if (days >= 15) months += Math.round(days / 30)
+  if (days >= 6) weeks += Math.round(days / 7)
   if (weeks || months || years) days = 0
 
-  if (days >= 4) weeks += Math.round(days / 7)
-  if (weeks || months || years) days = 0
-
-  if (weeks >= 2) months += Math.round(weeks / 4)
+  if (weeks >= 4) months += Math.round(weeks / 4)
   if (months || years) weeks = 0
 
-  if (months >= 6) years += Math.round(months / 12)
+  if (months >= 11) years += Math.round(months / 12)
   if (years) months = 0
 
   const sign = duration.sign
