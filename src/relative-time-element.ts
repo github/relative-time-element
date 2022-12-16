@@ -218,7 +218,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
   get weekday() {
     const weekday = this.getAttribute('weekday')
     if (weekday === 'long' || weekday === 'short' || weekday === 'narrow') return weekday
-    if (this.format === 'datetime') return this.formatStyle
+    if (this.format === 'datetime' && weekday !== '') return this.formatStyle
   }
 
   set weekday(value: 'short' | 'long' | 'narrow' | undefined) {
@@ -236,8 +236,9 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
 
   get month() {
     const format = this.format
-    const defaultFormatStyle = format === 'datetime' ? this.formatStyle : 'short'
-    const month = this.getAttribute('month') ?? defaultFormatStyle
+    let month = this.getAttribute('month')
+    if (month === '') return
+    month ??= format === 'datetime' ? this.formatStyle : 'short'
     if (month === 'numeric' || month === '2-digit' || month === 'short' || month === 'long' || month === 'narrow') {
       return month
     }
