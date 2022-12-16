@@ -78,7 +78,11 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
   #updating: false | Promise<void> = false
 
   get #lang() {
-    return this.closest('[lang]')?.getAttribute('lang') ?? 'default'
+    return (
+      this.closest('[lang]')?.getAttribute('lang') ||
+      this.ownerDocument.documentElement.getAttribute('lang') ||
+      'default'
+    )
   }
 
   #renderRoot: Node = this.shadowRoot ? this.shadowRoot : this.attachShadow ? this.attachShadow({mode: 'open'}) : this

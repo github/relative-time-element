@@ -27,6 +27,7 @@ suite('relative-time', function () {
   suiteSetup(() => {
     fixture = document.createElement('div')
     document.body.appendChild(fixture)
+    document.documentElement.lang = 'en'
   })
 
   teardown(() => {
@@ -247,6 +248,24 @@ suite('relative-time', function () {
     time.setAttribute('datetime', now)
     await Promise.resolve()
     assert.equal(time.shadowRoot.textContent, 'in 2 days')
+  })
+
+  test('uses html lang if given lang is invalid', async () => {
+    const time = document.createElement('relative-time')
+    time.setAttribute('datetime', new Date())
+    time.setAttribute('lang', '')
+    document.documentElement.lang = 'es'
+    await Promise.resolve()
+    assert.equal(time.shadowRoot.textContent, 'ahora')
+  })
+
+  test('ignores empty lang attributes', async () => {
+    const time = document.createElement('relative-time')
+    time.setAttribute('datetime', new Date())
+    time.setAttribute('lang', '')
+    document.documentElement.lang = ''
+    await Promise.resolve()
+    assert.equal(time.shadowRoot.textContent, 'now')
   })
 
   suite('[threshold]', function () {
