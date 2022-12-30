@@ -65,7 +65,7 @@ So, a relative date phrase is used for up to a month and then the actual date is
 | Property Name  | Attribute Name   | Possible Values                                                                             | Default Value                    |
 |:---------------|:-----------------|:--------------------------------------------------------------------------------------------|:---------------------------------|
 | `datetime`     | `datetime`       | `string`                                                                                    | -                                |
-| `format`       | `format`         | `'datetime'\|'relative'\|'duration'`                                                        | 'auto'                           |
+| `format`       | `format`         | `'datetime'\|'relative'\|'duration'`                                                        | `'auto'`                           |
 | `date`         | -                | `Date \| null`                                                                              | -                                |
 | `tense`        | `tense`          | `'auto'\|'past'\|'future'`                                                                  | `'auto'`                         |
 | `precision`    | `precision`      | `'year'\|'month'\|'day'\|'hour'\|'minute'\|'second'`                                        | `'second'`                       |
