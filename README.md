@@ -210,7 +210,7 @@ Precision can be used to limit the display of an `relative` or `duration` format
 | seconds       | 25 seconds          |
 | minutes       | now                 |
 | hours         | now                 |
-| days          | nwo                 |
+| days          | now                 |
 | months        | now                 |
 | years         | now                 |
 
