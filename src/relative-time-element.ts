@@ -258,7 +258,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
   }
 
   set year(value: 'numeric' | '2-digit' | undefined) {
-    this.setAttribute('day', value || '')
+    this.setAttribute('year', value || '')
   }
 
   get timeZoneName() {
