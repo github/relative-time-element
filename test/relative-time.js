@@ -384,7 +384,7 @@ suite('relative-time', function () {
     time.setAttribute('lang', 'en-US')
     time.setAttribute('format', '')
     await Promise.resolve()
-    assert.equal(time.shadowRoot.textContent, 'on Jan 10')
+    assert.equal(time.shadowRoot.textContent, 'on Jan 10, 2022')
   })
 
   const esLangSupport = (function () {
