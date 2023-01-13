@@ -86,6 +86,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
   }
 
   #renderRoot: Node = this.shadowRoot ? this.shadowRoot : this.attachShadow ? this.attachShadow({mode: 'open'}) : this
+  #internals = 'attachInternals' in this ? this.attachInternals() : null
 
   static get observedAttributes() {
     return [
@@ -432,6 +433,15 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     } else {
       dateObserver.unobserve(this)
     }
+
+    const ariaLabel = `${newText || oldText} (${newTitle || oldTitle})`
+
+    if (this.#internals && 'ariaLabel' in this.#internals) {
+      this.#internals.ariaLabel = ariaLabel
+    } else {
+      this.setAttribute('aria-label', ariaLabel)
+    }
+
     this.#updating = false
   }
 }
