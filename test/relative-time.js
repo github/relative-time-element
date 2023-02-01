@@ -1834,13 +1834,13 @@ suite('relative-time', function () {
         datetime: '2024-03-31T14:46:00.000Z',
         tense: 'future',
         format: 'micro',
-        expected: '1y',
+        expected: '2y',
       },
       {
         datetime: '2024-04-01T14:46:00.000Z',
         tense: 'future',
         format: 'micro',
-        expected: '1y',
+        expected: '2y',
       },
 
       // Dates in the future
@@ -2090,13 +2090,13 @@ suite('relative-time', function () {
         datetime: '2024-03-31T14:46:00.000Z',
         tense: 'future',
         format: 'auto',
-        expected: 'next year',
+        expected: 'in 2 years',
       },
       {
         datetime: '2024-04-01T14:46:00.000Z',
         tense: 'future',
         format: 'auto',
-        expected: 'next year',
+        expected: 'in 2 years',
       },
       {
         datetime: '2022-10-24T15:46:00.000Z',
@@ -2159,14 +2159,14 @@ suite('relative-time', function () {
         lang: 'en',
         tense: 'future',
         formatStyle: 'narrow',
-        expected: 'next yr.',
+        expected: 'in 2 yr.',
       },
       {
         datetime: '2024-04-01T14:46:00.000Z',
         lang: 'en',
         tense: 'future',
         formatStyle: 'narrow',
-        expected: 'next yr.',
+        expected: 'in 2 yr.',
       },
 
       // Dates in the future
@@ -2348,14 +2348,21 @@ suite('relative-time', function () {
         datetime: '2024-03-01T12:00:00.000Z',
         tense: 'future',
         format: 'auto',
-        expected: 'next year',
+        expected: 'in 2 years',
       },
       {
         reference: '2022-12-31T12:00:00.000Z',
         datetime: '2024-03-01T12:00:00.000Z',
         tense: 'future',
         format: 'micro',
-        expected: '1y',
+        expected: '2y',
+      },
+      {
+        reference: '2021-04-24T12:00:00.000Z',
+        datetime: '2023-02-01T12:00:00.000Z',
+        tense: 'future',
+        format: 'micro',
+        expected: '2y',
       },
     ])
 
