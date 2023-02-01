@@ -1,15 +1,12 @@
-import {Duration, unitNames, Unit, isDuration, elapsedTime, roundToSingleUnit, getRelativeTimeUnit} from './duration.js'
+import {Duration, elapsedTime, getRelativeTimeUnit, isDuration, Unit, unitNames} from './duration.js'
 const root = (typeof globalThis !== 'undefined' ? globalThis : window) as typeof window
 const HTMLElement = root.HTMLElement || (null as unknown as typeof window['HTMLElement'])
 
-export type DeprecatedFormat = 'auto' | 'micro' | 'elapsed'
-export type ResolvedFormat = 'duration' | 'relative' | 'datetime'
-export type Format = DeprecatedFormat | ResolvedFormat
+export type Format = 'duration' | 'relative' | 'datetime'
 export type FormatStyle = 'long' | 'short' | 'narrow'
 export type Tense = 'auto' | 'past' | 'future'
 
 const emptyDuration = new Duration()
-const microEmptyDuration = new Duration(0, 0, 0, 0, 0, 1)
 
 export class RelativeTimeUpdatedEvent extends Event {
   constructor(public oldText: string, public newText: string, public oldTitle: string, public newTitle: string) {
@@ -19,7 +16,7 @@ export class RelativeTimeUpdatedEvent extends Event {
 
 function getUnitFactor(el: RelativeTimeElement): number {
   if (!el.date) return Infinity
-  if (el.format === 'duration' || el.format === 'elapsed') {
+  if (el.format === 'duration') {
     const precision = el.precision
     if (precision === 'second') {
       return 1000
@@ -125,7 +122,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     }).format(date)
   }
 
-  #resolveFormat(duration: Duration): ResolvedFormat {
+  #resolveFormat(duration: Duration): Format {
     const format: string = this.format
     if (format === 'datetime') return 'datetime'
     if (format === 'duration') return 'duration'
@@ -135,8 +132,7 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     // 'micro' is an alias for 'duration'
     if (format === 'micro') return 'duration'
 
-    // 'auto' is an alias for 'relative'
-    if ((format === 'auto' || format === 'relative') && typeof Intl !== 'undefined' && Intl.RelativeTimeFormat) {
+    if (format === 'relative' && typeof Intl !== 'undefined' && Intl.RelativeTimeFormat) {
       const tense = this.tense
       if (tense === 'past' || tense === 'future') return 'relative'
       if (Duration.compare(duration, this.threshold) === 1) return 'relative'
@@ -146,31 +142,33 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
 
   #getDurationFormat(duration: Duration): string {
     const locale = this.#lang
-    const format = this.format
     const style = this.formatStyle
     const tense = this.tense
-    let empty = emptyDuration
-    if (format === 'micro') {
-      duration = roundToSingleUnit(duration)
-      empty = microEmptyDuration
-      if ((this.tense === 'past' && duration.sign !== -1) || (this.tense === 'future' && duration.sign !== 1)) {
-        duration = microEmptyDuration
-      }
-    } else if ((tense === 'past' && duration.sign !== -1) || (tense === 'future' && duration.sign !== 1)) {
-      duration = empty
+    if ((tense === 'past' && duration.sign !== -1) || (tense === 'future' && duration.sign !== 1)) {
+      duration = emptyDuration
     }
     const display = `${this.precision}sDisplay`
-    if (duration.blank) return empty.toLocaleString(locale, {style, [display]: 'always'})
+    if (duration.blank) {
+      return emptyDuration.toLocaleString(locale, {
+        style,
+        [display]: 'always',
+      })
+    }
     return duration.abs().toLocaleString(locale, {style})
   }
 
   #getRelativeFormat(duration: Duration): string {
-    const relativeFormat = new Intl.RelativeTimeFormat(this.#lang, {numeric: 'auto', style: this.formatStyle})
+    const relativeFormat = new Intl.RelativeTimeFormat(this.#lang, {
+      numeric: 'auto',
+      style: this.formatStyle,
+    })
     const tense = this.tense
     if (tense === 'future' && duration.sign !== 1) duration = emptyDuration
     if (tense === 'past' && duration.sign !== -1) duration = emptyDuration
     const [int, unit] = getRelativeTimeUnit(duration)
-    if (unit === 'second' && int < 10) return relativeFormat.format(0, 'second')
+    if (unit === 'second' && int < 10) {
+      return relativeFormat.format(0, 'second')
+    }
     return relativeFormat.format(int, unit)
   }
 
@@ -217,7 +215,9 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
 
   get weekday() {
     const weekday = this.getAttribute('weekday')
-    if (weekday === 'long' || weekday === 'short' || weekday === 'narrow') return weekday
+    if (weekday === 'long' || weekday === 'short' || weekday === 'narrow') {
+      return weekday
+    }
     if (this.format === 'datetime' && weekday !== '') return this.formatStyle
   }
 
@@ -314,7 +314,6 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
   get precision(): Unit {
     const precision = this.getAttribute('precision') as unknown as Unit
     if (unitNames.includes(precision)) return precision
-    if (this.format === 'micro') return 'minute'
     return 'second'
   }
 
@@ -325,11 +324,8 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
   get format(): Format {
     const format = this.getAttribute('format')
     if (format === 'datetime') return 'datetime'
-    if (format === 'relative') return 'relative'
     if (format === 'duration') return 'duration'
-    if (format === 'micro') return 'micro'
-    if (format === 'elapsed') return 'elapsed'
-    return 'auto'
+    return 'relative'
   }
 
   set format(value: Format) {
@@ -342,7 +338,6 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     if (formatStyle === 'short') return 'short'
     if (formatStyle === 'narrow') return 'narrow'
     const format = this.format
-    if (format === 'elapsed' || format === 'micro') return 'narrow'
     if (format === 'datetime') return 'short'
     return 'long'
   }
