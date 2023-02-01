@@ -1,4 +1,4 @@
-import {Duration, unitNames, Unit, isDuration, elapsedTime, roundToSingleUnit, getRelativeTimeUnit} from './duration.js'
+import {Duration, elapsedTime, getRelativeTimeUnit, isDuration, roundToSingleUnit, Unit, unitNames} from './duration.js'
 const root = (typeof globalThis !== 'undefined' ? globalThis : window) as typeof window
 const HTMLElement = root.HTMLElement || (null as unknown as typeof window['HTMLElement'])
 
@@ -160,17 +160,24 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
       duration = empty
     }
     const display = `${this.precision}sDisplay`
-    if (duration.blank) return empty.toLocaleString(locale, {style, [display]: 'always'})
+    if (duration.blank) {
+      return empty.toLocaleString(locale, {style, [display]: 'always'})
+    }
     return duration.abs().toLocaleString(locale, {style})
   }
 
   #getRelativeFormat(duration: Duration): string {
-    const relativeFormat = new Intl.RelativeTimeFormat(this.#lang, {numeric: 'auto', style: this.formatStyle})
+    const relativeFormat = new Intl.RelativeTimeFormat(this.#lang, {
+      numeric: 'auto',
+      style: this.formatStyle,
+    })
     const tense = this.tense
     if (tense === 'future' && duration.sign !== 1) duration = emptyDuration
     if (tense === 'past' && duration.sign !== -1) duration = emptyDuration
     const [int, unit] = getRelativeTimeUnit(duration)
-    if (unit === 'second' && int < 10) return relativeFormat.format(0, 'second')
+    if (unit === 'second' && int < 10) {
+      return relativeFormat.format(0, 'second')
+    }
     return relativeFormat.format(int, unit)
   }
 
@@ -186,6 +193,24 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
       timeZoneName: this.timeZoneName,
     })
     return `${this.prefix} ${formatter.format(date)}`.trim()
+  }
+
+  #onRelativeTimeUpdated: ((event: RelativeTimeUpdatedEvent) => void) | null = null
+  get onRelativeTimeUpdated() {
+    return this.#onRelativeTimeUpdated
+  }
+
+  set onRelativeTimeUpdated(listener: ((event: RelativeTimeUpdatedEvent) => void) | null) {
+    if (this.#onRelativeTimeUpdated) {
+      this.removeEventListener(
+        'relative-time-updated',
+        this.#onRelativeTimeUpdated as unknown as EventListenerOrEventListenerObject,
+      )
+    }
+    this.#onRelativeTimeUpdated = typeof listener === 'object' || typeof listener === 'function' ? listener : null
+    if (typeof listener === 'function') {
+      this.addEventListener('relative-time-updated', listener as unknown as EventListenerOrEventListenerObject)
+    }
   }
 
   get second() {
@@ -217,7 +242,9 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
 
   get weekday() {
     const weekday = this.getAttribute('weekday')
-    if (weekday === 'long' || weekday === 'short' || weekday === 'narrow') return weekday
+    if (weekday === 'long' || weekday === 'short' || weekday === 'narrow') {
+      return weekday
+    }
     if (this.format === 'datetime' && weekday !== '') return this.formatStyle
   }
 
@@ -422,6 +449,8 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
       // Ensure invalid dates fall back to lightDOM text content
       this.#renderRoot.textContent = this.textContent
     }
+
+    this.setAttribute('aria-label', `${this.#renderRoot.textContent} (${this.getAttribute('title')})`)
 
     if (newText !== oldText || newTitle !== oldTitle) {
       this.dispatchEvent(new RelativeTimeUpdatedEvent(oldText, newText, oldTitle, newTitle))
