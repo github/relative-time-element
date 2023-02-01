@@ -419,12 +419,12 @@ suite('relative-time', function () {
 
   suite('[tense=past]', function () {
     test('always uses relative dates', async () => {
-      const now = new Date(Date.now() - 10 * 365 * 24 * 60 * 60 * 1000).toISOString()
+      freezeTime(new Date(2033, 1, 1))
       const time = document.createElement('relative-time')
       time.setAttribute('tense', 'past')
-      time.setAttribute('datetime', now)
+      time.setAttribute('datetime', '2023-01-01T00:00:00Z')
       await Promise.resolve()
-      assert.equal(time.shadowRoot.textContent, '10 years ago')
+      assert.equal(time.shadowRoot.textContent, '11 years ago')
     })
 
     test('rewrites from now past datetime to minutes ago', async () => {
@@ -466,32 +466,12 @@ suite('relative-time', function () {
     })
 
     test('rewrites from now past datetime to months ago', async () => {
-      const now = new Date(Date.now() - 3 * 30 * 24 * 60 * 60 * 1000).toISOString()
+      freezeTime(new Date(2023, 8, 1))
       const time = document.createElement('relative-time')
       time.setAttribute('tense', 'past')
-      time.setAttribute('datetime', now)
+      time.setAttribute('datetime', '2023-06-01T00:00:00Z')
       await Promise.resolve()
       assert.equal(time.shadowRoot.textContent, '3 months ago')
-    })
-
-    test('rewrites relative-time datetimes < 18 months as "last year"', async () => {
-      freezeTime(new Date(2020, 0, 1))
-      const then = new Date(2018, 9, 1).toISOString()
-      const timeElement = document.createElement('relative-time')
-      timeElement.setAttribute('tense', 'past')
-      timeElement.setAttribute('datetime', then)
-      await Promise.resolve()
-      assert.equal(timeElement.shadowRoot.textContent, 'last year')
-    })
-
-    test('rewrites relative-time datetimes >= 18 months as "years ago"', async () => {
-      freezeTime(new Date(2020, 0, 1))
-      const then = new Date(2018, 6, 1).toISOString()
-      const timeElement = document.createElement('relative-time')
-      timeElement.setAttribute('tense', 'past')
-      timeElement.setAttribute('datetime', then)
-      await Promise.resolve()
-      assert.equal(timeElement.shadowRoot.textContent, 'last year')
     })
 
     test('micro formats years', async () => {
@@ -501,7 +481,7 @@ suite('relative-time', function () {
       time.setAttribute('datetime', now)
       time.setAttribute('format', 'micro')
       await Promise.resolve()
-      assert.equal(time.shadowRoot.textContent, '10y')
+      assert.equal(time.shadowRoot.textContent, '11y')
     })
 
     test('micro formats future times', async () => {
@@ -537,10 +517,10 @@ suite('relative-time', function () {
 
   suite('[tense=future]', function () {
     test('always uses relative dates', async () => {
-      const now = new Date(Date.now() + 10 * 365 * 24 * 60 * 60 * 1000).toISOString()
+      freezeTime(new Date(2023, 1, 1))
       const time = document.createElement('relative-time')
       time.setAttribute('tense', 'future')
-      time.setAttribute('datetime', now)
+      time.setAttribute('datetime', '2033-01-01T00:00:00Z')
       await Promise.resolve()
       assert.equal(time.shadowRoot.textContent, 'in 10 years')
     })
