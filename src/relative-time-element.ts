@@ -186,6 +186,24 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     return `${this.prefix} ${formatter.format(date)}`.trim()
   }
 
+  #onRelativeTimeUpdated: ((event: RelativeTimeUpdatedEvent) => void) | null = null
+  get onRelativeTimeUpdated() {
+    return this.#onRelativeTimeUpdated
+  }
+
+  set onRelativeTimeUpdated(listener: ((event: RelativeTimeUpdatedEvent) => void) | null) {
+    if (this.#onRelativeTimeUpdated) {
+      this.removeEventListener(
+        'relative-time-updated',
+        this.#onRelativeTimeUpdated as unknown as EventListenerOrEventListenerObject,
+      )
+    }
+    this.#onRelativeTimeUpdated = typeof listener === 'object' || typeof listener === 'function' ? listener : null
+    if (typeof listener === 'function') {
+      this.addEventListener('relative-time-updated', listener as unknown as EventListenerOrEventListenerObject)
+    }
+  }
+
   get second() {
     const second = this.getAttribute('second')
     if (second === 'numeric' || second === '2-digit') return second

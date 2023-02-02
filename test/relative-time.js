@@ -1,5 +1,5 @@
 import {assert} from '@open-wc/testing'
-import {RelativeTimeElement} from '../src/index.ts'
+import {RelativeTimeElement, RelativeTimeUpdatedEvent} from '../src/index.ts'
 
 suite('relative-time', function () {
   let dateNow
@@ -419,12 +419,12 @@ suite('relative-time', function () {
 
   suite('[tense=past]', function () {
     test('always uses relative dates', async () => {
-      const now = new Date(Date.now() - 10 * 365 * 24 * 60 * 60 * 1000).toISOString()
+      freezeTime(new Date(2033, 1, 1))
       const time = document.createElement('relative-time')
       time.setAttribute('tense', 'past')
-      time.setAttribute('datetime', now)
+      time.setAttribute('datetime', '2023-01-01T00:00:00Z')
       await Promise.resolve()
-      assert.equal(time.shadowRoot.textContent, '10 years ago')
+      assert.equal(time.shadowRoot.textContent, '11 years ago')
     })
 
     test('rewrites from now past datetime to minutes ago', async () => {
@@ -466,10 +466,10 @@ suite('relative-time', function () {
     })
 
     test('rewrites from now past datetime to months ago', async () => {
-      const now = new Date(Date.now() - 3 * 30 * 24 * 60 * 60 * 1000).toISOString()
+      freezeTime(new Date(2023, 8, 1))
       const time = document.createElement('relative-time')
       time.setAttribute('tense', 'past')
-      time.setAttribute('datetime', now)
+      time.setAttribute('datetime', '2023-06-01T00:00:00Z')
       await Promise.resolve()
       assert.equal(time.shadowRoot.textContent, '3 months ago')
     })
@@ -497,10 +497,10 @@ suite('relative-time', function () {
 
   suite('[tense=future]', function () {
     test('always uses relative dates', async () => {
-      const now = new Date(Date.now() + 10 * 365 * 24 * 60 * 60 * 1000).toISOString()
+      freezeTime(new Date(2023, 1, 1))
       const time = document.createElement('relative-time')
       time.setAttribute('tense', 'future')
-      time.setAttribute('datetime', now)
+      time.setAttribute('datetime', '2033-01-01T00:00:00Z')
       await Promise.resolve()
       assert.equal(time.shadowRoot.textContent, 'in 10 years')
     })
@@ -670,6 +670,86 @@ suite('relative-time', function () {
 
       await Promise.resolve()
       assert.equal(el.shadowRoot.textContent, '1/1/1970, Gulf Standard Time')
+    })
+  })
+
+  suite('relative-time-updated event', () => {
+    test('dispatches a bubbling+composed relative-time-updated event on each update', async () => {
+      const el = document.createElement('relative-time')
+      el.setAttribute('datetime', '1970-01-01T00:00:00.000-08:00')
+      let event
+      el.addEventListener('relative-time-updated', e => (event = e))
+      await Promise.resolve()
+      assert.instanceOf(event, RelativeTimeUpdatedEvent)
+      assert.propertyVal(event, 'composed', true)
+      assert.propertyVal(event, 'bubbles', true)
+    })
+
+    test('event contains oldText, newText, oldTitle, newTitle properties', async () => {
+      const el = document.createElement('relative-time')
+      el.setAttribute('datetime', '1970-01-01T00:00:00.000-08:00')
+      let event
+      el.addEventListener('relative-time-updated', e => (event = e))
+      await Promise.resolve()
+      assert.propertyVal(event, 'oldText', '')
+      assert.propertyVal(event, 'newText', 'on Jan 1, 1970')
+      assert.propertyVal(event, 'oldTitle', '')
+      assert.propertyVal(event, 'newTitle', 'Jan 1, 1970, 12:00 PM GMT+4')
+      el.setAttribute('datetime', '1970-01-01T01:00:00.000-08:00')
+      await Promise.resolve()
+      assert.propertyVal(event, 'oldText', 'on Jan 1, 1970')
+      assert.propertyVal(event, 'newText', 'on Jan 1, 1970')
+      assert.propertyVal(event, 'oldTitle', 'Jan 1, 1970, 12:00 PM GMT+4')
+      assert.propertyVal(event, 'newTitle', 'Jan 1, 1970, 1:00 PM GMT+4')
+    })
+
+    test('allows binding of `onrelativetimeupdated` property', async () => {
+      const el = document.createElement('relative-time')
+      el.setAttribute('datetime', '1970-01-01T00:00:00.000-08:00')
+      let event
+      el.onRelativeTimeUpdated = e => (event = e)
+      await Promise.resolve()
+      assert.instanceOf(event, RelativeTimeUpdatedEvent)
+    })
+
+    test('unbinds old `onRelativeTimeUpdated` property values', async () => {
+      const el = document.createElement('relative-time')
+      el.setAttribute('datetime', '1970-01-01T00:00:00.000-08:00')
+      let called = false
+      const fn = () => (called = true)
+      el.onRelativeTimeUpdated = fn
+      assert.equal(el.onRelativeTimeUpdated, fn)
+      el.onRelativeTimeUpdated = null
+      assert.equal(el.onRelativeTimeUpdated, null)
+      await Promise.resolve()
+      assert.equal(called, false, 'onRelativeTimeUpdated was called but should not have been')
+    })
+
+    test('only binds function event listeners on `onRelativeTimeUpdated`', async () => {
+      const el = document.createElement('relative-time')
+      el.setAttribute('datetime', '1970-01-01T00:00:00.000-08:00')
+      let called = false
+      const listenerObject = {
+        handleEvent() {
+          called = true
+        },
+      }
+      el.onRelativeTimeUpdated = listenerObject
+      assert.equal(el.onRelativeTimeUpdated, listenerObject)
+      await Promise.resolve()
+      assert.equal(called, false, 'onRelativeTimeUpdated was called but should not have been')
+    })
+
+    test('calling stopImmediatePropagation() effects onRelativeTimeUpdated property', async () => {
+      const el = document.createElement('relative-time')
+      el.setAttribute('datetime', '1970-01-01T00:00:00.000-08:00')
+      let called = false
+      el.addEventListener('relative-time-updated', e => {
+        e.stopImmediatePropagation()
+      })
+      el.onRelativeTimeUpdated = () => (called = true)
+      await Promise.resolve()
+      assert.equal(called, false, 'onRelativeTimeUpdated was called but should not have been')
     })
   })
 
