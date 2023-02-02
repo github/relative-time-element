@@ -119,8 +119,14 @@ export function elapsedTime(date: Date, precision: Unit = 'second', now = Date.n
   )
 }
 
-export function roundToSingleUnit(duration: Duration): Duration {
+interface RoundingOpts {
+  relativeTo: Date | number
+}
+
+export function roundToSingleUnit(duration: Duration, {relativeTo = Date.now()}: Partial<RoundingOpts> = {}): Duration {
+  relativeTo = new Date(relativeTo)
   if (duration.blank) return duration
+  const sign = duration.sign
   let years = Math.abs(duration.years)
   let months = Math.abs(duration.months)
   let weeks = Math.abs(duration.weeks)
@@ -131,7 +137,9 @@ export function roundToSingleUnit(duration: Duration): Duration {
   let milliseconds = Math.abs(duration.milliseconds)
 
   if (milliseconds >= 900) seconds += Math.round(milliseconds / 1000)
-  if (seconds || minutes || hours || days || weeks || months || years) milliseconds = 0
+  if (seconds || minutes || hours || days || weeks || months || years) {
+    milliseconds = 0
+  }
 
   if (seconds >= 55) minutes += Math.round(seconds / 60)
   if (minutes || hours || days || weeks || months || years) seconds = 0
@@ -148,10 +156,17 @@ export function roundToSingleUnit(duration: Duration): Duration {
   if (weeks >= 4) months += Math.round(weeks / 4)
   if (months || years) weeks = 0
 
-  if (months >= 11) years += Math.round(months / 12)
+  const currentMonth = relativeTo.getMonth()
+  const delta = sign < 0 ? currentMonth : 12 - currentMonth
+  if (months && months >= delta) {
+    years += 1
+    relativeTo.setFullYear(relativeTo.getFullYear() + sign)
+    relativeTo.setMonth(0)
+    months -= delta
+    years += Math.floor(months / 12)
+  }
   if (years) months = 0
 
-  const sign = duration.sign
   return new Duration(
     years * sign,
     months * sign,
@@ -164,8 +179,11 @@ export function roundToSingleUnit(duration: Duration): Duration {
   )
 }
 
-export function getRelativeTimeUnit(duration: Duration): [number, Intl.RelativeTimeFormatUnit] {
-  const rounded = roundToSingleUnit(duration)
+export function getRelativeTimeUnit(
+  duration: Duration,
+  opts?: Partial<RoundingOpts>,
+): [number, Intl.RelativeTimeFormatUnit] {
+  const rounded = roundToSingleUnit(duration, opts)
   if (rounded.blank) return [0, 'second']
   for (const unit of unitNames) {
     if (unit === 'millisecond') continue

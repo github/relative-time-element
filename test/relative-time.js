@@ -279,10 +279,10 @@ suite('relative-time', function () {
     })
 
     test('switches to dates after 30 future days with default threshold', async () => {
-      const now = new Date(Date.now() + 31 * 60 * 60 * 24 * 1000).toISOString()
+      freezeTime(new Date('2023-01-01T00:00:00Z'))
       const time = document.createElement('relative-time')
       time.setAttribute('lang', 'en-US')
-      time.setAttribute('datetime', now)
+      time.setAttribute('datetime', '2023-02-10T00:00:00Z')
       await Promise.resolve()
       assert.match(time.shadowRoot.textContent, /on [A-Z][a-z]{2} \d{1,2}/)
     })
@@ -298,40 +298,40 @@ suite('relative-time', function () {
     })
 
     test('switches to dates after 30 future days with default threshold', async () => {
-      const now = new Date(Date.now() + 31 * 60 * 60 * 24 * 1000).toISOString()
+      freezeTime(new Date('2023-01-01T00:00:00Z'))
       const time = document.createElement('relative-time')
       time.setAttribute('lang', 'en-US')
-      time.setAttribute('datetime', now)
+      time.setAttribute('datetime', '2023-02-10T00:00:00Z')
       await Promise.resolve()
       assert.match(time.shadowRoot.textContent, /on [A-Z][a-z]{2} \d{1,2}/)
     })
 
     test('switches to dates after 30 future days with P1D threshold', async () => {
-      const now = new Date(Date.now() + 2 * 60 * 60 * 24 * 1000).toISOString()
+      freezeTime(new Date('2023-01-01T00:00:00Z'))
       const time = document.createElement('relative-time')
       time.setAttribute('lang', 'en-US')
       time.setAttribute('threshold', 'P1D')
-      time.setAttribute('datetime', now)
+      time.setAttribute('datetime', '2023-01-03T00:00:00Z')
       await Promise.resolve()
       assert.match(time.shadowRoot.textContent, /on [A-Z][a-z]{2} \d{1,2}/)
     })
 
     test('uses `prefix` attribute to customise prefix', async () => {
-      const now = new Date(Date.now() + 31 * 60 * 60 * 24 * 1000).toISOString()
+      freezeTime(new Date('2023-01-01T00:00:00Z'))
       const time = document.createElement('relative-time')
       time.setAttribute('prefix', 'will happen by')
       time.setAttribute('lang', 'en-US')
-      time.setAttribute('datetime', now)
+      time.setAttribute('datetime', '2023-02-01T00:00:00.000Z')
       await Promise.resolve()
       assert.match(time.shadowRoot.textContent, /will happen by [A-Z][a-z]{2} \d{1,2}/)
     })
 
     test('uses `prefix` attribute to customise prefix as empty string', async () => {
-      const now = new Date(Date.now() + 31 * 60 * 60 * 24 * 1000).toISOString()
+      freezeTime(new Date('2023-01-01T00:00:00Z'))
       const time = document.createElement('relative-time')
       time.setAttribute('prefix', '')
       time.setAttribute('lang', 'en-US')
-      time.setAttribute('datetime', now)
+      time.setAttribute('datetime', '2023-02-01T00:00:00.000Z')
       await Promise.resolve()
       assert.match(time.shadowRoot.textContent, /[A-Z][a-z]{2} \d{1,2}/)
     })
@@ -419,12 +419,12 @@ suite('relative-time', function () {
 
   suite('[tense=past]', function () {
     test('always uses relative dates', async () => {
-      const now = new Date(Date.now() - 10 * 365 * 24 * 60 * 60 * 1000).toISOString()
+      freezeTime(new Date(2033, 1, 1))
       const time = document.createElement('relative-time')
       time.setAttribute('tense', 'past')
-      time.setAttribute('datetime', now)
+      time.setAttribute('datetime', '2023-01-01T00:00:00Z')
       await Promise.resolve()
-      assert.equal(time.shadowRoot.textContent, '10 years ago')
+      assert.equal(time.shadowRoot.textContent, '11 years ago')
     })
 
     test('rewrites from now past datetime to minutes ago', async () => {
@@ -466,32 +466,12 @@ suite('relative-time', function () {
     })
 
     test('rewrites from now past datetime to months ago', async () => {
-      const now = new Date(Date.now() - 3 * 30 * 24 * 60 * 60 * 1000).toISOString()
+      freezeTime(new Date(2023, 8, 1))
       const time = document.createElement('relative-time')
       time.setAttribute('tense', 'past')
-      time.setAttribute('datetime', now)
+      time.setAttribute('datetime', '2023-06-01T00:00:00Z')
       await Promise.resolve()
       assert.equal(time.shadowRoot.textContent, '3 months ago')
-    })
-
-    test('rewrites relative-time datetimes < 18 months as "last year"', async () => {
-      freezeTime(new Date(2020, 0, 1))
-      const then = new Date(2018, 9, 1).toISOString()
-      const timeElement = document.createElement('relative-time')
-      timeElement.setAttribute('tense', 'past')
-      timeElement.setAttribute('datetime', then)
-      await Promise.resolve()
-      assert.equal(timeElement.shadowRoot.textContent, 'last year')
-    })
-
-    test('rewrites relative-time datetimes >= 18 months as "years ago"', async () => {
-      freezeTime(new Date(2020, 0, 1))
-      const then = new Date(2018, 6, 1).toISOString()
-      const timeElement = document.createElement('relative-time')
-      timeElement.setAttribute('tense', 'past')
-      timeElement.setAttribute('datetime', then)
-      await Promise.resolve()
-      assert.equal(timeElement.shadowRoot.textContent, 'last year')
     })
 
     test('micro formats years', async () => {
@@ -501,7 +481,7 @@ suite('relative-time', function () {
       time.setAttribute('datetime', now)
       time.setAttribute('format', 'micro')
       await Promise.resolve()
-      assert.equal(time.shadowRoot.textContent, '10y')
+      assert.equal(time.shadowRoot.textContent, '11y')
     })
 
     test('micro formats future times', async () => {
@@ -537,10 +517,10 @@ suite('relative-time', function () {
 
   suite('[tense=future]', function () {
     test('always uses relative dates', async () => {
-      const now = new Date(Date.now() + 10 * 365 * 24 * 60 * 60 * 1000).toISOString()
+      freezeTime(new Date(2023, 1, 1))
       const time = document.createElement('relative-time')
       time.setAttribute('tense', 'future')
-      time.setAttribute('datetime', now)
+      time.setAttribute('datetime', '2033-01-01T00:00:00Z')
       await Promise.resolve()
       assert.equal(time.shadowRoot.textContent, 'in 10 years')
     })
@@ -757,189 +737,941 @@ suite('relative-time', function () {
     const referenceDate = '2022-10-24T14:46:00.000Z'
     const tests = new Set([
       // Same as the current time
-      {datetime: '2022-10-24T14:46:00.000Z', tense: 'future', format: 'relative', expected: 'now'},
-      {datetime: '2022-10-24T14:46:00.000Z', tense: 'past', format: 'relative', expected: 'now'},
-      {datetime: '2022-10-24T14:46:00.000Z', format: 'relative', formatStyle: 'narrow', expected: 'now'},
-      {datetime: '2022-10-24T14:46:00.000Z', format: 'relative', precision: 'hour', expected: 'now'},
-      {datetime: '2022-10-24T14:46:00.000Z', format: 'relative', threshold: 'PT0S', expected: 'on Oct 24'},
-      {datetime: '2022-10-24T14:46:00.000Z', format: 'datetime', expected: 'Mon, Oct 24'},
-      {datetime: '2022-10-24T14:46:00.000Z', format: 'datetime', weekday: '', month: '', expected: '24'},
-      {datetime: '2022-10-24T14:46:00.000Z', format: 'duration', expected: '0 seconds'},
-      {datetime: '2022-10-24T14:46:00.000Z', format: 'duration', precision: 'minute', expected: '0 minutes'},
-      {datetime: '2022-10-24T14:46:00.000Z', format: 'duration', precision: 'day', expected: '0 days'},
+      {
+        datetime: '2022-10-24T14:46:00.000Z',
+        tense: 'future',
+        format: 'relative',
+        expected: 'now',
+      },
+      {
+        datetime: '2022-10-24T14:46:00.000Z',
+        tense: 'past',
+        format: 'relative',
+        expected: 'now',
+      },
+      {
+        datetime: '2022-10-24T14:46:00.000Z',
+        format: 'relative',
+        formatStyle: 'narrow',
+        expected: 'now',
+      },
+      {
+        datetime: '2022-10-24T14:46:00.000Z',
+        format: 'relative',
+        precision: 'hour',
+        expected: 'now',
+      },
+      {
+        datetime: '2022-10-24T14:46:00.000Z',
+        format: 'relative',
+        threshold: 'PT0S',
+        expected: 'on Oct 24',
+      },
+      {
+        datetime: '2022-10-24T14:46:00.000Z',
+        format: 'datetime',
+        expected: 'Mon, Oct 24',
+      },
+      {
+        datetime: '2022-10-24T14:46:00.000Z',
+        format: 'datetime',
+        weekday: '',
+        month: '',
+        expected: '24',
+      },
+      {
+        datetime: '2022-10-24T14:46:00.000Z',
+        format: 'duration',
+        expected: '0 seconds',
+      },
+      {
+        datetime: '2022-10-24T14:46:00.000Z',
+        format: 'duration',
+        precision: 'minute',
+        expected: '0 minutes',
+      },
+      {
+        datetime: '2022-10-24T14:46:00.000Z',
+        format: 'duration',
+        precision: 'day',
+        expected: '0 days',
+      },
 
       // A few seconds in the future
-      {datetime: '2022-10-24T14:46:08.000Z', tense: 'future', format: 'relative', expected: 'now'},
-      {datetime: '2022-10-24T14:46:08.000Z', tense: 'past', format: 'relative', expected: 'now'},
-      {datetime: '2022-10-24T14:46:08.000Z', format: 'relative', formatStyle: 'narrow', expected: 'now'},
-      {datetime: '2022-10-24T14:46:08.000Z', format: 'relative', precision: 'hour', expected: 'now'},
-      {datetime: '2022-10-24T14:46:08.000Z', format: 'relative', threshold: 'PT0S', expected: 'on Oct 24'},
-      {datetime: '2022-10-24T14:46:08.000Z', format: 'datetime', expected: 'Mon, Oct 24'},
-      {datetime: '2022-10-24T14:46:00.000Z', format: 'datetime', weekday: '', month: '', expected: '24'},
-      {datetime: '2022-10-24T14:46:08.000Z', format: 'duration', expected: '8 seconds'},
-      {datetime: '2022-10-24T14:46:08.000Z', format: 'duration', precision: 'minute', expected: '0 minutes'},
-      {datetime: '2022-10-24T14:46:08.000Z', format: 'duration', precision: 'day', expected: '0 days'},
-      {datetime: '2022-10-24T14:46:08.000Z', format: 'duration', tense: 'future', expected: '8 seconds'},
-      {datetime: '2022-10-24T14:46:08.000Z', format: 'duration', tense: 'past', expected: '0 seconds'},
+      {
+        datetime: '2022-10-24T14:46:08.000Z',
+        tense: 'future',
+        format: 'relative',
+        expected: 'now',
+      },
+      {
+        datetime: '2022-10-24T14:46:08.000Z',
+        tense: 'past',
+        format: 'relative',
+        expected: 'now',
+      },
+      {
+        datetime: '2022-10-24T14:46:08.000Z',
+        format: 'relative',
+        formatStyle: 'narrow',
+        expected: 'now',
+      },
+      {
+        datetime: '2022-10-24T14:46:08.000Z',
+        format: 'relative',
+        precision: 'hour',
+        expected: 'now',
+      },
+      {
+        datetime: '2022-10-24T14:46:08.000Z',
+        format: 'relative',
+        threshold: 'PT0S',
+        expected: 'on Oct 24',
+      },
+      {
+        datetime: '2022-10-24T14:46:08.000Z',
+        format: 'datetime',
+        expected: 'Mon, Oct 24',
+      },
+      {
+        datetime: '2022-10-24T14:46:00.000Z',
+        format: 'datetime',
+        weekday: '',
+        month: '',
+        expected: '24',
+      },
+      {
+        datetime: '2022-10-24T14:46:08.000Z',
+        format: 'duration',
+        expected: '8 seconds',
+      },
+      {
+        datetime: '2022-10-24T14:46:08.000Z',
+        format: 'duration',
+        precision: 'minute',
+        expected: '0 minutes',
+      },
+      {
+        datetime: '2022-10-24T14:46:08.000Z',
+        format: 'duration',
+        precision: 'day',
+        expected: '0 days',
+      },
+      {
+        datetime: '2022-10-24T14:46:08.000Z',
+        format: 'duration',
+        tense: 'future',
+        expected: '8 seconds',
+      },
+      {
+        datetime: '2022-10-24T14:46:08.000Z',
+        format: 'duration',
+        tense: 'past',
+        expected: '0 seconds',
+      },
 
       // 50 seconds in the future
-      {datetime: '2022-10-24T14:46:50.000Z', tense: 'future', format: 'relative', expected: 'in 50 seconds'},
-      {datetime: '2022-10-24T14:46:50.000Z', tense: 'past', format: 'relative', expected: 'now'},
-      {datetime: '2022-10-24T14:46:50.000Z', format: 'relative', formatStyle: 'narrow', expected: 'in 50 sec.'},
-      {datetime: '2022-10-24T14:46:50.000Z', format: 'relative', precision: 'hour', expected: 'now'},
-      {datetime: '2022-10-24T14:46:50.000Z', format: 'relative', threshold: 'PT0S', expected: 'on Oct 24'},
-      {datetime: '2022-10-24T14:46:50.000Z', format: 'datetime', expected: 'Mon, Oct 24'},
-      {datetime: '2022-10-24T14:46:50.000Z', format: 'datetime', weekday: '', month: '', expected: '24'},
-      {datetime: '2022-10-24T14:46:50.000Z', format: 'duration', expected: '50 seconds'},
-      {datetime: '2022-10-24T14:46:50.000Z', format: 'duration', precision: 'minute', expected: '0 minutes'},
-      {datetime: '2022-10-24T14:46:50.000Z', format: 'duration', precision: 'day', expected: '0 days'},
-      {datetime: '2022-10-24T14:46:50.000Z', format: 'duration', tense: 'future', expected: '50 seconds'},
-      {datetime: '2022-10-24T14:46:50.000Z', format: 'duration', tense: 'past', expected: '0 seconds'},
+      {
+        datetime: '2022-10-24T14:46:50.000Z',
+        tense: 'future',
+        format: 'relative',
+        expected: 'in 50 seconds',
+      },
+      {
+        datetime: '2022-10-24T14:46:50.000Z',
+        tense: 'past',
+        format: 'relative',
+        expected: 'now',
+      },
+      {
+        datetime: '2022-10-24T14:46:50.000Z',
+        format: 'relative',
+        formatStyle: 'narrow',
+        expected: 'in 50 sec.',
+      },
+      {
+        datetime: '2022-10-24T14:46:50.000Z',
+        format: 'relative',
+        precision: 'hour',
+        expected: 'now',
+      },
+      {
+        datetime: '2022-10-24T14:46:50.000Z',
+        format: 'relative',
+        threshold: 'PT0S',
+        expected: 'on Oct 24',
+      },
+      {
+        datetime: '2022-10-24T14:46:50.000Z',
+        format: 'datetime',
+        expected: 'Mon, Oct 24',
+      },
+      {
+        datetime: '2022-10-24T14:46:50.000Z',
+        format: 'datetime',
+        weekday: '',
+        month: '',
+        expected: '24',
+      },
+      {
+        datetime: '2022-10-24T14:46:50.000Z',
+        format: 'duration',
+        expected: '50 seconds',
+      },
+      {
+        datetime: '2022-10-24T14:46:50.000Z',
+        format: 'duration',
+        precision: 'minute',
+        expected: '0 minutes',
+      },
+      {
+        datetime: '2022-10-24T14:46:50.000Z',
+        format: 'duration',
+        precision: 'day',
+        expected: '0 days',
+      },
+      {
+        datetime: '2022-10-24T14:46:50.000Z',
+        format: 'duration',
+        tense: 'future',
+        expected: '50 seconds',
+      },
+      {
+        datetime: '2022-10-24T14:46:50.000Z',
+        format: 'duration',
+        tense: 'past',
+        expected: '0 seconds',
+      },
 
       // 90 seconds in the future
-      {datetime: '2022-10-24T14:47:30.000Z', tense: 'future', format: 'relative', expected: 'in 1 minute'},
-      {datetime: '2022-10-24T14:47:30.000Z', tense: 'past', format: 'relative', expected: 'now'},
-      {datetime: '2022-10-24T14:47:30.000Z', format: 'relative', formatStyle: 'narrow', expected: 'in 1 min.'},
-      {datetime: '2022-10-24T14:47:30.000Z', format: 'relative', precision: 'hour', expected: 'now'},
-      {datetime: '2022-10-24T14:47:30.000Z', format: 'relative', threshold: 'PT0S', expected: 'on Oct 24'},
-      {datetime: '2022-10-24T14:47:30.000Z', format: 'datetime', expected: 'Mon, Oct 24'},
-      {datetime: '2022-10-24T14:47:30.000Z', format: 'datetime', weekday: '', month: '', expected: '24'},
-      {datetime: '2022-10-24T14:47:30.000Z', format: 'duration', expected: '1 minute, 30 seconds'},
-      {datetime: '2022-10-24T14:47:30.000Z', format: 'duration', precision: 'minute', expected: '1 minute'},
-      {datetime: '2022-10-24T14:47:30.000Z', format: 'duration', precision: 'day', expected: '0 days'},
-      {datetime: '2022-10-24T14:47:30.000Z', format: 'duration', tense: 'future', expected: '1 minute, 30 seconds'},
-      {datetime: '2022-10-24T14:47:30.000Z', format: 'duration', tense: 'past', expected: '0 seconds'},
+      {
+        datetime: '2022-10-24T14:47:30.000Z',
+        tense: 'future',
+        format: 'relative',
+        expected: 'in 1 minute',
+      },
+      {
+        datetime: '2022-10-24T14:47:30.000Z',
+        tense: 'past',
+        format: 'relative',
+        expected: 'now',
+      },
+      {
+        datetime: '2022-10-24T14:47:30.000Z',
+        format: 'relative',
+        formatStyle: 'narrow',
+        expected: 'in 1 min.',
+      },
+      {
+        datetime: '2022-10-24T14:47:30.000Z',
+        format: 'relative',
+        precision: 'hour',
+        expected: 'now',
+      },
+      {
+        datetime: '2022-10-24T14:47:30.000Z',
+        format: 'relative',
+        threshold: 'PT0S',
+        expected: 'on Oct 24',
+      },
+      {
+        datetime: '2022-10-24T14:47:30.000Z',
+        format: 'datetime',
+        expected: 'Mon, Oct 24',
+      },
+      {
+        datetime: '2022-10-24T14:47:30.000Z',
+        format: 'datetime',
+        weekday: '',
+        month: '',
+        expected: '24',
+      },
+      {
+        datetime: '2022-10-24T14:47:30.000Z',
+        format: 'duration',
+        expected: '1 minute, 30 seconds',
+      },
+      {
+        datetime: '2022-10-24T14:47:30.000Z',
+        format: 'duration',
+        precision: 'minute',
+        expected: '1 minute',
+      },
+      {
+        datetime: '2022-10-24T14:47:30.000Z',
+        format: 'duration',
+        precision: 'day',
+        expected: '0 days',
+      },
+      {
+        datetime: '2022-10-24T14:47:30.000Z',
+        format: 'duration',
+        tense: 'future',
+        expected: '1 minute, 30 seconds',
+      },
+      {
+        datetime: '2022-10-24T14:47:30.000Z',
+        format: 'duration',
+        tense: 'past',
+        expected: '0 seconds',
+      },
 
       // 20 days in the future
-      {datetime: '2022-11-13T15:46:00.000Z', tense: 'future', format: 'relative', expected: 'in 3 weeks'},
-      {datetime: '2022-11-13T15:46:00.000Z', tense: 'past', format: 'relative', expected: 'now'},
-      {datetime: '2022-11-13T15:46:00.000Z', format: 'relative', formatStyle: 'narrow', expected: 'in 3 wk.'},
-      {datetime: '2022-11-13T15:46:00.000Z', format: 'relative', precision: 'hour', expected: 'in 3 weeks'},
-      {datetime: '2022-11-13T15:46:00.000Z', format: 'relative', threshold: 'PT0S', expected: 'on Nov 13'},
-      {datetime: '2022-11-13T15:46:00.000Z', format: 'datetime', expected: 'Sun, Nov 13'},
-      {datetime: '2022-11-13T15:46:00.000Z', format: 'datetime', weekday: '', month: '', expected: '13'},
-      {datetime: '2022-11-13T15:46:00.000Z', format: 'duration', expected: '20 days, 1 hour'},
-      {datetime: '2022-11-13T15:46:00.000Z', format: 'duration', precision: 'minute', expected: '20 days, 1 hour'},
-      {datetime: '2022-11-13T15:46:00.000Z', format: 'duration', precision: 'day', expected: '20 days'},
-      {datetime: '2022-11-13T15:46:00.000Z', format: 'duration', tense: 'future', expected: '20 days, 1 hour'},
-      {datetime: '2022-11-13T15:46:00.000Z', format: 'duration', tense: 'past', expected: '0 seconds'},
+      {
+        datetime: '2022-11-13T15:46:00.000Z',
+        tense: 'future',
+        format: 'relative',
+        expected: 'in 3 weeks',
+      },
+      {
+        datetime: '2022-11-13T15:46:00.000Z',
+        tense: 'past',
+        format: 'relative',
+        expected: 'now',
+      },
+      {
+        datetime: '2022-11-13T15:46:00.000Z',
+        format: 'relative',
+        formatStyle: 'narrow',
+        expected: 'in 3 wk.',
+      },
+      {
+        datetime: '2022-11-13T15:46:00.000Z',
+        format: 'relative',
+        precision: 'hour',
+        expected: 'in 3 weeks',
+      },
+      {
+        datetime: '2022-11-13T15:46:00.000Z',
+        format: 'relative',
+        threshold: 'PT0S',
+        expected: 'on Nov 13',
+      },
+      {
+        datetime: '2022-11-13T15:46:00.000Z',
+        format: 'datetime',
+        expected: 'Sun, Nov 13',
+      },
+      {
+        datetime: '2022-11-13T15:46:00.000Z',
+        format: 'datetime',
+        weekday: '',
+        month: '',
+        expected: '13',
+      },
+      {
+        datetime: '2022-11-13T15:46:00.000Z',
+        format: 'duration',
+        expected: '20 days, 1 hour',
+      },
+      {
+        datetime: '2022-11-13T15:46:00.000Z',
+        format: 'duration',
+        precision: 'minute',
+        expected: '20 days, 1 hour',
+      },
+      {
+        datetime: '2022-11-13T15:46:00.000Z',
+        format: 'duration',
+        precision: 'day',
+        expected: '20 days',
+      },
+      {
+        datetime: '2022-11-13T15:46:00.000Z',
+        format: 'duration',
+        tense: 'future',
+        expected: '20 days, 1 hour',
+      },
+      {
+        datetime: '2022-11-13T15:46:00.000Z',
+        format: 'duration',
+        tense: 'past',
+        expected: '0 seconds',
+      },
 
       // 40 days in the future
-      {datetime: '2022-12-03T15:46:00.000Z', tense: 'future', format: 'relative', expected: 'next month'},
-      {datetime: '2022-12-03T15:46:00.000Z', tense: 'past', format: 'relative', expected: 'now'},
-      {datetime: '2022-12-03T15:46:00.000Z', format: 'relative', formatStyle: 'narrow', expected: 'on Dec 3'},
-      {datetime: '2022-12-03T15:46:00.000Z', format: 'relative', precision: 'hour', expected: 'on Dec 3'},
-      {datetime: '2022-12-03T15:46:00.000Z', format: 'relative', threshold: 'PT0S', expected: 'on Dec 3'},
-      {datetime: '2022-12-03T15:46:00.000Z', format: 'datetime', expected: 'Sat, Dec 3'},
-      {datetime: '2022-12-03T15:46:00.000Z', format: 'datetime', weekday: '', month: '', expected: '3'},
-      {datetime: '2022-12-03T15:46:00.000Z', format: 'duration', expected: '1 month, 10 days, 1 hour'},
+      {
+        datetime: '2022-12-03T15:46:00.000Z',
+        tense: 'future',
+        format: 'relative',
+        expected: 'next month',
+      },
+      {
+        datetime: '2022-12-03T15:46:00.000Z',
+        tense: 'past',
+        format: 'relative',
+        expected: 'now',
+      },
+      {
+        datetime: '2022-12-03T15:46:00.000Z',
+        format: 'relative',
+        formatStyle: 'narrow',
+        expected: 'on Dec 3',
+      },
+      {
+        datetime: '2022-12-03T15:46:00.000Z',
+        format: 'relative',
+        precision: 'hour',
+        expected: 'on Dec 3',
+      },
+      {
+        datetime: '2022-12-03T15:46:00.000Z',
+        format: 'relative',
+        threshold: 'PT0S',
+        expected: 'on Dec 3',
+      },
+      {
+        datetime: '2022-12-03T15:46:00.000Z',
+        format: 'datetime',
+        expected: 'Sat, Dec 3',
+      },
+      {
+        datetime: '2022-12-03T15:46:00.000Z',
+        format: 'datetime',
+        weekday: '',
+        month: '',
+        expected: '3',
+      },
+      {
+        datetime: '2022-12-03T15:46:00.000Z',
+        format: 'duration',
+        expected: '1 month, 10 days, 1 hour',
+      },
       {
         datetime: '2022-12-03T15:46:00.000Z',
         format: 'duration',
         precision: 'minute',
         expected: '1 month, 10 days, 1 hour',
       },
-      {datetime: '2022-12-03T15:46:00.000Z', format: 'duration', precision: 'day', expected: '1 month, 10 days'},
-      {datetime: '2022-12-03T15:46:00.000Z', format: 'duration', tense: 'future', expected: '1 month, 10 days, 1 hour'},
-      {datetime: '2022-12-03T15:46:00.000Z', format: 'duration', tense: 'past', expected: '0 seconds'},
+      {
+        datetime: '2022-12-03T15:46:00.000Z',
+        format: 'duration',
+        precision: 'day',
+        expected: '1 month, 10 days',
+      },
+      {
+        datetime: '2022-12-03T15:46:00.000Z',
+        format: 'duration',
+        tense: 'future',
+        expected: '1 month, 10 days, 1 hour',
+      },
+      {
+        datetime: '2022-12-03T15:46:00.000Z',
+        format: 'duration',
+        tense: 'past',
+        expected: '0 seconds',
+      },
 
       // 2 years in the future
-      {datetime: '2024-10-24T14:46:00.000Z', tense: 'future', format: 'relative', expected: 'in 2 years'},
-      {datetime: '2024-10-24T14:46:00.000Z', tense: 'past', format: 'relative', expected: 'now'},
-      {datetime: '2024-10-24T14:46:00.000Z', format: 'relative', formatStyle: 'narrow', expected: 'on Oct 24, 2024'},
-      {datetime: '2024-10-24T14:46:00.000Z', format: 'relative', precision: 'hour', expected: 'on Oct 24, 2024'},
-      {datetime: '2024-10-24T14:46:00.000Z', format: 'relative', threshold: 'PT0S', expected: 'on Oct 24, 2024'},
-      {datetime: '2024-10-24T14:46:00.000Z', format: 'datetime', expected: 'Thu, Oct 24, 2024'},
-      {datetime: '2024-10-24T14:46:00.000Z', format: 'datetime', weekday: '', month: '', expected: '2024 (day: 24)'},
-      {datetime: '2024-10-24T14:46:00.000Z', format: 'duration', expected: '2 years, 11 days'},
-      {datetime: '2024-10-24T14:46:00.000Z', format: 'duration', precision: 'minute', expected: '2 years, 11 days'},
-      {datetime: '2024-10-24T14:46:00.000Z', format: 'duration', precision: 'day', expected: '2 years, 11 days'},
-      {datetime: '2024-10-24T14:46:00.000Z', format: 'duration', tense: 'future', expected: '2 years, 11 days'},
-      {datetime: '2024-10-24T14:46:00.000Z', format: 'duration', tense: 'past', expected: '0 seconds'},
+      {
+        datetime: '2024-10-24T14:46:00.000Z',
+        tense: 'future',
+        format: 'relative',
+        expected: 'in 2 years',
+      },
+      {
+        datetime: '2024-10-24T14:46:00.000Z',
+        tense: 'past',
+        format: 'relative',
+        expected: 'now',
+      },
+      {
+        datetime: '2024-10-24T14:46:00.000Z',
+        format: 'relative',
+        formatStyle: 'narrow',
+        expected: 'on Oct 24, 2024',
+      },
+      {
+        datetime: '2024-10-24T14:46:00.000Z',
+        format: 'relative',
+        precision: 'hour',
+        expected: 'on Oct 24, 2024',
+      },
+      {
+        datetime: '2024-10-24T14:46:00.000Z',
+        format: 'relative',
+        threshold: 'PT0S',
+        expected: 'on Oct 24, 2024',
+      },
+      {
+        datetime: '2024-10-24T14:46:00.000Z',
+        format: 'datetime',
+        expected: 'Thu, Oct 24, 2024',
+      },
+      {
+        datetime: '2024-10-24T14:46:00.000Z',
+        format: 'datetime',
+        weekday: '',
+        month: '',
+        expected: '2024 (day: 24)',
+      },
+      {
+        datetime: '2024-10-24T14:46:00.000Z',
+        format: 'duration',
+        expected: '2 years, 11 days',
+      },
+      {
+        datetime: '2024-10-24T14:46:00.000Z',
+        format: 'duration',
+        precision: 'minute',
+        expected: '2 years, 11 days',
+      },
+      {
+        datetime: '2024-10-24T14:46:00.000Z',
+        format: 'duration',
+        precision: 'day',
+        expected: '2 years, 11 days',
+      },
+      {
+        datetime: '2024-10-24T14:46:00.000Z',
+        format: 'duration',
+        tense: 'future',
+        expected: '2 years, 11 days',
+      },
+      {
+        datetime: '2024-10-24T14:46:00.000Z',
+        format: 'duration',
+        tense: 'past',
+        expected: '0 seconds',
+      },
 
       // A few seconds in the past
-      {datetime: '2022-10-24T14:45:52.000Z', tense: 'future', format: 'relative', expected: 'now'},
-      {datetime: '2022-10-24T14:45:52.000Z', tense: 'past', format: 'relative', expected: 'now'},
-      {datetime: '2022-10-24T14:45:52.000Z', format: 'relative', formatStyle: 'narrow', expected: 'now'},
-      {datetime: '2022-10-24T14:45:52.000Z', format: 'relative', precision: 'hour', expected: 'now'},
-      {datetime: '2022-10-24T14:45:52.000Z', format: 'relative', threshold: 'PT0S', expected: 'on Oct 24'},
-      {datetime: '2022-10-24T14:45:52.000Z', format: 'datetime', expected: 'Mon, Oct 24'},
-      {datetime: '2022-10-24T14:45:52.000Z', format: 'datetime', weekday: '', month: '', expected: '24'},
-      {datetime: '2022-10-24T14:45:52.000Z', format: 'duration', expected: '8 seconds'},
-      {datetime: '2022-10-24T14:45:52.000Z', format: 'duration', precision: 'minute', expected: '0 minutes'},
-      {datetime: '2022-10-24T14:45:52.000Z', format: 'duration', precision: 'day', expected: '0 days'},
-      {datetime: '2022-10-24T14:45:52.000Z', format: 'duration', tense: 'future', expected: '0 seconds'},
-      {datetime: '2022-10-24T14:45:52.000Z', format: 'duration', tense: 'past', expected: '8 seconds'},
+      {
+        datetime: '2022-10-24T14:45:52.000Z',
+        tense: 'future',
+        format: 'relative',
+        expected: 'now',
+      },
+      {
+        datetime: '2022-10-24T14:45:52.000Z',
+        tense: 'past',
+        format: 'relative',
+        expected: 'now',
+      },
+      {
+        datetime: '2022-10-24T14:45:52.000Z',
+        format: 'relative',
+        formatStyle: 'narrow',
+        expected: 'now',
+      },
+      {
+        datetime: '2022-10-24T14:45:52.000Z',
+        format: 'relative',
+        precision: 'hour',
+        expected: 'now',
+      },
+      {
+        datetime: '2022-10-24T14:45:52.000Z',
+        format: 'relative',
+        threshold: 'PT0S',
+        expected: 'on Oct 24',
+      },
+      {
+        datetime: '2022-10-24T14:45:52.000Z',
+        format: 'datetime',
+        expected: 'Mon, Oct 24',
+      },
+      {
+        datetime: '2022-10-24T14:45:52.000Z',
+        format: 'datetime',
+        weekday: '',
+        month: '',
+        expected: '24',
+      },
+      {
+        datetime: '2022-10-24T14:45:52.000Z',
+        format: 'duration',
+        expected: '8 seconds',
+      },
+      {
+        datetime: '2022-10-24T14:45:52.000Z',
+        format: 'duration',
+        precision: 'minute',
+        expected: '0 minutes',
+      },
+      {
+        datetime: '2022-10-24T14:45:52.000Z',
+        format: 'duration',
+        precision: 'day',
+        expected: '0 days',
+      },
+      {
+        datetime: '2022-10-24T14:45:52.000Z',
+        format: 'duration',
+        tense: 'future',
+        expected: '0 seconds',
+      },
+      {
+        datetime: '2022-10-24T14:45:52.000Z',
+        format: 'duration',
+        tense: 'past',
+        expected: '8 seconds',
+      },
 
       // 50 seconds in the past
-      {datetime: '2022-10-24T14:45:10.000Z', tense: 'future', format: 'relative', expected: 'now'},
-      {datetime: '2022-10-24T14:45:10.000Z', tense: 'past', format: 'relative', expected: 'now'},
-      {datetime: '2022-10-24T14:45:10.000Z', format: 'relative', formatStyle: 'narrow', expected: 'now'},
-      {datetime: '2022-10-24T14:45:10.000Z', format: 'relative', precision: 'hour', expected: 'now'},
-      {datetime: '2022-10-24T14:45:10.000Z', format: 'relative', threshold: 'PT0S', expected: 'on Oct 24'},
-      {datetime: '2022-10-24T14:45:10.000Z', format: 'datetime', expected: 'Mon, Oct 24'},
-      {datetime: '2022-10-24T14:45:10.000Z', format: 'datetime', weekday: '', month: '', expected: '24'},
-      {datetime: '2022-10-24T14:45:10.000Z', format: 'duration', expected: '50 seconds'},
-      {datetime: '2022-10-24T14:45:10.000Z', format: 'duration', precision: 'minute', expected: '0 minutes'},
-      {datetime: '2022-10-24T14:45:10.000Z', format: 'duration', precision: 'day', expected: '0 days'},
-      {datetime: '2022-10-24T14:45:10.000Z', format: 'duration', tense: 'future', expected: '0 seconds'},
-      {datetime: '2022-10-24T14:45:10.000Z', format: 'duration', tense: 'past', expected: '50 seconds'},
+      {
+        datetime: '2022-10-24T14:45:10.000Z',
+        tense: 'future',
+        format: 'relative',
+        expected: 'now',
+      },
+      {
+        datetime: '2022-10-24T14:45:10.000Z',
+        tense: 'past',
+        format: 'relative',
+        expected: 'now',
+      },
+      {
+        datetime: '2022-10-24T14:45:10.000Z',
+        format: 'relative',
+        formatStyle: 'narrow',
+        expected: 'now',
+      },
+      {
+        datetime: '2022-10-24T14:45:10.000Z',
+        format: 'relative',
+        precision: 'hour',
+        expected: 'now',
+      },
+      {
+        datetime: '2022-10-24T14:45:10.000Z',
+        format: 'relative',
+        threshold: 'PT0S',
+        expected: 'on Oct 24',
+      },
+      {
+        datetime: '2022-10-24T14:45:10.000Z',
+        format: 'datetime',
+        expected: 'Mon, Oct 24',
+      },
+      {
+        datetime: '2022-10-24T14:45:10.000Z',
+        format: 'datetime',
+        weekday: '',
+        month: '',
+        expected: '24',
+      },
+      {
+        datetime: '2022-10-24T14:45:10.000Z',
+        format: 'duration',
+        expected: '50 seconds',
+      },
+      {
+        datetime: '2022-10-24T14:45:10.000Z',
+        format: 'duration',
+        precision: 'minute',
+        expected: '0 minutes',
+      },
+      {
+        datetime: '2022-10-24T14:45:10.000Z',
+        format: 'duration',
+        precision: 'day',
+        expected: '0 days',
+      },
+      {
+        datetime: '2022-10-24T14:45:10.000Z',
+        format: 'duration',
+        tense: 'future',
+        expected: '0 seconds',
+      },
+      {
+        datetime: '2022-10-24T14:45:10.000Z',
+        format: 'duration',
+        tense: 'past',
+        expected: '50 seconds',
+      },
 
       // 90 seconds in the past
-      {datetime: '2022-10-24T14:44:30.000Z', tense: 'future', format: 'relative', expected: 'now'},
-      {datetime: '2022-10-24T14:44:30.000Z', tense: 'past', format: 'relative', expected: '1 minute ago'},
-      {datetime: '2022-10-24T14:44:30.000Z', format: 'relative', formatStyle: 'narrow', expected: '1 min. ago'},
-      {datetime: '2022-10-24T14:44:30.000Z', format: 'relative', precision: 'hour', expected: 'now'},
-      {datetime: '2022-10-24T14:44:30.000Z', format: 'relative', threshold: 'PT0S', expected: 'on Oct 24'},
-      {datetime: '2022-10-24T14:44:30.000Z', format: 'datetime', expected: 'Mon, Oct 24'},
-      {datetime: '2022-10-24T14:44:30.000Z', format: 'datetime', weekday: '', month: '', expected: '24'},
-      {datetime: '2022-10-24T14:44:30.000Z', format: 'duration', expected: '1 minute, 30 seconds'},
-      {datetime: '2022-10-24T14:44:30.000Z', format: 'duration', precision: 'minute', expected: '1 minute'},
-      {datetime: '2022-10-24T14:44:30.000Z', format: 'duration', precision: 'day', expected: '0 days'},
-      {datetime: '2022-10-24T14:44:30.000Z', format: 'duration', tense: 'future', expected: '0 seconds'},
-      {datetime: '2022-10-24T14:44:30.000Z', format: 'duration', tense: 'past', expected: '1 minute, 30 seconds'},
+      {
+        datetime: '2022-10-24T14:44:30.000Z',
+        tense: 'future',
+        format: 'relative',
+        expected: 'now',
+      },
+      {
+        datetime: '2022-10-24T14:44:30.000Z',
+        tense: 'past',
+        format: 'relative',
+        expected: '1 minute ago',
+      },
+      {
+        datetime: '2022-10-24T14:44:30.000Z',
+        format: 'relative',
+        formatStyle: 'narrow',
+        expected: '1 min. ago',
+      },
+      {
+        datetime: '2022-10-24T14:44:30.000Z',
+        format: 'relative',
+        precision: 'hour',
+        expected: 'now',
+      },
+      {
+        datetime: '2022-10-24T14:44:30.000Z',
+        format: 'relative',
+        threshold: 'PT0S',
+        expected: 'on Oct 24',
+      },
+      {
+        datetime: '2022-10-24T14:44:30.000Z',
+        format: 'datetime',
+        expected: 'Mon, Oct 24',
+      },
+      {
+        datetime: '2022-10-24T14:44:30.000Z',
+        format: 'datetime',
+        weekday: '',
+        month: '',
+        expected: '24',
+      },
+      {
+        datetime: '2022-10-24T14:44:30.000Z',
+        format: 'duration',
+        expected: '1 minute, 30 seconds',
+      },
+      {
+        datetime: '2022-10-24T14:44:30.000Z',
+        format: 'duration',
+        precision: 'minute',
+        expected: '1 minute',
+      },
+      {
+        datetime: '2022-10-24T14:44:30.000Z',
+        format: 'duration',
+        precision: 'day',
+        expected: '0 days',
+      },
+      {
+        datetime: '2022-10-24T14:44:30.000Z',
+        format: 'duration',
+        tense: 'future',
+        expected: '0 seconds',
+      },
+      {
+        datetime: '2022-10-24T14:44:30.000Z',
+        format: 'duration',
+        tense: 'past',
+        expected: '1 minute, 30 seconds',
+      },
 
       // 20 days in the past
-      {datetime: '2022-10-04T14:46:00.000Z', tense: 'future', format: 'relative', expected: 'now'},
-      {datetime: '2022-10-04T14:46:00.000Z', tense: 'past', format: 'relative', expected: '3 weeks ago'},
-      {datetime: '2022-10-04T14:46:00.000Z', format: 'relative', formatStyle: 'narrow', expected: '3 wk. ago'},
-      {datetime: '2022-10-04T14:46:00.000Z', format: 'relative', precision: 'hour', expected: '3 weeks ago'},
-      {datetime: '2022-10-04T14:46:00.000Z', format: 'relative', threshold: 'PT0S', expected: 'on Oct 4'},
-      {datetime: '2022-10-04T14:46:00.000Z', format: 'datetime', expected: 'Tue, Oct 4'},
-      {datetime: '2022-10-04T14:46:00.000Z', format: 'datetime', weekday: '', month: '', expected: '4'},
-      {datetime: '2022-10-04T14:46:00.000Z', format: 'duration', expected: '20 days'},
-      {datetime: '2022-10-04T14:46:00.000Z', format: 'duration', precision: 'minute', expected: '20 days'},
-      {datetime: '2022-10-04T14:46:00.000Z', format: 'duration', precision: 'day', expected: '20 days'},
-      {datetime: '2022-10-04T14:46:00.000Z', format: 'duration', tense: 'future', expected: '0 seconds'},
-      {datetime: '2022-10-04T14:46:00.000Z', format: 'duration', tense: 'past', expected: '20 days'},
+      {
+        datetime: '2022-10-04T14:46:00.000Z',
+        tense: 'future',
+        format: 'relative',
+        expected: 'now',
+      },
+      {
+        datetime: '2022-10-04T14:46:00.000Z',
+        tense: 'past',
+        format: 'relative',
+        expected: '3 weeks ago',
+      },
+      {
+        datetime: '2022-10-04T14:46:00.000Z',
+        format: 'relative',
+        formatStyle: 'narrow',
+        expected: '3 wk. ago',
+      },
+      {
+        datetime: '2022-10-04T14:46:00.000Z',
+        format: 'relative',
+        precision: 'hour',
+        expected: '3 weeks ago',
+      },
+      {
+        datetime: '2022-10-04T14:46:00.000Z',
+        format: 'relative',
+        threshold: 'PT0S',
+        expected: 'on Oct 4',
+      },
+      {
+        datetime: '2022-10-04T14:46:00.000Z',
+        format: 'datetime',
+        expected: 'Tue, Oct 4',
+      },
+      {
+        datetime: '2022-10-04T14:46:00.000Z',
+        format: 'datetime',
+        weekday: '',
+        month: '',
+        expected: '4',
+      },
+      {
+        datetime: '2022-10-04T14:46:00.000Z',
+        format: 'duration',
+        expected: '20 days',
+      },
+      {
+        datetime: '2022-10-04T14:46:00.000Z',
+        format: 'duration',
+        precision: 'minute',
+        expected: '20 days',
+      },
+      {
+        datetime: '2022-10-04T14:46:00.000Z',
+        format: 'duration',
+        precision: 'day',
+        expected: '20 days',
+      },
+      {
+        datetime: '2022-10-04T14:46:00.000Z',
+        format: 'duration',
+        tense: 'future',
+        expected: '0 seconds',
+      },
+      {
+        datetime: '2022-10-04T14:46:00.000Z',
+        format: 'duration',
+        tense: 'past',
+        expected: '20 days',
+      },
 
       // 40 days in the past
-      {datetime: '2022-09-14T14:46:00.000Z', tense: 'future', format: 'relative', expected: 'now'},
-      {datetime: '2022-09-14T14:46:00.000Z', tense: 'past', format: 'relative', expected: 'last month'},
-      {datetime: '2022-09-14T14:46:00.000Z', format: 'relative', formatStyle: 'narrow', expected: 'on Sep 14'},
-      {datetime: '2022-09-14T14:46:00.000Z', format: 'relative', precision: 'hour', expected: 'on Sep 14'},
-      {datetime: '2022-09-14T14:46:00.000Z', format: 'relative', threshold: 'PT0S', expected: 'on Sep 14'},
-      {datetime: '2022-09-14T14:46:00.000Z', format: 'datetime', expected: 'Wed, Sep 14'},
-      {datetime: '2022-09-14T14:46:00.000Z', format: 'datetime', weekday: '', month: '', expected: '14'},
-      {datetime: '2022-09-14T14:46:00.000Z', format: 'duration', expected: '1 month, 10 days'},
-      {datetime: '2022-09-14T14:46:00.000Z', format: 'duration', precision: 'minute', expected: '1 month, 10 days'},
-      {datetime: '2022-09-14T14:46:00.000Z', format: 'duration', precision: 'day', expected: '1 month, 10 days'},
-      {datetime: '2022-09-14T14:46:00.000Z', format: 'duration', tense: 'future', expected: '0 seconds'},
-      {datetime: '2022-09-14T14:46:00.000Z', format: 'duration', tense: 'past', expected: '1 month, 10 days'},
+      {
+        datetime: '2022-09-14T14:46:00.000Z',
+        tense: 'future',
+        format: 'relative',
+        expected: 'now',
+      },
+      {
+        datetime: '2022-09-14T14:46:00.000Z',
+        tense: 'past',
+        format: 'relative',
+        expected: 'last month',
+      },
+      {
+        datetime: '2022-09-14T14:46:00.000Z',
+        format: 'relative',
+        formatStyle: 'narrow',
+        expected: 'on Sep 14',
+      },
+      {
+        datetime: '2022-09-14T14:46:00.000Z',
+        format: 'relative',
+        precision: 'hour',
+        expected: 'on Sep 14',
+      },
+      {
+        datetime: '2022-09-14T14:46:00.000Z',
+        format: 'relative',
+        threshold: 'PT0S',
+        expected: 'on Sep 14',
+      },
+      {
+        datetime: '2022-09-14T14:46:00.000Z',
+        format: 'datetime',
+        expected: 'Wed, Sep 14',
+      },
+      {
+        datetime: '2022-09-14T14:46:00.000Z',
+        format: 'datetime',
+        weekday: '',
+        month: '',
+        expected: '14',
+      },
+      {
+        datetime: '2022-09-14T14:46:00.000Z',
+        format: 'duration',
+        expected: '1 month, 10 days',
+      },
+      {
+        datetime: '2022-09-14T14:46:00.000Z',
+        format: 'duration',
+        precision: 'minute',
+        expected: '1 month, 10 days',
+      },
+      {
+        datetime: '2022-09-14T14:46:00.000Z',
+        format: 'duration',
+        precision: 'day',
+        expected: '1 month, 10 days',
+      },
+      {
+        datetime: '2022-09-14T14:46:00.000Z',
+        format: 'duration',
+        tense: 'future',
+        expected: '0 seconds',
+      },
+      {
+        datetime: '2022-09-14T14:46:00.000Z',
+        format: 'duration',
+        tense: 'past',
+        expected: '1 month, 10 days',
+      },
 
       // 2 years in the past
-      {datetime: '2020-10-24T14:46:00.000Z', tense: 'future', format: 'relative', expected: 'now'},
-      {datetime: '2020-10-24T14:46:00.000Z', tense: 'past', format: 'relative', expected: '2 years ago'},
-      {datetime: '2020-10-24T14:46:00.000Z', format: 'relative', formatStyle: 'narrow', expected: 'on Oct 24, 2020'},
-      {datetime: '2020-10-24T14:46:00.000Z', format: 'relative', precision: 'hour', expected: 'on Oct 24, 2020'},
-      {datetime: '2020-10-24T14:46:00.000Z', format: 'relative', threshold: 'PT0S', expected: 'on Oct 24, 2020'},
-      {datetime: '2020-10-24T14:46:00.000Z', format: 'datetime', expected: 'Sat, Oct 24, 2020'},
-      {datetime: '2020-10-24T14:46:00.000Z', format: 'datetime', weekday: '', month: '', expected: '2020 (day: 24)'},
-      {datetime: '2020-10-24T14:46:00.000Z', format: 'duration', expected: '2 years, 10 days'},
-      {datetime: '2020-10-24T14:46:00.000Z', format: 'duration', precision: 'minute', expected: '2 years, 10 days'},
-      {datetime: '2020-10-24T14:46:00.000Z', format: 'duration', precision: 'day', expected: '2 years, 10 days'},
-      {datetime: '2020-10-24T14:46:00.000Z', format: 'duration', tense: 'future', expected: '0 seconds'},
-      {datetime: '2020-10-24T14:46:00.000Z', format: 'duration', tense: 'past', expected: '2 years, 10 days'},
+      {
+        datetime: '2020-10-24T14:46:00.000Z',
+        tense: 'future',
+        format: 'relative',
+        expected: 'now',
+      },
+      {
+        datetime: '2020-10-24T14:46:00.000Z',
+        tense: 'past',
+        format: 'relative',
+        expected: '2 years ago',
+      },
+      {
+        datetime: '2020-10-24T14:46:00.000Z',
+        format: 'relative',
+        formatStyle: 'narrow',
+        expected: 'on Oct 24, 2020',
+      },
+      {
+        datetime: '2020-10-24T14:46:00.000Z',
+        format: 'relative',
+        precision: 'hour',
+        expected: 'on Oct 24, 2020',
+      },
+      {
+        datetime: '2020-10-24T14:46:00.000Z',
+        format: 'relative',
+        threshold: 'PT0S',
+        expected: 'on Oct 24, 2020',
+      },
+      {
+        datetime: '2020-10-24T14:46:00.000Z',
+        format: 'datetime',
+        expected: 'Sat, Oct 24, 2020',
+      },
+      {
+        datetime: '2020-10-24T14:46:00.000Z',
+        format: 'datetime',
+        weekday: '',
+        month: '',
+        expected: '2020 (day: 24)',
+      },
+      {
+        datetime: '2020-10-24T14:46:00.000Z',
+        format: 'duration',
+        expected: '2 years, 10 days',
+      },
+      {
+        datetime: '2020-10-24T14:46:00.000Z',
+        format: 'duration',
+        precision: 'minute',
+        expected: '2 years, 10 days',
+      },
+      {
+        datetime: '2020-10-24T14:46:00.000Z',
+        format: 'duration',
+        precision: 'day',
+        expected: '2 years, 10 days',
+      },
+      {
+        datetime: '2020-10-24T14:46:00.000Z',
+        format: 'duration',
+        tense: 'future',
+        expected: '0 seconds',
+      },
+      {
+        datetime: '2020-10-24T14:46:00.000Z',
+        format: 'duration',
+        tense: 'past',
+        expected: '2 years, 10 days',
+      },
     ])
 
     for (const {
@@ -955,9 +1687,13 @@ suite('relative-time', function () {
       lang = 'en',
       reference = referenceDate,
     } of tests) {
-      const attrs = Object.entries({datetime, tense, format, formatStyle, precision}).map(([k, v]) =>
-        v ? `${k}="${v}"` : '',
-      )
+      const attrs = Object.entries({
+        datetime,
+        tense,
+        format,
+        formatStyle,
+        precision,
+      }).map(([k, v]) => (v ? `${k}="${v}"` : ''))
       test(`<relative-time ${attrs.join(' ')}> => ${expected}`, async () => {
         freezeTime(new Date(reference))
         const time = document.createElement('relative-time')
@@ -980,117 +1716,590 @@ suite('relative-time', function () {
     const referenceDate = '2022-10-24T14:46:00.000Z'
     const tests = new Set([
       // Same as the current time
-      {datetime: '2022-10-24T14:46:00.000z', tense: 'future', format: 'micro', expected: '1m'},
-      {datetime: '2022-10-24T14:46:00.000z', tense: 'past', format: 'micro', expected: '1m'},
-      {datetime: '2022-10-24T14:46:00.000z', tense: 'auto', format: 'micro', expected: '1m'},
-      {datetime: '2022-10-24T14:46:00.000z', tense: 'auto', format: 'auto', expected: 'now'},
+      {
+        datetime: '2022-10-24T14:46:00.000z',
+        tense: 'future',
+        format: 'micro',
+        expected: '1m',
+      },
+      {
+        datetime: '2022-10-24T14:46:00.000z',
+        tense: 'past',
+        format: 'micro',
+        expected: '1m',
+      },
+      {
+        datetime: '2022-10-24T14:46:00.000z',
+        tense: 'auto',
+        format: 'micro',
+        expected: '1m',
+      },
+      {
+        datetime: '2022-10-24T14:46:00.000z',
+        tense: 'auto',
+        format: 'auto',
+        expected: 'now',
+      },
 
       // Dates in the past
-      {datetime: '2022-09-24T14:46:00.000Z', tense: 'future', format: 'micro', expected: '1m'},
-      {datetime: '2022-10-23T14:46:00.000Z', tense: 'future', format: 'micro', expected: '1m'},
-      {datetime: '2022-10-24T13:46:00.000Z', tense: 'future', format: 'micro', expected: '1m'},
+      {
+        datetime: '2022-09-24T14:46:00.000Z',
+        tense: 'future',
+        format: 'micro',
+        expected: '1m',
+      },
+      {
+        datetime: '2022-10-23T14:46:00.000Z',
+        tense: 'future',
+        format: 'micro',
+        expected: '1m',
+      },
+      {
+        datetime: '2022-10-24T13:46:00.000Z',
+        tense: 'future',
+        format: 'micro',
+        expected: '1m',
+      },
 
       // Dates in the future
-      {datetime: '2022-10-24T15:46:00.000Z', tense: 'future', format: 'micro', expected: '1h'},
-      {datetime: '2022-10-24T16:00:00.000Z', tense: 'future', format: 'micro', expected: '1h'},
-      {datetime: '2022-10-24T16:15:00.000Z', tense: 'future', format: 'micro', expected: '1h'},
-      {datetime: '2022-10-24T16:31:00.000Z', tense: 'future', format: 'micro', expected: '1h'},
-      {datetime: '2022-10-30T14:46:00.000Z', tense: 'future', format: 'micro', expected: '1w'},
-      {datetime: '2022-11-24T14:46:00.000Z', tense: 'future', format: 'micro', expected: '1m'},
-      {datetime: '2023-10-23T14:46:00.000Z', tense: 'future', format: 'micro', expected: '1y'},
-      {datetime: '2023-10-24T14:46:00.000Z', tense: 'future', format: 'micro', expected: '1y'},
-      {datetime: '2024-03-31T14:46:00.000Z', tense: 'future', format: 'micro', expected: '1y'},
-      {datetime: '2024-04-01T14:46:00.000Z', tense: 'future', format: 'micro', expected: '1y'},
+      {
+        datetime: '2022-10-24T15:46:00.000Z',
+        tense: 'future',
+        format: 'micro',
+        expected: '1h',
+      },
+      {
+        datetime: '2022-10-24T16:00:00.000Z',
+        tense: 'future',
+        format: 'micro',
+        expected: '1h',
+      },
+      {
+        datetime: '2022-10-24T16:15:00.000Z',
+        tense: 'future',
+        format: 'micro',
+        expected: '1h',
+      },
+      {
+        datetime: '2022-10-24T16:31:00.000Z',
+        tense: 'future',
+        format: 'micro',
+        expected: '1h',
+      },
+      {
+        datetime: '2022-10-30T14:46:00.000Z',
+        tense: 'future',
+        format: 'micro',
+        expected: '1w',
+      },
+      {
+        datetime: '2022-11-24T14:46:00.000Z',
+        tense: 'future',
+        format: 'micro',
+        expected: '1m',
+      },
+      {
+        datetime: '2023-10-23T14:46:00.000Z',
+        tense: 'future',
+        format: 'micro',
+        expected: '1y',
+      },
+      {
+        datetime: '2023-10-24T14:46:00.000Z',
+        tense: 'future',
+        format: 'micro',
+        expected: '1y',
+      },
+      {
+        datetime: '2024-03-31T14:46:00.000Z',
+        tense: 'future',
+        format: 'micro',
+        expected: '2y',
+      },
+      {
+        datetime: '2024-04-01T14:46:00.000Z',
+        tense: 'future',
+        format: 'micro',
+        expected: '2y',
+      },
 
       // Dates in the future
-      {datetime: '2022-11-24T14:46:00.000Z', tense: 'past', format: 'micro', expected: '1m'},
-      {datetime: '2022-10-25T14:46:00.000Z', tense: 'past', format: 'micro', expected: '1m'},
-      {datetime: '2022-10-24T15:46:00.000Z', tense: 'past', format: 'micro', expected: '1m'},
+      {
+        datetime: '2022-11-24T14:46:00.000Z',
+        tense: 'past',
+        format: 'micro',
+        expected: '1m',
+      },
+      {
+        datetime: '2022-10-25T14:46:00.000Z',
+        tense: 'past',
+        format: 'micro',
+        expected: '1m',
+      },
+      {
+        datetime: '2022-10-24T15:46:00.000Z',
+        tense: 'past',
+        format: 'micro',
+        expected: '1m',
+      },
 
       // Dates in the past
-      {datetime: '2022-10-24T13:46:00.000Z', tense: 'past', format: 'micro', expected: '1h'},
-      {datetime: '2022-10-24T13:30:00.000Z', tense: 'past', format: 'micro', expected: '1h'},
-      {datetime: '2022-10-24T13:17:00.000Z', tense: 'past', format: 'micro', expected: '1h'},
-      {datetime: '2022-10-24T13:01:00.000Z', tense: 'past', format: 'micro', expected: '1h'},
-      {datetime: '2022-10-18T14:46:00.000Z', tense: 'past', format: 'micro', expected: '1w'},
-      {datetime: '2022-09-23T14:46:00.000Z', tense: 'past', format: 'micro', expected: '1m'},
-      {datetime: '2021-10-25T14:46:00.000Z', tense: 'past', format: 'micro', expected: '1y'},
-      {datetime: '2021-10-24T14:46:00.000Z', tense: 'past', format: 'micro', expected: '1y'},
-      {datetime: '2021-05-18T14:46:00.000Z', tense: 'past', format: 'micro', expected: '1y'},
-      {datetime: '2021-05-17T14:46:00.000Z', tense: 'past', format: 'micro', expected: '1y'},
+      {
+        datetime: '2022-10-24T13:46:00.000Z',
+        tense: 'past',
+        format: 'micro',
+        expected: '1h',
+      },
+      {
+        datetime: '2022-10-24T13:30:00.000Z',
+        tense: 'past',
+        format: 'micro',
+        expected: '1h',
+      },
+      {
+        datetime: '2022-10-24T13:17:00.000Z',
+        tense: 'past',
+        format: 'micro',
+        expected: '1h',
+      },
+      {
+        datetime: '2022-10-24T13:01:00.000Z',
+        tense: 'past',
+        format: 'micro',
+        expected: '1h',
+      },
+      {
+        datetime: '2022-10-18T14:46:00.000Z',
+        tense: 'past',
+        format: 'micro',
+        expected: '1w',
+      },
+      {
+        datetime: '2022-09-23T14:46:00.000Z',
+        tense: 'past',
+        format: 'micro',
+        expected: '1m',
+      },
+      {
+        datetime: '2021-10-25T14:46:00.000Z',
+        tense: 'past',
+        format: 'micro',
+        expected: '1y',
+      },
+      {
+        datetime: '2021-10-24T14:46:00.000Z',
+        tense: 'past',
+        format: 'micro',
+        expected: '1y',
+      },
+      {
+        datetime: '2021-05-18T14:46:00.000Z',
+        tense: 'past',
+        format: 'micro',
+        expected: '1y',
+      },
+      {
+        datetime: '2021-05-17T14:46:00.000Z',
+        tense: 'past',
+        format: 'micro',
+        expected: '1y',
+      },
 
       // Elapsed Times
-      {datetime: '2022-10-24T14:46:10.000Z', format: 'elapsed', expected: '10s'},
-      {datetime: '2022-10-24T14:45:50.000Z', format: 'elapsed', expected: '10s'},
-      {datetime: '2022-10-24T14:45:50.000Z', format: 'elapsed', precision: 'minute', expected: '0m'},
-      {datetime: '2022-10-24T14:47:40.000Z', format: 'elapsed', expected: '1m 40s'},
-      {datetime: '2022-10-24T14:44:20.000Z', format: 'elapsed', expected: '1m 40s'},
-      {datetime: '2022-10-24T14:44:20.000Z', format: 'elapsed', precision: 'minute', expected: '1m'},
-      {datetime: '2022-10-24T15:51:40.000Z', format: 'elapsed', expected: '1h 5m 40s'},
-      {datetime: '2022-10-24T15:51:40.000Z', format: 'elapsed', precision: 'minute', expected: '1h 5m'},
-      {datetime: '2022-10-24T15:52:00.000Z', format: 'elapsed', expected: '1h 6m'},
-      {datetime: '2022-10-24T17:46:00.000Z', format: 'elapsed', expected: '3h'},
-      {datetime: '2022-10-24T10:46:00.000Z', format: 'elapsed', expected: '4h'},
-      {datetime: '2022-10-25T18:46:00.000Z', format: 'elapsed', expected: '1d 4h'},
-      {datetime: '2022-10-23T10:46:00.000Z', format: 'elapsed', expected: '1d 4h'},
-      {datetime: '2022-10-23T10:46:00.000Z', format: 'elapsed', precision: 'day', expected: '1d'},
-      {datetime: '2021-10-30T14:46:00.000Z', format: 'elapsed', expected: '11m 29d'},
-      {datetime: '2021-10-30T14:46:00.000Z', format: 'elapsed', precision: 'month', expected: '11m'},
-      {datetime: '2021-10-29T14:46:00.000Z', format: 'elapsed', expected: '1y'},
+      {
+        datetime: '2022-10-24T14:46:10.000Z',
+        format: 'elapsed',
+        expected: '10s',
+      },
+      {
+        datetime: '2022-10-24T14:45:50.000Z',
+        format: 'elapsed',
+        expected: '10s',
+      },
+      {
+        datetime: '2022-10-24T14:45:50.000Z',
+        format: 'elapsed',
+        precision: 'minute',
+        expected: '0m',
+      },
+      {
+        datetime: '2022-10-24T14:47:40.000Z',
+        format: 'elapsed',
+        expected: '1m 40s',
+      },
+      {
+        datetime: '2022-10-24T14:44:20.000Z',
+        format: 'elapsed',
+        expected: '1m 40s',
+      },
+      {
+        datetime: '2022-10-24T14:44:20.000Z',
+        format: 'elapsed',
+        precision: 'minute',
+        expected: '1m',
+      },
+      {
+        datetime: '2022-10-24T15:51:40.000Z',
+        format: 'elapsed',
+        expected: '1h 5m 40s',
+      },
+      {
+        datetime: '2022-10-24T15:51:40.000Z',
+        format: 'elapsed',
+        precision: 'minute',
+        expected: '1h 5m',
+      },
+      {
+        datetime: '2022-10-24T15:52:00.000Z',
+        format: 'elapsed',
+        expected: '1h 6m',
+      },
+      {
+        datetime: '2022-10-24T17:46:00.000Z',
+        format: 'elapsed',
+        expected: '3h',
+      },
+      {
+        datetime: '2022-10-24T10:46:00.000Z',
+        format: 'elapsed',
+        expected: '4h',
+      },
+      {
+        datetime: '2022-10-25T18:46:00.000Z',
+        format: 'elapsed',
+        expected: '1d 4h',
+      },
+      {
+        datetime: '2022-10-23T10:46:00.000Z',
+        format: 'elapsed',
+        expected: '1d 4h',
+      },
+      {
+        datetime: '2022-10-23T10:46:00.000Z',
+        format: 'elapsed',
+        precision: 'day',
+        expected: '1d',
+      },
+      {
+        datetime: '2021-10-30T14:46:00.000Z',
+        format: 'elapsed',
+        expected: '11m 29d',
+      },
+      {
+        datetime: '2021-10-30T14:46:00.000Z',
+        format: 'elapsed',
+        precision: 'month',
+        expected: '11m',
+      },
+      {
+        datetime: '2021-10-29T14:46:00.000Z',
+        format: 'elapsed',
+        expected: '1y',
+      },
 
       // Dates in the past
-      {datetime: '2022-09-24T14:46:00.000Z', tense: 'future', format: 'auto', expected: 'now'},
-      {datetime: '2022-10-23T14:46:00.000Z', tense: 'future', format: 'auto', expected: 'now'},
-      {datetime: '2022-10-24T13:46:00.000Z', tense: 'future', format: 'auto', expected: 'now'},
+      {
+        datetime: '2022-09-24T14:46:00.000Z',
+        tense: 'future',
+        format: 'auto',
+        expected: 'now',
+      },
+      {
+        datetime: '2022-10-23T14:46:00.000Z',
+        tense: 'future',
+        format: 'auto',
+        expected: 'now',
+      },
+      {
+        datetime: '2022-10-24T13:46:00.000Z',
+        tense: 'future',
+        format: 'auto',
+        expected: 'now',
+      },
 
       // Dates in the future
-      {datetime: '2022-10-24T15:46:00.000Z', tense: 'future', format: 'auto', expected: 'in 1 hour'},
-      {datetime: '2022-10-24T16:00:00.000Z', tense: 'future', format: 'auto', expected: 'in 1 hour'},
-      {datetime: '2022-10-24T16:15:00.000Z', tense: 'future', format: 'auto', expected: 'in 1 hour'},
-      {datetime: '2022-10-24T16:31:00.000Z', tense: 'future', format: 'auto', expected: 'in 1 hour'},
-      {datetime: '2022-10-30T14:46:00.000Z', tense: 'future', format: 'auto', expected: 'next week'},
-      {datetime: '2022-11-24T14:46:00.000Z', tense: 'future', format: 'auto', expected: 'next month'},
-      {datetime: '2023-10-23T14:46:00.000Z', tense: 'future', format: 'auto', expected: 'next year'},
-      {datetime: '2023-10-24T14:46:00.000Z', tense: 'future', format: 'auto', expected: 'next year'},
-      {datetime: '2024-03-31T14:46:00.000Z', tense: 'future', format: 'auto', expected: 'next year'},
-      {datetime: '2024-04-01T14:46:00.000Z', tense: 'future', format: 'auto', expected: 'next year'},
-      {datetime: '2022-10-24T15:46:00.000Z', lang: 'en', tense: 'future', formatStyle: 'narrow', expected: 'in 1 hr.'},
-      {datetime: '2022-10-24T16:00:00.000Z', lang: 'en', tense: 'future', formatStyle: 'narrow', expected: 'in 1 hr.'},
-      {datetime: '2022-10-24T16:15:00.000Z', lang: 'en', tense: 'future', formatStyle: 'narrow', expected: 'in 1 hr.'},
-      {datetime: '2022-10-24T16:31:00.000Z', lang: 'en', tense: 'future', formatStyle: 'narrow', expected: 'in 1 hr.'},
-      {datetime: '2022-10-30T14:46:00.000Z', lang: 'en', tense: 'future', formatStyle: 'narrow', expected: 'next wk.'},
-      {datetime: '2022-11-24T14:46:00.000Z', lang: 'en', tense: 'future', formatStyle: 'narrow', expected: 'next mo.'},
-      {datetime: '2023-10-23T14:46:00.000Z', lang: 'en', tense: 'future', formatStyle: 'narrow', expected: 'next yr.'},
-      {datetime: '2023-10-24T14:46:00.000Z', lang: 'en', tense: 'future', formatStyle: 'narrow', expected: 'next yr.'},
-      {datetime: '2024-03-31T14:46:00.000Z', lang: 'en', tense: 'future', formatStyle: 'narrow', expected: 'next yr.'},
-      {datetime: '2024-04-01T14:46:00.000Z', lang: 'en', tense: 'future', formatStyle: 'narrow', expected: 'next yr.'},
+      {
+        datetime: '2022-10-24T15:46:00.000Z',
+        tense: 'future',
+        format: 'auto',
+        expected: 'in 1 hour',
+      },
+      {
+        datetime: '2022-10-24T16:00:00.000Z',
+        tense: 'future',
+        format: 'auto',
+        expected: 'in 1 hour',
+      },
+      {
+        datetime: '2022-10-24T16:15:00.000Z',
+        tense: 'future',
+        format: 'auto',
+        expected: 'in 1 hour',
+      },
+      {
+        datetime: '2022-10-24T16:31:00.000Z',
+        tense: 'future',
+        format: 'auto',
+        expected: 'in 1 hour',
+      },
+      {
+        datetime: '2022-10-30T14:46:00.000Z',
+        tense: 'future',
+        format: 'auto',
+        expected: 'next week',
+      },
+      {
+        datetime: '2022-11-24T14:46:00.000Z',
+        tense: 'future',
+        format: 'auto',
+        expected: 'next month',
+      },
+      {
+        datetime: '2023-10-23T14:46:00.000Z',
+        tense: 'future',
+        format: 'auto',
+        expected: 'next year',
+      },
+      {
+        datetime: '2023-10-24T14:46:00.000Z',
+        tense: 'future',
+        format: 'auto',
+        expected: 'next year',
+      },
+      {
+        datetime: '2024-03-31T14:46:00.000Z',
+        tense: 'future',
+        format: 'auto',
+        expected: 'in 2 years',
+      },
+      {
+        datetime: '2024-04-01T14:46:00.000Z',
+        tense: 'future',
+        format: 'auto',
+        expected: 'in 2 years',
+      },
+      {
+        datetime: '2022-10-24T15:46:00.000Z',
+        lang: 'en',
+        tense: 'future',
+        formatStyle: 'narrow',
+        expected: 'in 1 hr.',
+      },
+      {
+        datetime: '2022-10-24T16:00:00.000Z',
+        lang: 'en',
+        tense: 'future',
+        formatStyle: 'narrow',
+        expected: 'in 1 hr.',
+      },
+      {
+        datetime: '2022-10-24T16:15:00.000Z',
+        lang: 'en',
+        tense: 'future',
+        formatStyle: 'narrow',
+        expected: 'in 1 hr.',
+      },
+      {
+        datetime: '2022-10-24T16:31:00.000Z',
+        lang: 'en',
+        tense: 'future',
+        formatStyle: 'narrow',
+        expected: 'in 1 hr.',
+      },
+      {
+        datetime: '2022-10-30T14:46:00.000Z',
+        lang: 'en',
+        tense: 'future',
+        formatStyle: 'narrow',
+        expected: 'next wk.',
+      },
+      {
+        datetime: '2022-11-24T14:46:00.000Z',
+        lang: 'en',
+        tense: 'future',
+        formatStyle: 'narrow',
+        expected: 'next mo.',
+      },
+      {
+        datetime: '2023-10-23T14:46:00.000Z',
+        lang: 'en',
+        tense: 'future',
+        formatStyle: 'narrow',
+        expected: 'next yr.',
+      },
+      {
+        datetime: '2023-10-24T14:46:00.000Z',
+        lang: 'en',
+        tense: 'future',
+        formatStyle: 'narrow',
+        expected: 'next yr.',
+      },
+      {
+        datetime: '2024-03-31T14:46:00.000Z',
+        lang: 'en',
+        tense: 'future',
+        formatStyle: 'narrow',
+        expected: 'in 2 yr.',
+      },
+      {
+        datetime: '2024-04-01T14:46:00.000Z',
+        lang: 'en',
+        tense: 'future',
+        formatStyle: 'narrow',
+        expected: 'in 2 yr.',
+      },
 
       // Dates in the future
-      {datetime: '2022-11-24T14:46:00.000Z', tense: 'past', format: 'auto', expected: 'now'},
-      {datetime: '2022-10-25T14:46:00.000Z', tense: 'past', format: 'auto', expected: 'now'},
-      {datetime: '2022-10-24T15:46:00.000Z', tense: 'past', format: 'auto', expected: 'now'},
+      {
+        datetime: '2022-11-24T14:46:00.000Z',
+        tense: 'past',
+        format: 'auto',
+        expected: 'now',
+      },
+      {
+        datetime: '2022-10-25T14:46:00.000Z',
+        tense: 'past',
+        format: 'auto',
+        expected: 'now',
+      },
+      {
+        datetime: '2022-10-24T15:46:00.000Z',
+        tense: 'past',
+        format: 'auto',
+        expected: 'now',
+      },
 
       // Dates in the past
-      {datetime: '2022-10-24T13:46:00.000Z', tense: 'past', format: 'auto', expected: '1 hour ago'},
-      {datetime: '2022-10-24T13:30:00.000Z', tense: 'past', format: 'auto', expected: '1 hour ago'},
-      {datetime: '2022-10-24T13:17:00.000Z', tense: 'past', format: 'auto', expected: '1 hour ago'},
-      {datetime: '2022-10-24T13:01:00.000Z', tense: 'past', format: 'auto', expected: '1 hour ago'},
-      {datetime: '2022-10-18T14:46:00.000Z', tense: 'past', format: 'auto', expected: 'last week'},
-      {datetime: '2022-09-23T14:46:00.000Z', tense: 'past', format: 'auto', expected: 'last month'},
-      {datetime: '2021-10-25T14:46:00.000Z', tense: 'past', format: 'auto', expected: 'last year'},
-      {datetime: '2021-10-24T14:46:00.000Z', tense: 'past', format: 'auto', expected: 'last year'},
-      {datetime: '2021-05-18T14:46:00.000Z', tense: 'past', format: 'auto', expected: 'last year'},
-      {datetime: '2021-05-17T14:46:00.000Z', tense: 'past', format: 'auto', expected: 'last year'},
-      {datetime: '2022-10-24T13:46:00.000Z', lang: 'en', tense: 'past', formatStyle: 'narrow', expected: '1 hr. ago'},
-      {datetime: '2022-10-24T13:30:00.000Z', lang: 'en', tense: 'past', formatStyle: 'narrow', expected: '1 hr. ago'},
-      {datetime: '2022-10-24T13:17:00.000Z', lang: 'en', tense: 'past', formatStyle: 'narrow', expected: '1 hr. ago'},
-      {datetime: '2022-10-24T13:01:00.000Z', lang: 'en', tense: 'past', formatStyle: 'narrow', expected: '1 hr. ago'},
-      {datetime: '2022-10-18T14:46:00.000Z', lang: 'en', tense: 'past', formatStyle: 'narrow', expected: 'last wk.'},
-      {datetime: '2022-09-23T14:46:00.000Z', lang: 'en', tense: 'past', formatStyle: 'narrow', expected: 'last mo.'},
-      {datetime: '2021-10-25T14:46:00.000Z', lang: 'en', tense: 'past', formatStyle: 'narrow', expected: 'last yr.'},
-      {datetime: '2021-10-24T14:46:00.000Z', lang: 'en', tense: 'past', formatStyle: 'narrow', expected: 'last yr.'},
-      {datetime: '2021-05-18T14:46:00.000Z', lang: 'en', tense: 'past', formatStyle: 'narrow', expected: 'last yr.'},
-      {datetime: '2021-05-17T14:46:00.000Z', lang: 'en', tense: 'past', formatStyle: 'narrow', expected: 'last yr.'},
+      {
+        datetime: '2022-10-24T13:46:00.000Z',
+        tense: 'past',
+        format: 'auto',
+        expected: '1 hour ago',
+      },
+      {
+        datetime: '2022-10-24T13:30:00.000Z',
+        tense: 'past',
+        format: 'auto',
+        expected: '1 hour ago',
+      },
+      {
+        datetime: '2022-10-24T13:17:00.000Z',
+        tense: 'past',
+        format: 'auto',
+        expected: '1 hour ago',
+      },
+      {
+        datetime: '2022-10-24T13:01:00.000Z',
+        tense: 'past',
+        format: 'auto',
+        expected: '1 hour ago',
+      },
+      {
+        datetime: '2022-10-18T14:46:00.000Z',
+        tense: 'past',
+        format: 'auto',
+        expected: 'last week',
+      },
+      {
+        datetime: '2022-09-23T14:46:00.000Z',
+        tense: 'past',
+        format: 'auto',
+        expected: 'last month',
+      },
+      {
+        datetime: '2021-10-25T14:46:00.000Z',
+        tense: 'past',
+        format: 'auto',
+        expected: 'last year',
+      },
+      {
+        datetime: '2021-10-24T14:46:00.000Z',
+        tense: 'past',
+        format: 'auto',
+        expected: 'last year',
+      },
+      {
+        datetime: '2021-05-18T14:46:00.000Z',
+        tense: 'past',
+        format: 'auto',
+        expected: 'last year',
+      },
+      {
+        datetime: '2021-05-17T14:46:00.000Z',
+        tense: 'past',
+        format: 'auto',
+        expected: 'last year',
+      },
+      {
+        datetime: '2022-10-24T13:46:00.000Z',
+        lang: 'en',
+        tense: 'past',
+        formatStyle: 'narrow',
+        expected: '1 hr. ago',
+      },
+      {
+        datetime: '2022-10-24T13:30:00.000Z',
+        lang: 'en',
+        tense: 'past',
+        formatStyle: 'narrow',
+        expected: '1 hr. ago',
+      },
+      {
+        datetime: '2022-10-24T13:17:00.000Z',
+        lang: 'en',
+        tense: 'past',
+        formatStyle: 'narrow',
+        expected: '1 hr. ago',
+      },
+      {
+        datetime: '2022-10-24T13:01:00.000Z',
+        lang: 'en',
+        tense: 'past',
+        formatStyle: 'narrow',
+        expected: '1 hr. ago',
+      },
+      {
+        datetime: '2022-10-18T14:46:00.000Z',
+        lang: 'en',
+        tense: 'past',
+        formatStyle: 'narrow',
+        expected: 'last wk.',
+      },
+      {
+        datetime: '2022-09-23T14:46:00.000Z',
+        lang: 'en',
+        tense: 'past',
+        formatStyle: 'narrow',
+        expected: 'last mo.',
+      },
+      {
+        datetime: '2021-10-25T14:46:00.000Z',
+        lang: 'en',
+        tense: 'past',
+        formatStyle: 'narrow',
+        expected: 'last yr.',
+      },
+      {
+        datetime: '2021-10-24T14:46:00.000Z',
+        lang: 'en',
+        tense: 'past',
+        formatStyle: 'narrow',
+        expected: 'last yr.',
+      },
+      {
+        datetime: '2021-05-18T14:46:00.000Z',
+        lang: 'en',
+        tense: 'past',
+        formatStyle: 'narrow',
+        expected: 'last yr.',
+      },
+      {
+        datetime: '2021-05-17T14:46:00.000Z',
+        lang: 'en',
+        tense: 'past',
+        formatStyle: 'narrow',
+        expected: 'last yr.',
+      },
 
       // Edge case dates
       {
@@ -1119,14 +2328,21 @@ suite('relative-time', function () {
         datetime: '2024-03-01T12:00:00.000Z',
         tense: 'future',
         format: 'auto',
-        expected: 'next year',
+        expected: 'in 2 years',
       },
       {
         reference: '2022-12-31T12:00:00.000Z',
         datetime: '2024-03-01T12:00:00.000Z',
         tense: 'future',
         format: 'micro',
-        expected: '1y',
+        expected: '2y',
+      },
+      {
+        reference: '2021-04-24T12:00:00.000Z',
+        datetime: '2023-02-01T12:00:00.000Z',
+        tense: 'future',
+        format: 'micro',
+        expected: '2y',
       },
     ])
 
@@ -1140,9 +2356,13 @@ suite('relative-time', function () {
       lang,
       reference = referenceDate,
     } of tests) {
-      const attrs = Object.entries({datetime, tense, format, formatStyle, precision}).map(([k, v]) =>
-        v ? `${k}="${v}"` : '',
-      )
+      const attrs = Object.entries({
+        datetime,
+        tense,
+        format,
+        formatStyle,
+        precision,
+      }).map(([k, v]) => (v ? `${k}="${v}"` : ''))
       test(`<relative-time ${attrs.join(' ')}> => ${expected}`, async () => {
         freezeTime(new Date(reference))
         const time = document.createElement('relative-time')
