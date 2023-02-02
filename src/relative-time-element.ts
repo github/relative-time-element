@@ -450,8 +450,6 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
       this.#renderRoot.textContent = this.textContent
     }
 
-    this.setAttribute('aria-label', `${this.#renderRoot.textContent} (${this.getAttribute('title')})`)
-
     if (newText !== oldText || newTitle !== oldTitle) {
       this.dispatchEvent(new RelativeTimeUpdatedEvent(oldText, newText, oldTitle, newTitle))
     }
