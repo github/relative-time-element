@@ -150,20 +150,29 @@ export function roundToSingleUnit(duration: Duration, {relativeTo = Date.now()}:
   if (hours >= 21) days += Math.round(hours / 24)
   if (days || weeks || months || years) hours = 0
 
+  const currentYear = relativeTo.getFullYear()
+  let currentMonth = relativeTo.getMonth()
+  const currentDate = relativeTo.getDate()
+  if (days >= 27 || (years + months && days)) {
+    relativeTo.setDate(currentDate + days * sign)
+    days = 0
+    months += Math.abs(
+      relativeTo.getFullYear() >= currentYear
+        ? relativeTo.getMonth() - currentMonth
+        : relativeTo.getMonth() - currentMonth - 12,
+    )
+    currentMonth = relativeTo.getMonth()
+  }
+
   if (days >= 6) weeks += Math.round(days / 7)
   if (weeks || months || years) days = 0
 
   if (weeks >= 4) months += Math.round(weeks / 4)
   if (months || years) weeks = 0
 
-  const currentMonth = relativeTo.getMonth()
-  const delta = sign < 0 ? currentMonth : 12 - currentMonth
-  if (months && months >= delta) {
-    years += 1
-    relativeTo.setFullYear(relativeTo.getFullYear() + sign)
-    relativeTo.setMonth(0)
-    months -= delta
-    years += Math.floor(months / 12)
+  if (months >= 11 || (years && months)) {
+    relativeTo.setMonth(relativeTo.getMonth() + months * sign)
+    years += Math.abs(currentYear - relativeTo.getFullYear())
   }
   if (years) months = 0
 
