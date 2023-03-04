@@ -155,12 +155,14 @@ export function roundToSingleUnit(duration: Duration, {relativeTo = Date.now()}:
   const currentDate = relativeTo.getDate()
   if (days >= 27 || (years + months && days)) {
     relativeTo.setDate(currentDate + days * sign)
-    days = 0
     months += Math.abs(
       relativeTo.getFullYear() >= currentYear
         ? relativeTo.getMonth() - currentMonth
         : relativeTo.getMonth() - currentMonth - 12,
     )
+    if (months) {
+      days = 0
+    }
     currentMonth = relativeTo.getMonth()
   }
 
