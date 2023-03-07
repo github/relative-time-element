@@ -301,6 +301,7 @@ suite('duration', function () {
           relativeTo: new Date('2022-01-01T00:00:00Z'),
         },
       ],
+      ['-P27D', '-P1M', {relativeTo: new Date('2023-02-28T00:00:00Z')}],
     ])
     for (const [input, expected, opts] of roundTests) {
       test(`roundToSingleUnit(${input}) === ${expected}`, () => {
