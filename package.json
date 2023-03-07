@@ -30,7 +30,7 @@
     "manifest": "custom-elements-manifest analyze"
   },
   "prettier": "@github/prettier-config",
-  "repository": "github/time-elements",
+  "repository": "github/relative-time-element",
   "devDependencies": {
     "@custom-elements-manifest/analyzer": "^0.6.4",
     "@github/prettier-config": "^0.0.6",
