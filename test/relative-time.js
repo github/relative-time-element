@@ -1752,6 +1752,13 @@ suite('relative-time', function () {
         tense: 'past',
         expected: '2 years, 10 days',
       },
+      {
+        reference: '2023-03-23T12:03:00.000Z',
+        datetime: '2023-03-21T16:03:00.000Z',
+        format: 'relative',
+        tense: 'past',
+        expected: '2 days ago',
+      },
     ])
 
     for (const {

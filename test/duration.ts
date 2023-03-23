@@ -215,6 +215,11 @@ suite('duration', function () {
         input: '2021-10-29T14:46:00.000Z',
         expected: '-P1Y',
       },
+      {
+        now: '2023-03-23T12:03:00.000Z',
+        input: '2023-03-21T16:03:00.000Z',
+        expected: '-P1DT20H',
+      },
     ])
     for (const {input, now, precision = 'millisecond', expected} of elapsed) {
       test(`${input} is ${expected} elapsed from ${now} (precision ${precision})`, () => {
@@ -235,6 +240,8 @@ suite('duration', function () {
       ['PT1H55M', 'PT2H'],
       ['PT20H', 'PT20H'],
       ['PT21H', 'P1D'],
+      ['P1DT20H', 'P2D'],
+      ['P1DT18H', 'P2D'],
       ['P4D', 'P4D', {relativeTo: new Date('2023-07-01T00:00:00')}],
       ['-P4D', '-P4D', {relativeTo: new Date('2023-07-01T00:00:00')}],
       ['P6D', 'P1W', {relativeTo: new Date('2023-07-01T00:00:00')}],
