@@ -147,7 +147,8 @@ export function roundToSingleUnit(duration: Duration, {relativeTo = Date.now()}:
   if (minutes >= 55) hours += Math.round(minutes / 60)
   if (hours || days || weeks || months || years) minutes = 0
 
-  if (hours >= 21) days += Math.round(hours / 24)
+  if (days && hours >= 12) days += Math.round(hours / 24)
+  if (!days && hours >= 21) days += Math.round(hours / 24)
   if (days || weeks || months || years) hours = 0
 
   const currentYear = relativeTo.getFullYear()

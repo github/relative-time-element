@@ -475,13 +475,14 @@ suite('relative-time', function () {
     })
 
     test('micro formats years', async () => {
-      const now = new Date(Date.now() - 10 * 365 * 24 * 60 * 60 * 1000).toISOString()
+      const datetime = new Date()
+      datetime.setFullYear(datetime.getFullYear() - 10)
       const time = document.createElement('relative-time')
       time.setAttribute('tense', 'past')
-      time.setAttribute('datetime', now)
+      time.setAttribute('datetime', datetime)
       time.setAttribute('format', 'micro')
       await Promise.resolve()
-      assert.equal(time.shadowRoot.textContent, '11y')
+      assert.equal(time.shadowRoot.textContent, '10y')
     })
 
     test('micro formats future times', async () => {
@@ -1751,6 +1752,13 @@ suite('relative-time', function () {
         format: 'duration',
         tense: 'past',
         expected: '2 years, 10 days',
+      },
+      {
+        reference: '2023-03-23T12:03:00.000Z',
+        datetime: '2023-03-21T16:03:00.000Z',
+        format: 'relative',
+        tense: 'past',
+        expected: '2 days ago',
       },
     ])
 
