@@ -1,6 +1,5 @@
 import {Duration, elapsedTime, getRelativeTimeUnit, isDuration, roundToSingleUnit, Unit, unitNames} from './duration.js'
-const root = (typeof globalThis !== 'undefined' ? globalThis : window) as typeof window
-const HTMLElement = root.HTMLElement || (null as unknown as typeof window['HTMLElement'])
+const HTMLElement = globalThis.HTMLElement || (null as unknown as typeof window['HTMLElement'])
 
 export type DeprecatedFormat = 'auto' | 'micro' | 'elapsed'
 export type ResolvedFormat = 'duration' | 'relative' | 'datetime'
@@ -73,7 +72,12 @@ const dateObserver = new (class {
   }
 })()
 
-export default class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFormatOptions {
+export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFormatOptions {
+  static define(tag = 'relative-time', registry = customElements) {
+    registry.define(tag, this)
+    return this
+  }
+
   #customTitle = false
   #updating: false | Promise<void> = false
 
@@ -462,3 +466,5 @@ export default class RelativeTimeElement extends HTMLElement implements Intl.Dat
     this.#updating = false
   }
 }
+
+export default RelativeTimeElement

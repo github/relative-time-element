@@ -1,9 +1,8 @@
-import RelativeTimeElement from './relative-time-element.js'
+import {RelativeTimeElement} from './relative-time-element.js'
 
 const root = (typeof globalThis !== 'undefined' ? globalThis : window) as typeof window
 try {
-  customElements.define('relative-time', RelativeTimeElement)
-  root.RelativeTimeElement = RelativeTimeElement
+  root.RelativeTimeElement = RelativeTimeElement.define()
 } catch (e: unknown) {
   if (
     !(root.DOMException && e instanceof DOMException && e.name === 'NotSupportedError') &&
