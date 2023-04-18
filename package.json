@@ -39,7 +39,7 @@
     "@web/dev-server-esbuild": "^0.3.6",
     "@web/test-runner": "^0.15.3",
     "@web/test-runner-playwright": "^0.9.0",
-    "esbuild": "^0.15.18",
+    "esbuild": "^0.17.17",
     "eslint": "^8.38.0",
     "eslint-plugin-custom-elements": "^0.0.8",
     "eslint-plugin-github": "^4.7.0",
