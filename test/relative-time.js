@@ -2432,6 +2432,46 @@ suite('relative-time', function () {
         format: 'micro',
         expected: '2y',
       },
+      {
+        reference: 'Thu Jul 06 2023 17:11:17 GMT+0100 (British Summer Time)',
+        datetime: '2023-07-06T16:11:17.774Z',
+        tense: 'past',
+        format: 'relative',
+        precision: 'minute',
+        expected: 'now',
+      },
+      {
+        reference: '2023-07-06T16:11:17.000Z',
+        datetime: '2023-07-06T16:11:17.774Z',
+        tense: 'past',
+        format: 'relative',
+        precision: 'minute',
+        expected: 'now',
+      },
+      {
+        reference: '2023-07-06T16:11:30.000Z',
+        datetime: '2023-07-06T16:11:17.774Z',
+        tense: 'past',
+        format: 'relative',
+        precision: 'minute',
+        expected: 'now',
+      },
+      {
+        reference: '2023-07-06T16:11:59.000Z',
+        datetime: '2023-07-06T16:11:17.774Z',
+        tense: 'past',
+        format: 'relative',
+        precision: 'minute',
+        expected: 'now',
+      },
+      {
+        reference: '2023-07-06T16:12:50.000Z',
+        datetime: '2023-07-06T16:11:17.774Z',
+        tense: 'past',
+        format: 'relative',
+        precision: 'minute',
+        expected: '1 minute ago',
+      },
     ])
 
     for (const {
