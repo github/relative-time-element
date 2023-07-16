@@ -65,7 +65,7 @@ So, a relative date phrase is used for up to a month and then the actual date is
 | Property Name  | Attribute Name   | Possible Values                                                                             | Default Value                    |
 |:---------------|:-----------------|:--------------------------------------------------------------------------------------------|:---------------------------------|
 | `datetime`     | `datetime`       | `string`                                                                                    | -                                |
-| `format`       | `format`         | `'datetime'\|'relative'\|'duration'`                                                        | `'auto'`                           |
+| `format`       | `format`         | `'datetime'\|'relative'\|'duration'`                                                        | `'auto'`                         |
 | `date`         | -                | `Date \| null`                                                                              | -                                |
 | `tense`        | `tense`          | `'auto'\|'past'\|'future'`                                                                  | `'auto'`                         |
 | `precision`    | `precision`      | `'year'\|'month'\|'day'\|'hour'\|'minute'\|'second'`                                        | `'second'`                       |
@@ -83,7 +83,7 @@ So, a relative date phrase is used for up to a month and then the actual date is
 
 <sup>*</sup>: If unspecified, `formatStyle` will return `'narrow'` if `format` is `'elapsed'` or `'micro'`, `'short'` if the format is `'relative'` or `'datetime'`, otherwise it will be `'long'`.
 
-<sup>**</sup>: If unspecified, `month` will return the same value as `formatStyle` whenever `format` is `'datetime'`, otherwise it wil be `'short'`.
+<sup>**</sup>: If unspecified, `month` will return the same value as `formatStyle` whenever `format` is `'datetime'`, otherwise it will be `'short'`.
 
 <sup>***</sup>: If unspecified, `weekday` will return the same value as `formatStyle` whenever `format` is `'datetime'`, otherwise it will be `undefined`.
 
@@ -122,7 +122,7 @@ Unless specified, it will consider `weekday` to be `'long'`, `month` to be `'lon
 
 ###### `format=relative`
 
-The default `relative` format will display dates relative to the current time (unless they are past the `threshold` value - see below). The values are rounded to display a single unit, for example if the time between the given `datetime` and the current wall clock time exceeds a day, then the format will _only_ ouput in days, and will not display hours, minutes or seconds. Some examples of this format with the default options and an `en` locale:
+The default `relative` format will display dates relative to the current time (unless they are past the `threshold` value - see below). The values are rounded to display a single unit, for example if the time between the given `datetime` and the current wall clock time exceeds a day, then the format will _only_ output in days, and will not display hours, minutes or seconds. Some examples of this format with the default options and an `en` locale:
 
  - `in 20 days`
  - `20 days ago`
@@ -146,7 +146,7 @@ This is similar to the `format=duration`, except the `formatStyle` defaults to `
 
 ###### `format=auto`
 
-This is identical to `format=relative`. Code that uses `format=auto` should migrae to `format=relative` as this will be the new default in a later version.
+This is identical to `format=relative`. Code that uses `format=auto` should migrate to `format=relative` as this will be the new default in a later version.
 
 ###### `format=micro`
 
