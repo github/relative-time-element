@@ -482,7 +482,7 @@ suite('relative-time', function () {
       time.setAttribute('datetime', datetime)
       time.setAttribute('format', 'micro')
       await Promise.resolve()
-      assert.equal(time.shadowRoot.textContent, '10y')
+      assert.equal(time.shadowRoot.textContent, '11y')
     })
 
     test('micro formats future times', async () => {
@@ -2416,14 +2416,14 @@ suite('relative-time', function () {
         datetime: '2024-03-01T12:00:00.000Z',
         tense: 'future',
         format: 'auto',
-        expected: 'in 3 years',
+        expected: 'in 2 years',
       },
       {
         reference: '2022-12-31T12:00:00.000Z',
         datetime: '2024-03-01T12:00:00.000Z',
         tense: 'future',
         format: 'micro',
-        expected: '3y',
+        expected: '2y',
       },
       {
         reference: '2021-04-24T12:00:00.000Z',
@@ -2431,6 +2431,13 @@ suite('relative-time', function () {
         tense: 'future',
         format: 'micro',
         expected: '2y',
+      },
+      {
+        reference: '2024-01-04T12:00:00.000Z',
+        datetime: '2020-02-16T16:16:41.000Z',
+        tense: 'past',
+        format: 'auto',
+        expected: '4 years ago',
       },
     ])
 
