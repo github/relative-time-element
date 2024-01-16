@@ -293,6 +293,7 @@ suite('duration', function () {
       ['P9M20DT25H', 'P10M', {relativeTo: new Date('2023-01-12T00:00:00Z')}],
       ['P11M', 'P1Y', {relativeTo: new Date('2022-11-01T00:00:00Z')}],
       ['-P11M', '-P1Y', {relativeTo: new Date('2022-11-01T00:00:00Z')}],
+      ['-P11M15D', '-P1Y', {relativeTo: new Date('2024-01-06T00:00:00')}],
       ['P1Y4D', 'P1Y', {relativeTo: new Date('2022-11-01T00:00:00Z')}],
       ['P1Y5M13D', 'P1Y', {relativeTo: new Date('2023-01-01T00:00:00Z')}],
       ['P1Y5M15D', 'P1Y', {relativeTo: new Date('2023-01-01T00:00:00Z')}],
@@ -308,7 +309,12 @@ suite('duration', function () {
           relativeTo: new Date('2022-01-01T00:00:00Z'),
         },
       ],
-      ['-P27D', '-P1M', {relativeTo: new Date('2023-02-28T00:00:00Z')}],
+      ['-P27D', '-P27D', {relativeTo: new Date('2023-02-28T00:00:00Z')}],
+      ['-P27D', '-P1M', {relativeTo: new Date('2023-02-27T00:00:00Z')}],
+      ['P1Y2M1D', 'P2Y', {relativeTo: new Date('2022-12-31T12:00:00.000Z')}],
+      ['-P1Y8D', '-P1Y', {relativeTo: new Date('2024-01-11T12:00:00.000Z')}],
+      ['-P1Y7DT19H43M19S', '-P1Y', {relativeTo: new Date('2024-01-11T12:00:00.000Z')}],
+      ['-P1Y11D', '-P2Y', {relativeTo: new Date('2024-01-11T12:00:00.000Z')}],
     ])
     for (const [input, expected, opts] of roundTests) {
       test(`roundToSingleUnit(${input}) === ${expected}`, () => {

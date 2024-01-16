@@ -151,33 +151,45 @@ export function roundToSingleUnit(duration: Duration, {relativeTo = Date.now()}:
   if (!days && hours >= 21) days += Math.round(hours / 24)
   if (days || weeks || months || years) hours = 0
 
+  // Resolve calendar dates
   const currentYear = relativeTo.getFullYear()
   let currentMonth = relativeTo.getMonth()
   const currentDate = relativeTo.getDate()
-  if (days >= 27 || (years + months && days)) {
-    relativeTo.setDate(currentDate + days * sign)
-    months += Math.abs(
-      relativeTo.getFullYear() >= currentYear
-        ? relativeTo.getMonth() - currentMonth
-        : relativeTo.getMonth() - currentMonth - 12,
-    )
-    if (months) {
-      days = 0
+  if (days >= 27 || years + months + days) {
+    const newDate = new Date(relativeTo)
+    newDate.setFullYear(currentYear + years * sign)
+    newDate.setMonth(currentMonth + months * sign)
+    newDate.setDate(currentDate + days * sign)
+    const yearDiff = newDate.getFullYear() - relativeTo.getFullYear()
+    const monthDiff = newDate.getMonth() - relativeTo.getMonth()
+    const daysDiff = Math.abs(Math.round((Number(newDate) - Number(relativeTo)) / 86400000))
+    const monthsDiff = Math.abs(yearDiff * 12 + monthDiff)
+    if (daysDiff < 27) {
+      if (days >= 6) {
+        weeks += Math.round(days / 7)
+        days = 0
+      } else {
+        days = daysDiff
+      }
+      months = years = 0
+    } else if (monthsDiff < 11) {
+      months = monthsDiff
+      years = 0
+    } else {
+      months = 0
+      years = yearDiff * sign
     }
+    if (months || years) days = 0
     currentMonth = relativeTo.getMonth()
   }
-
-  if (days >= 6) weeks += Math.round(days / 7)
-  if (weeks || months || years) days = 0
+  if (years) months = 0
 
   if (weeks >= 4) months += Math.round(weeks / 4)
   if (months || years) weeks = 0
-
-  if (months >= 11 || (years && months)) {
-    relativeTo.setMonth(relativeTo.getMonth() + months * sign)
-    years += Math.abs(currentYear - relativeTo.getFullYear())
+  if (days && weeks && !months && !years) {
+    weeks += Math.round(days / 7)
+    days = 0
   }
-  if (years) months = 0
 
   return new Duration(
     years * sign,
