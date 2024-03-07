@@ -85,7 +85,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     return (
       this.closest('[lang]')?.getAttribute('lang') ||
       this.ownerDocument.documentElement.getAttribute('lang') ||
-      'default'
+      'unknown'
     )
   }
 

@@ -266,7 +266,7 @@ For dates outside of the specified `threshold`, the formatting of the date can b
 
 ##### lang
 
-Lang is a [built-in global attribute](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/lang). Relative Time will use this to provide an applicable language to the `Intl` APIs. If the individual element does not have a `lang` attribute then it will traverse upwards in the tree to find the closest element that does, or default the lang to `en`.
+Lang is a [built-in global attribute](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/lang). Relative Time will use this to provide an applicable language to the `Intl` APIs. If the individual element does not have a `lang` attribute then it will traverse upwards in the tree to find the closest element that does, or default the lang to `unknown`.
 
 ## Browser Support
 
