@@ -1,5 +1,5 @@
 import {Duration, elapsedTime, getRelativeTimeUnit, isDuration, roundToSingleUnit, Unit, unitNames} from './duration.js'
-const HTMLElement = globalThis.HTMLElement || (null as unknown as typeof window['HTMLElement'])
+const HTMLElement = globalThis.HTMLElement || (null as unknown as (typeof window)['HTMLElement'])
 
 export type DeprecatedFormat = 'auto' | 'micro' | 'elapsed'
 export type ResolvedFormat = 'duration' | 'relative' | 'datetime'
@@ -11,7 +11,12 @@ const emptyDuration = new Duration()
 const microEmptyDuration = new Duration(0, 0, 0, 0, 0, 1)
 
 export class RelativeTimeUpdatedEvent extends Event {
-  constructor(public oldText: string, public newText: string, public oldTitle: string, public newTitle: string) {
+  constructor(
+    public oldText: string,
+    public newText: string,
+    public oldTitle: string,
+    public newTitle: string,
+  ) {
     super('relative-time-updated', {bubbles: true, composed: true})
   }
 }

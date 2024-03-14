@@ -108,8 +108,8 @@ export default class DurationFormat {
         unitStyle === '2-digit'
           ? twoDigitFormatOptions
           : unitStyle === 'numeric'
-          ? {}
-          : {style: 'unit', unit: nfUnit, unitDisplay: unitStyle}
+            ? {}
+            : {style: 'unit', unit: nfUnit, unitDisplay: unitStyle}
       list.push(new Intl.NumberFormat(locale, nfOpts).format(value))
     }
     return new ListFormat(locale, {

@@ -2,7 +2,7 @@ import DurationFormat from './duration-format-ponyfill.js'
 import type {DurationFormatOptions} from './duration-format-ponyfill.js'
 const durationRe = /^[-+]?P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)W)?(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?$/
 export const unitNames = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second', 'millisecond'] as const
-export type Unit = typeof unitNames[number]
+export type Unit = (typeof unitNames)[number]
 
 export const isDuration = (str: string) => durationRe.test(str)
 type Sign = -1 | 0 | 1
