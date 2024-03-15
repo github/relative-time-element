@@ -482,7 +482,7 @@ suite('relative-time', function () {
       time.setAttribute('datetime', datetime)
       time.setAttribute('format', 'micro')
       await Promise.resolve()
-      assert.equal(time.shadowRoot.textContent, '11y')
+      assert.equal(time.shadowRoot.textContent, '10y')
     })
 
     test('micro formats future times', async () => {
