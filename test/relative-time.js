@@ -840,7 +840,7 @@ suite('relative-time', function () {
         datetime: '2022-10-24T14:46:00.000Z',
         format: 'relative',
         precision: 'hour',
-        expected: 'now',
+        expected: 'this hour',
       },
       {
         datetime: '2022-10-24T14:46:00.000Z',
@@ -901,7 +901,7 @@ suite('relative-time', function () {
         datetime: '2022-10-24T14:46:08.000Z',
         format: 'relative',
         precision: 'hour',
-        expected: 'now',
+        expected: 'this hour',
       },
       {
         datetime: '2022-10-24T14:46:08.000Z',
@@ -973,8 +973,14 @@ suite('relative-time', function () {
       {
         datetime: '2022-10-24T14:46:50.000Z',
         format: 'relative',
-        precision: 'hour',
-        expected: 'now',
+        precision: 'minute',
+        expected: 'this minute',
+      },
+      {
+        datetime: '2022-10-24T14:46:50.000Z',
+        format: 'relative',
+        precision: 'day',
+        expected: 'today',
       },
       {
         datetime: '2022-10-24T14:46:50.000Z',
@@ -1047,7 +1053,7 @@ suite('relative-time', function () {
         datetime: '2022-10-24T14:47:30.000Z',
         format: 'relative',
         precision: 'hour',
-        expected: 'now',
+        expected: 'this hour',
       },
       {
         datetime: '2022-10-24T14:47:30.000Z',
@@ -1121,6 +1127,12 @@ suite('relative-time', function () {
         format: 'relative',
         precision: 'hour',
         expected: 'in 3 weeks',
+      },
+      {
+        datetime: '2022-11-13T15:46:00.000Z',
+        format: 'relative',
+        precision: 'month',
+        expected: 'this month',
       },
       {
         datetime: '2022-11-13T15:46:00.000Z',
@@ -1339,7 +1351,7 @@ suite('relative-time', function () {
         datetime: '2022-10-24T14:45:52.000Z',
         format: 'relative',
         precision: 'hour',
-        expected: 'now',
+        expected: 'this hour',
       },
       {
         datetime: '2022-10-24T14:45:52.000Z',
@@ -1412,7 +1424,13 @@ suite('relative-time', function () {
         datetime: '2022-10-24T14:45:10.000Z',
         format: 'relative',
         precision: 'hour',
-        expected: 'now',
+        expected: 'this hour',
+      },
+      {
+        datetime: '2022-10-24T14:45:10.000Z',
+        format: 'relative',
+        precision: 'day',
+        expected: 'today',
       },
       {
         datetime: '2022-10-24T14:45:10.000Z',
@@ -1485,7 +1503,7 @@ suite('relative-time', function () {
         datetime: '2022-10-24T14:44:30.000Z',
         format: 'relative',
         precision: 'hour',
-        expected: 'now',
+        expected: 'this hour',
       },
       {
         datetime: '2022-10-24T14:44:30.000Z',
@@ -1559,6 +1577,12 @@ suite('relative-time', function () {
         format: 'relative',
         precision: 'hour',
         expected: '3 weeks ago',
+      },
+      {
+        datetime: '2022-10-04T14:46:00.000Z',
+        format: 'relative',
+        precision: 'month',
+        expected: 'this month',
       },
       {
         datetime: '2022-10-04T14:46:00.000Z',
