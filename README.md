@@ -27,7 +27,7 @@ If the browser's JavaScript is disabled, the default text served in the cached m
 Available on [npm](https://www.npmjs.com/) as [**@github/relative-time-element**](https://www.npmjs.com/package/@github/relative-time-element).
 
 ```
-$ npm install @github/relative-time-element
+npm install @github/relative-time-element
 ```
 
 This element uses the `Intl.DateTimeFormat` & `Intl.RelativeTimeFormat` APIs, which are supported by all modern JS engines. If you need to support an older browser, you may need to introduce a polyfill for `Intl.DateTimeFormat` & `Intl.RelativeTimeFormat`.
