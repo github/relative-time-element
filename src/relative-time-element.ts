@@ -388,7 +388,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
   }
 
   set noTitle(value: boolean | undefined) {
-    this.setAttribute('no-title', value?.toString() || '')
+    this.toggleAttribute('no-title')
   }
 
   get datetime() {
