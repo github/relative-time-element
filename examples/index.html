@@ -22,6 +22,13 @@
   </p>
 
   <p>
+    Hide title attribute:
+    <relative-time datetime="1970-01-01T00:00:00.000Z" format="datetime" hour="numeric" minute="2-digit" second="2-digit" hide-title="true">
+      Jan 1 1970
+    </relative-time>
+  </p>
+
+  <p>
     Customised options:
     <relative-time datetime="1970-01-01T00:00:00.000Z" format="datetime" weekday="narrow" year="2-digit" month="narrow" day="numeric" hour="numeric" minute="2-digit" second="2-digit">
       Jan 1 1970
@@ -185,8 +192,8 @@
     </relative-time>
   </p>
 
-  <!-- <script type="module" src="../dist/index.js"></script> -->
-  <script type="module" src="https://unpkg.com/@github/relative-time-element@latest/dist/bundle.js"></script>
+  <script type="module" src="../dist/index.js"></script>
+  <!-- <script type="module" src="https://unpkg.com/@github/relative-time-element@latest/dist/bundle.js"></script> -->
   <script>
     document.body.addEventListener('relative-time-updated', event => {
       console.log('event from', event.target, event)

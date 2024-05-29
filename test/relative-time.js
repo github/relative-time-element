@@ -83,6 +83,22 @@ suite('relative-time', function () {
     assert.equal(el.getAttribute('title'), text)
   })
 
+  test('does not set title if hide-title=true', async () => {
+    const el = document.createElement('relative-time')
+    el.setAttribute('datetime', new Date().toISOString())
+    el.setAttribute('hide-title', true)
+    await Promise.resolve()
+    assert.equal(el.getAttribute('title'), null)
+  })
+
+  test('sets title if hide-title=false', async () => {
+    const el = document.createElement('relative-time')
+    el.setAttribute('datetime', new Date().toISOString())
+    el.setAttribute('hide-title', false)
+    await Promise.resolve()
+    assert.ok(el.getAttribute('title'))
+  })
+
   test('shadowDOM reflects textContent with invalid date', async () => {
     const el = document.createElement('relative-time')
     el.textContent = 'A date string'
