@@ -271,7 +271,7 @@ Lang is a [built-in global attribute](https://developer.mozilla.org/en-US/docs/W
 
 ##### noTitle (`boolean`, default: `undefined`)
 
-Passing in `no-title="true"` will remove the `title` attribute from the `<relative-time>` element. The `title` attribute is inaccessible to screen reader and keyboard users, so no adding a title attribute allows a user to create a custom, accessible tooltip if one is desired.
+Passing in `no-title="true"` will remove the `title` attribute from the `<relative-time>` element. The `title` attribute is inaccessible to screen reader and keyboard users, so not adding a title attribute allows a user to create a custom, accessible tooltip if one is desired.
 
 ## Browser Support
 
