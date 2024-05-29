@@ -83,18 +83,18 @@ suite('relative-time', function () {
     assert.equal(el.getAttribute('title'), text)
   })
 
-  test('does not set title if hide-title=true', async () => {
+  test('does not set title if no-title=true', async () => {
     const el = document.createElement('relative-time')
     el.setAttribute('datetime', new Date().toISOString())
-    el.setAttribute('hide-title', true)
+    el.setAttribute('no-title', true)
     await Promise.resolve()
     assert.equal(el.getAttribute('title'), null)
   })
 
-  test('sets title if hide-title=false', async () => {
+  test('sets title if no-title=false', async () => {
     const el = document.createElement('relative-time')
     el.setAttribute('datetime', new Date().toISOString())
-    el.setAttribute('hide-title', false)
+    el.setAttribute('no-title', false)
     await Promise.resolve()
     assert.ok(el.getAttribute('title'))
   })

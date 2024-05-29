@@ -80,7 +80,7 @@ So, a relative date phrase is used for up to a month and then the actual date is
 | `month`        | `month`          | `'numeric'\|'2-digit'\|'short'\|'long'\|'narrow'\|undefined`                                | <sup>***</sup>                   |
 | `year`         | `year`           | `'numeric'\|'2-digit'\|undefined`                                                           | <sup>****</sup>                  |
 | `timeZoneName` | `time-zone-name` | `'long'\|'short'\|'shortOffset'\|'longOffset'` `\|'shortGeneric'\|'longGeneric'\|undefined` | `undefined`                      |
-| `hideTitle`    | `hide-title`     | `boolean \| null`                                                                           | -                                |
+| `noTitle`      | `no-title`       | `boolean \| null`                                                                           | -                                |
 
 <sup>*</sup>: If unspecified, `formatStyle` will return `'narrow'` if `format` is `'elapsed'` or `'micro'`, `'short'` if the format is `'relative'` or `'datetime'`, otherwise it will be `'long'`.
 
@@ -269,9 +269,9 @@ For dates outside of the specified `threshold`, the formatting of the date can b
 
 Lang is a [built-in global attribute](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/lang). Relative Time will use this to provide an applicable language to the `Intl` APIs. If the individual element does not have a `lang` attribute then it will traverse upwards in the tree to find the closest element that does, or default the lang to `en`.
 
-##### hideTitle (`boolean`, default: `undefined`)
+##### noTitle (`boolean`, default: `undefined`)
 
-Passing in `hide-title="true"` will remove the `title` attribute from the `<relative-time>` element. The `title` attribute is inaccessible to screen reader and keyboard users, so hiding the title allows a user to create a custom accessible version of a tooltip if one is desired.
+Passing in `no-title="true"` will remove the `title` attribute from the `<relative-time>` element. The `title` attribute is inaccessible to screen reader and keyboard users, so no adding a title attribute allows a user to create a custom, accessible tooltip if one is desired.
 
 ## Browser Support
 
