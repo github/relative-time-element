@@ -83,7 +83,7 @@ suite('relative-time', function () {
     assert.equal(el.getAttribute('title'), text)
   })
 
-  test('does not set title if no-title=true', async () => {
+  test('does not set title if no-title attribute is present', async () => {
     const el = document.createElement('relative-time')
     el.setAttribute('datetime', new Date().toISOString())
     el.setAttribute('no-title', '')
