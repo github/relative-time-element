@@ -83,6 +83,14 @@ suite('relative-time', function () {
     assert.equal(el.getAttribute('title'), text)
   })
 
+  test('does not set title if no-title attribute is present', async () => {
+    const el = document.createElement('relative-time')
+    el.setAttribute('datetime', new Date().toISOString())
+    el.setAttribute('no-title', '')
+    await Promise.resolve()
+    assert.equal(el.getAttribute('title'), null)
+  })
+
   test('shadowDOM reflects textContent with invalid date', async () => {
     const el = document.createElement('relative-time')
     el.textContent = 'A date string'
