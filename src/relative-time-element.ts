@@ -440,9 +440,9 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       return
     }
     const now = Date.now()
-    if (!this.#customTitle && !this.noTitle) {
+    if (!this.#customTitle) {
       newTitle = this.#getFormattedTitle(date) || ''
-      if (newTitle) this.setAttribute('title', newTitle)
+      if (newTitle && !this.noTitle) this.setAttribute('title', newTitle)
     }
 
     const duration = elapsedTime(date, this.precision, now)
