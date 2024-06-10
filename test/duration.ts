@@ -367,6 +367,9 @@ suite('duration', function () {
       ['-P55D', [-1, 'month'], {relativeTo: '2023-02-27T22:22:57Z'}],
       ['-P65D', [-3, 'month'], {relativeTo: '2023-02-28T22:22:57Z'}],
       ['-P75D', [-3, 'month'], {relativeTo: '2023-03-09T22:22:57Z'}],
+      ['P1M', [1, 'month'], {relativeTo: '2024-05-31T00:00:00Z'}],
+      ['-P1M', [-1, 'month'], {relativeTo: '2024-05-31T00:00:00Z'}],
+      ['-P3M', [-3, 'month'], {relativeTo: '2023-05-30T00:00:00Z'}],
       [
         'P8M',
         [8, 'month'],
@@ -396,6 +399,8 @@ suite('duration', function () {
         },
       ],
       ['P1M1D', [1, 'month'], {relativeTo: new Date('2022-12-01T00:00:00Z')}],
+      ['P1M1D', [2, 'month'], {relativeTo: new Date('2023-01-31T00:00:00Z')}],
+      ['P1M30D', [2, 'month'], {relativeTo: new Date('2023-01-31T00:00:00Z')}],
       [
         'P9M20DT25H',
         [9, 'month'],
@@ -478,14 +483,14 @@ suite('duration', function () {
       ],
     ])
     for (const [input, [val, unit], opts] of relativeTests) {
-      test(`getRelativeTimeUnit(${input}) === [${val}, ${unit}]`, () => {
+      test(`getRelativeTimeUnit(${input}${opts ? `, ${JSON.stringify(opts)}` : ''}) === [${val}, ${unit}]`, () => {
         assert.deepEqual(
           getRelativeTimeUnit(Duration.from(input), opts || {relativeTo: new Date('2023-07-01T00:00:00')}),
           [val, unit],
         )
       })
       if (opts?.relativeTo) continue
-      test(`getRelativeTimeUnit(-${input}) === [-${val}, ${unit}]`, () => {
+      test(`getRelativeTimeUnit(-${input}${opts ? `, ${JSON.stringify(opts)}` : ''}) === [-${val}, ${unit}]`, () => {
         assert.deepEqual(
           getRelativeTimeUnit(Duration.from(`-${input}`), opts || {relativeTo: new Date('2023-07-01T00:00:00')}),
           [-val, unit],

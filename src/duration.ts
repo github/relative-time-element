@@ -153,16 +153,23 @@ export function roundToSingleUnit(duration: Duration, {relativeTo = Date.now()}:
 
   // Resolve calendar dates
   const currentYear = relativeTo.getFullYear()
-  let currentMonth = relativeTo.getMonth()
+  const currentMonth = relativeTo.getMonth()
   const currentDate = relativeTo.getDate()
   if (days >= 27 || years + months + days) {
+    const newMonthDate = new Date(relativeTo)
+    newMonthDate.setDate(1)
+    newMonthDate.setMonth(currentMonth + months * sign + 1)
+    newMonthDate.setDate(0)
+    const monthDateCorrection = Math.max(0, currentDate - newMonthDate.getDate())
+
     const newDate = new Date(relativeTo)
     newDate.setFullYear(currentYear + years * sign)
+    newDate.setDate(currentDate - monthDateCorrection)
     newDate.setMonth(currentMonth + months * sign)
-    newDate.setDate(currentDate + days * sign)
+    newDate.setDate(currentDate - monthDateCorrection + days * sign)
     const yearDiff = newDate.getFullYear() - relativeTo.getFullYear()
     const monthDiff = newDate.getMonth() - relativeTo.getMonth()
-    const daysDiff = Math.abs(Math.round((Number(newDate) - Number(relativeTo)) / 86400000))
+    const daysDiff = Math.abs(Math.round((Number(newDate) - Number(relativeTo)) / 86400000)) + monthDateCorrection
     const monthsDiff = Math.abs(yearDiff * 12 + monthDiff)
     if (daysDiff < 27) {
       if (days >= 6) {
@@ -180,7 +187,6 @@ export function roundToSingleUnit(duration: Duration, {relativeTo = Date.now()}:
       years = yearDiff * sign
     }
     if (months || years) days = 0
-    currentMonth = relativeTo.getMonth()
   }
   if (years) months = 0
 
