@@ -199,21 +199,21 @@ Precision can be used to limit the display of an `relative` or `duration` format
 
 | `precision=`  | format=duration     |
 |:-------------:|:-------------------:|
-| seconds       | 2y 6m 10d 3h 20m 8s |
-| minutes       | 2y 6m 10d 3h 20m    |
-| hours         | 2y 6m 10d 3h        |
-| days          | 2y 6m 10d           |
-| months        | 2y 6m               |
-| years         | 2y                  |
+| second        | 2y 6m 10d 3h 20m 8s |
+| minute        | 2y 6m 10d 3h 20m    |
+| hour          | 2y 6m 10d 3h        |
+| day           | 2y 6m 10d           |
+| month         | 2y 6m               |
+| year          | 2y                  |
 
 | `precision=`  | format=relative     |
 |:-------------:|:-------------------:|
-| seconds       | 25 seconds          |
-| minutes       | now                 |
-| hours         | now                 |
-| days          | now                 |
-| months        | now                 |
-| years         | now                 |
+| second        | 25 seconds          |
+| minute        | now                 |
+| hour          | now                 |
+| day           | now                 |
+| month         | now                 |
+| year          | now                 |
 
 
 ##### threshold (`string`, default: `P30D`)
