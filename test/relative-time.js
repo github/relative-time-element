@@ -70,6 +70,15 @@ suite('relative-time', function () {
     assert.equal(counter, 1)
   })
 
+  test('calls update even after nullish datetime', async () => {
+    const el = document.createElement('relative-time')
+    el.setAttribute('datetime', '')
+    await new Promise(resolve => setTimeout(resolve, 10))
+    el.setAttribute('datetime', new Date().toISOString())
+    await Promise.resolve()
+    assert(el.shadowRoot.textContent.length > 0, 'should have set time, but textContent is empty')
+  })
+
   test('sets title back to default if removed', async () => {
     const el = document.createElement('relative-time')
     el.setAttribute('datetime', new Date().toISOString())

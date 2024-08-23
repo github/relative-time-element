@@ -426,6 +426,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       this.#updating = (async () => {
         await Promise.resolve()
         this.update()
+        this.#updating = false
       })()
     }
   }
@@ -472,7 +473,6 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     } else {
       dateObserver.unobserve(this)
     }
-    this.#updating = false
   }
 }
 
