@@ -193,6 +193,13 @@
     </relative-time>
   </p>
 
+  <p>
+    Lazily added datetime via setAttribute
+    <relative-time id="lazy" tense="past">
+      This will display in one second.
+    </relative-time>
+  </p>
+
   <!-- <script type="module" src="../dist/index.js"></script> -->
   <script type="module" src="https://unpkg.com/@github/relative-time-element@latest/dist/bundle.js"></script>
   <script>
@@ -203,6 +210,9 @@
     document.getElementById('dynamic2').date = new Date(Date.now() - 30000)
     document.getElementById('dynamic3').date = new Date(Date.now() + 5000)
     document.getElementById('dynamic4').date = new Date()
+    setTimeout(() => {
+      document.getElementById('lazy').setAttribute('datetime', new Date().toJSON())
+    }, 1000)
   </script>
 </body>
 </html>
