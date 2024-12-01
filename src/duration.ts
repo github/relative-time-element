@@ -1,6 +1,7 @@
 import DurationFormat from './duration-format-ponyfill.js'
 import type {DurationFormatOptions} from './duration-format-ponyfill.js'
 const durationRe = /^[-+]?P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)W)?(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?$/
+const durationRoundingThresholds = [Infinity, 11, 28, 21, 55, 55, 900]
 export const unitNames = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second', 'millisecond'] as const
 export type Unit = typeof unitNames[number]
 
@@ -86,37 +87,161 @@ export class Duration {
 
 export function applyDuration(date: Date | number, duration: Duration): Date {
   const r = new Date(date)
-  r.setFullYear(r.getFullYear() + duration.years)
-  r.setMonth(r.getMonth() + duration.months)
-  r.setDate(r.getDate() + duration.weeks * 7 + duration.days)
-  r.setHours(r.getHours() + duration.hours)
-  r.setMinutes(r.getMinutes() + duration.minutes)
-  r.setSeconds(r.getSeconds() + duration.seconds)
+  const actions: Array<() => void> = [
+    () => {
+      r.setUTCFullYear(r.getUTCFullYear() + duration.years)
+    },
+    () => {
+      r.setUTCMonth(r.getUTCMonth() + duration.months)
+    },
+    () => {
+      r.setUTCDate(r.getUTCDate() + duration.weeks * 7 + duration.days)
+    },
+    () => {
+      r.setUTCHours(r.getUTCHours() + duration.hours)
+    },
+    () => {
+      r.setUTCMinutes(r.getUTCMinutes() + duration.minutes)
+    },
+    () => {
+      r.setUTCSeconds(r.getUTCSeconds() + duration.seconds)
+    },
+  ]
+  if (duration.sign < 0) {
+    actions.reverse()
+  }
+  for (const action of actions) action()
   return r
 }
 
-export function elapsedTime(date: Date, precision: Unit = 'second', now = Date.now()): Duration {
-  const delta = date.getTime() - now
-  if (delta === 0) return new Duration()
-  const sign = Math.sign(delta)
-  const ms = Math.abs(delta)
-  const sec = Math.floor(ms / 1000)
-  const min = Math.floor(sec / 60)
-  const hr = Math.floor(min / 60)
-  const day = Math.floor(hr / 24)
-  const month = Math.floor(day / 30)
-  const year = Math.floor(month / 12)
-  const i = unitNames.indexOf(precision) || unitNames.length
+// Calculates the elapsed time from `now` to `date`.
+export function elapsedTime(
+  date: Date,
+  precision: Unit = 'second',
+  nowTimestamp: Date | number = Date.now(),
+): Duration {
+  const now = new Date(nowTimestamp)
+  // eslint-disable-next-line prefer-const
+  let [sign, subtrahend, minuend] = date < now ? [-1, now, date] : [1, date, now]
+  let ms: number
+  let sec: number
+  let min: number
+  let hr: number
+  let day: number
+  let month: number
+  let year: number
+  // Using UTC to avoid timezone-specific variations.
+  if (subtrahend.getUTCMilliseconds() >= minuend.getUTCMilliseconds()) {
+    ms = subtrahend.getUTCMilliseconds() - minuend.getUTCMilliseconds()
+  } else {
+    ms = 1000 + subtrahend.getUTCMilliseconds() - minuend.getUTCMilliseconds()
+    subtrahend = new Date(subtrahend.getTime() - 1000)
+  }
+
+  if (subtrahend.getUTCSeconds() >= minuend.getUTCSeconds()) {
+    sec = subtrahend.getUTCSeconds() - minuend.getUTCSeconds()
+  } else {
+    sec = 60 + subtrahend.getUTCSeconds() - minuend.getUTCSeconds()
+    subtrahend = new Date(subtrahend.getTime() - 1000 * 60)
+  }
+
+  if (subtrahend.getUTCMinutes() >= minuend.getUTCMinutes()) {
+    min = subtrahend.getUTCMinutes() - minuend.getUTCMinutes()
+  } else {
+    min = 60 + subtrahend.getUTCMinutes() - minuend.getUTCMinutes()
+    subtrahend = new Date(subtrahend.getTime() - 1000 * 60 * 60)
+  }
+
+  if (subtrahend.getUTCHours() >= minuend.getUTCHours()) {
+    hr = subtrahend.getUTCHours() - minuend.getUTCHours()
+  } else {
+    hr = 24 + subtrahend.getUTCHours() - minuend.getUTCHours()
+    subtrahend = new Date(subtrahend.getTime() - 1000 * 60 * 60 * 24)
+  }
+
+  if (subtrahend.getUTCDate() >= minuend.getUTCDate()) {
+    day = subtrahend.getUTCDate() - minuend.getUTCDate()
+  } else {
+    day = subtrahend.getUTCDate()
+    subtrahend = new Date(subtrahend.getTime() - 1000 * 60 * 60 * 24 * day)
+    day += Math.max(0, subtrahend.getUTCDate() - minuend.getUTCDate())
+  }
+
+  year = subtrahend.getUTCFullYear() - minuend.getUTCFullYear()
+  if (subtrahend.getUTCMonth() >= minuend.getUTCMonth()) {
+    month = subtrahend.getUTCMonth() - minuend.getUTCMonth()
+  } else {
+    month = 12 + subtrahend.getUTCMonth() - minuend.getUTCMonth()
+    year -= 1
+  }
+
+  let precisionIndex = unitNames.indexOf(precision)
+  if (precisionIndex === -1) {
+    precisionIndex = unitNames.length
+  }
   return new Duration(
-    i >= 0 ? year * sign : 0,
-    i >= 1 ? (month - year * 12) * sign : 0,
+    precisionIndex >= 0 ? year * sign : 0,
+    precisionIndex >= 1 ? month * sign : 0,
     0,
-    i >= 3 ? (day - month * 30) * sign : 0,
-    i >= 4 ? (hr - day * 24) * sign : 0,
-    i >= 5 ? (min - hr * 60) * sign : 0,
-    i >= 6 ? (sec - min * 60) * sign : 0,
-    i >= 7 ? (ms - sec * 1000) * sign : 0,
+    precisionIndex >= 3 ? day * sign : 0,
+    precisionIndex >= 4 ? hr * sign : 0,
+    precisionIndex >= 5 ? min * sign : 0,
+    precisionIndex >= 6 ? sec * sign : 0,
+    precisionIndex >= 7 ? ms * sign : 0,
   )
+}
+
+export function relativeTime(
+  date: Date,
+  precision: Unit = 'second',
+  nowTimestamp: Date | number = Date.now(),
+): [number, Intl.RelativeTimeFormatUnit] {
+  let precisionIndex = unitNames.indexOf(precision)
+  if (precisionIndex === -1) {
+    precisionIndex = unitNames.length
+  }
+  const now = new Date(nowTimestamp)
+  const sign = Math.sign(date.getTime() - now.getTime())
+  const dateWithoutTime = new Date(date)
+  dateWithoutTime.setHours(0)
+  dateWithoutTime.setMinutes(0)
+  dateWithoutTime.setSeconds(0)
+  dateWithoutTime.setMilliseconds(0)
+  const nowWithoutTime = new Date(now)
+  nowWithoutTime.setHours(0)
+  nowWithoutTime.setMinutes(0)
+  nowWithoutTime.setSeconds(0)
+  nowWithoutTime.setMilliseconds(0)
+  if (
+    precisionIndex >= 4 &&
+    (dateWithoutTime.getTime() === nowWithoutTime.getTime() ||
+      Math.abs(date.getTime() - now.getTime()) < 1000 * 60 * 60 * 12)
+  ) {
+    const difference = Math.round(((date.getTime() - now.getTime()) / 1000) * sign)
+    let hours = Math.floor(difference / 3600)
+    let minutes = Math.floor((difference % 3600) / 60)
+    const seconds = Math.floor(difference % 60)
+    if (hours === 0) {
+      if (seconds >= durationRoundingThresholds[5]) minutes += 1
+      if (minutes >= durationRoundingThresholds[4]) return [sign, 'hour']
+      if (precision === 'hour') return [0, 'hour']
+      if (minutes === 0 && precisionIndex >= 6) return [seconds * sign, 'second']
+      return [minutes * sign, 'minute']
+    } else {
+      if (hours < 23 && minutes >= durationRoundingThresholds[4]) hours += 1
+      return [hours * sign, 'hour']
+    }
+  }
+  const days = Math.round(((dateWithoutTime.getTime() - nowWithoutTime.getTime()) / (1000 * 60 * 60 * 24)) * sign)
+  const months = date.getFullYear() * 12 + date.getMonth() - (now.getFullYear() * 12 + now.getMonth())
+  if (precisionIndex >= 2 && (months === 0 || days <= 26)) {
+    if (precision === 'week' || days >= 6) return [Math.floor((days + 1) / 7) * sign, 'week']
+    return [days * sign, 'day']
+  }
+  if (precision !== 'year' && (date.getFullYear() === now.getFullYear() || Math.abs(months) <= 6)) {
+    return [months, 'month']
+  }
+  return [date.getFullYear() - now.getFullYear(), 'year']
 }
 
 interface RoundingOpts {
@@ -124,96 +249,52 @@ interface RoundingOpts {
 }
 
 export function roundToSingleUnit(duration: Duration, {relativeTo = Date.now()}: Partial<RoundingOpts> = {}): Duration {
-  relativeTo = new Date(relativeTo)
-  if (duration.blank) return duration
-  const sign = duration.sign
-  let years = Math.abs(duration.years)
-  let months = Math.abs(duration.months)
-  let weeks = Math.abs(duration.weeks)
-  let days = Math.abs(duration.days)
-  let hours = Math.abs(duration.hours)
-  let minutes = Math.abs(duration.minutes)
-  let seconds = Math.abs(duration.seconds)
-  let milliseconds = Math.abs(duration.milliseconds)
-
-  if (milliseconds >= 900) seconds += Math.round(milliseconds / 1000)
-  if (seconds || minutes || hours || days || weeks || months || years) {
-    milliseconds = 0
-  }
-
-  if (seconds >= 55) minutes += Math.round(seconds / 60)
-  if (minutes || hours || days || weeks || months || years) seconds = 0
-
-  if (minutes >= 55) hours += Math.round(minutes / 60)
-  if (hours || days || weeks || months || years) minutes = 0
-
-  if (days && hours >= 12) days += Math.round(hours / 24)
-  if (!days && hours >= 21) days += Math.round(hours / 24)
-  if (days || weeks || months || years) hours = 0
-
-  // Resolve calendar dates
-  const currentYear = relativeTo.getFullYear()
-  const currentMonth = relativeTo.getMonth()
-  const currentDate = relativeTo.getDate()
-  if (days >= 27 || years + months + days) {
-    const newMonthDate = new Date(relativeTo)
-    newMonthDate.setDate(1)
-    newMonthDate.setMonth(currentMonth + months * sign + 1)
-    newMonthDate.setDate(0)
-    const monthDateCorrection = Math.max(0, currentDate - newMonthDate.getDate())
-
-    const newDate = new Date(relativeTo)
-    newDate.setFullYear(currentYear + years * sign)
-    newDate.setDate(currentDate - monthDateCorrection)
-    newDate.setMonth(currentMonth + months * sign)
-    newDate.setDate(currentDate - monthDateCorrection + days * sign)
-    const yearDiff = newDate.getFullYear() - relativeTo.getFullYear()
-    const monthDiff = newDate.getMonth() - relativeTo.getMonth()
-    const daysDiff = Math.abs(Math.round((Number(newDate) - Number(relativeTo)) / 86400000)) + monthDateCorrection
-    const monthsDiff = Math.abs(yearDiff * 12 + monthDiff)
-    if (daysDiff < 27) {
-      if (days >= 6) {
-        weeks += Math.round(days / 7)
-        days = 0
-      } else {
-        days = daysDiff
-      }
-      months = years = 0
-    } else if (monthsDiff < 11) {
-      months = monthsDiff
-      years = 0
-    } else {
-      months = 0
-      years = yearDiff * sign
-    }
-    if (months || years) days = 0
-  }
-  if (years) months = 0
-
-  if (weeks >= 4) months += Math.round(weeks / 4)
-  if (months || years) weeks = 0
-  if (days && weeks && !months && !years) {
-    weeks += Math.round(days / 7)
-    days = 0
-  }
-
-  return new Duration(
-    years * sign,
-    months * sign,
-    weeks * sign,
-    days * sign,
-    hours * sign,
-    minutes * sign,
-    seconds * sign,
-    milliseconds * sign,
+  return roundBalancedToSingleUnit(
+    elapsedTime(applyDuration(new Date(relativeTo), duration), 'millisecond', relativeTo),
   )
 }
 
-export function getRelativeTimeUnit(
-  duration: Duration,
-  opts?: Partial<RoundingOpts>,
-): [number, Intl.RelativeTimeFormatUnit] {
-  const rounded = roundToSingleUnit(duration, opts)
+export function roundBalancedToSingleUnit(duration: Duration): Duration {
+  if (duration.blank) return duration
+  const sign = duration.sign
+  const values = [
+    Math.abs(duration.years),
+    Math.abs(duration.months),
+    Math.abs(duration.days),
+    Math.abs(duration.hours),
+    Math.abs(duration.minutes),
+    Math.abs(duration.seconds),
+    Math.abs(duration.milliseconds),
+  ]
+  let biggestUnitIndex = values.findIndex(v => v > 0)
+  const roundedLowerUnit =
+    biggestUnitIndex < values.length - 1 &&
+    values[biggestUnitIndex + 1] >= durationRoundingThresholds[biggestUnitIndex + 1]
+  if (roundedLowerUnit) {
+    values[biggestUnitIndex] += 1
+  }
+  if (values[biggestUnitIndex] >= durationRoundingThresholds[biggestUnitIndex]) {
+    --biggestUnitIndex
+    values[biggestUnitIndex] = 1
+  }
+  for (let i = biggestUnitIndex + 1; i < values.length; ++i) {
+    values[i] = 0
+  }
+  if (biggestUnitIndex === 2 && values[2] >= 6) {
+    const weeks = Math.max(1, Math.floor((values[2] + (roundedLowerUnit ? 0 : 1)) / 7))
+    if (weeks < 4) {
+      return new Duration(0, 0, weeks * sign)
+    }
+    values[biggestUnitIndex] = 0
+    --biggestUnitIndex
+    values[biggestUnitIndex] = 1
+  }
+  values[biggestUnitIndex] *= sign
+  values.splice(2, 0, 0)
+  return new Duration(...values)
+}
+
+export function getRoundedRelativeTimeUnit(rounded: Duration): [number, Intl.RelativeTimeFormatUnit] {
   if (rounded.blank) return [0, 'second']
   for (const unit of unitNames) {
     if (unit === 'millisecond') continue
