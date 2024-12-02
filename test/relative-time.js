@@ -441,7 +441,7 @@ suite('relative-time', function () {
       time.setAttribute('tense', 'past')
       time.setAttribute('datetime', '2023-01-01T00:00:00Z')
       await Promise.resolve()
-      assert.equal(time.shadowRoot.textContent, '11 years ago')
+      assert.equal(time.shadowRoot.textContent, '10 years ago')
     })
 
     test('rewrites from now past datetime to minutes ago', async () => {
@@ -488,7 +488,7 @@ suite('relative-time', function () {
       time.setAttribute('tense', 'past')
       time.setAttribute('datetime', '2023-06-01T00:00:00Z')
       await Promise.resolve()
-      assert.equal(time.shadowRoot.textContent, '4 months ago')
+      assert.equal(time.shadowRoot.textContent, '3 months ago')
     })
 
     test('rewrites from last few days of month to smaller last month', async () => {
@@ -1167,7 +1167,7 @@ suite('relative-time', function () {
         datetime: '2022-11-13T15:46:00.000Z',
         format: 'relative',
         precision: 'month',
-        expected: 'this month',
+        expected: 'next month',
       },
       {
         datetime: '2022-11-13T15:46:00.000Z',
@@ -1263,25 +1263,25 @@ suite('relative-time', function () {
       {
         datetime: '2022-12-03T15:46:00.000Z',
         format: 'duration',
-        expected: '1 month, 10 days, 1 hour',
+        expected: '1 month, 9 days, 1 hour',
       },
       {
         datetime: '2022-12-03T15:46:00.000Z',
         format: 'duration',
         precision: 'minute',
-        expected: '1 month, 10 days, 1 hour',
+        expected: '1 month, 9 days, 1 hour',
       },
       {
         datetime: '2022-12-03T15:46:00.000Z',
         format: 'duration',
         precision: 'day',
-        expected: '1 month, 10 days',
+        expected: '1 month, 9 days',
       },
       {
         datetime: '2022-12-03T15:46:00.000Z',
         format: 'duration',
         tense: 'future',
-        expected: '1 month, 10 days, 1 hour',
+        expected: '1 month, 9 days, 1 hour',
       },
       {
         datetime: '2022-12-03T15:46:00.000Z',
@@ -1336,25 +1336,25 @@ suite('relative-time', function () {
       {
         datetime: '2024-10-24T14:46:00.000Z',
         format: 'duration',
-        expected: '2 years, 11 days',
+        expected: '2 years',
       },
       {
         datetime: '2024-10-24T14:46:00.000Z',
         format: 'duration',
         precision: 'minute',
-        expected: '2 years, 11 days',
+        expected: '2 years',
       },
       {
         datetime: '2024-10-24T14:46:00.000Z',
         format: 'duration',
         precision: 'day',
-        expected: '2 years, 11 days',
+        expected: '2 years',
       },
       {
         datetime: '2024-10-24T14:46:00.000Z',
         format: 'duration',
         tense: 'future',
-        expected: '2 years, 11 days',
+        expected: '2 years',
       },
       {
         datetime: '2024-10-24T14:46:00.000Z',
@@ -1786,19 +1786,19 @@ suite('relative-time', function () {
       {
         datetime: '2020-10-24T14:46:00.000Z',
         format: 'duration',
-        expected: '2 years, 10 days',
+        expected: '2 years',
       },
       {
         datetime: '2020-10-24T14:46:00.000Z',
         format: 'duration',
         precision: 'minute',
-        expected: '2 years, 10 days',
+        expected: '2 years',
       },
       {
         datetime: '2020-10-24T14:46:00.000Z',
         format: 'duration',
         precision: 'day',
-        expected: '2 years, 10 days',
+        expected: '2 years',
       },
       {
         datetime: '2020-10-24T14:46:00.000Z',
@@ -1810,7 +1810,7 @@ suite('relative-time', function () {
         datetime: '2020-10-24T14:46:00.000Z',
         format: 'duration',
         tense: 'past',
-        expected: '2 years, 10 days',
+        expected: '2 years',
       },
       {
         reference: '2023-03-23T12:03:00.000Z',
@@ -1958,13 +1958,13 @@ suite('relative-time', function () {
         expected: '1y',
       },
       {
-        datetime: '2024-03-31T14:46:00.000Z',
+        datetime: '2024-09-23T14:46:00.000Z',
         tense: 'future',
         format: 'micro',
-        expected: '2y',
+        expected: '1y',
       },
       {
-        datetime: '2024-04-01T14:46:00.000Z',
+        datetime: '2024-09-24T14:46:00.000Z',
         tense: 'future',
         format: 'micro',
         expected: '2y',
@@ -2130,7 +2130,7 @@ suite('relative-time', function () {
       {
         datetime: '2021-10-30T14:46:00.000Z',
         format: 'elapsed',
-        expected: '11m 29d',
+        expected: '11m 24d',
       },
       {
         datetime: '2021-10-30T14:46:00.000Z',
@@ -2139,7 +2139,7 @@ suite('relative-time', function () {
         expected: '11m',
       },
       {
-        datetime: '2021-10-29T14:46:00.000Z',
+        datetime: '2021-10-24T14:46:00.000Z',
         format: 'elapsed',
         expected: '1y',
       },
@@ -2482,11 +2482,11 @@ suite('relative-time', function () {
         datetime: '2024-03-01T12:00:00.000Z',
         tense: 'future',
         format: 'micro',
-        expected: '2y',
+        expected: '1y',
       },
       {
         reference: '2021-04-24T12:00:00.000Z',
-        datetime: '2023-02-01T12:00:00.000Z',
+        datetime: '2023-04-21T12:00:00.000Z',
         tense: 'future',
         format: 'micro',
         expected: '2y',
