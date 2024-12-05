@@ -179,12 +179,9 @@ export function roundToSingleUnit(duration: Duration, {relativeTo = Date.now()}:
         days = daysDiff
       }
       months = years = 0
-    } else if (monthsDiff < 11) {
+    } else if (monthsDiff <= 11) {
       months = monthsDiff
       years = 0
-    } else if (monthsDiff === 11) {
-      months = 0
-      years += 1 // the old behavior: "11 months" is rounded to "1 year"
     } else {
       months = 0
       years = yearDiff * sign
