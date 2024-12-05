@@ -179,7 +179,7 @@ export function roundToSingleUnit(duration: Duration, {relativeTo = Date.now()}:
         days = daysDiff
       }
       months = years = 0
-    } else if (monthsDiff < 11) {
+    } else if (monthsDiff <= 11) {
       months = monthsDiff
       years = 0
     } else {
