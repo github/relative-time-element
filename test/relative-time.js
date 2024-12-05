@@ -2498,6 +2498,13 @@ suite('relative-time', function () {
         format: 'auto',
         expected: '4 years ago',
       },
+      {
+        reference: '2024-12-04T00:00:00.000Z',
+        datetime: '2024-01-16T00:00:00.000Z',
+        tense: 'past',
+        format: 'auto',
+        expected: 'last year', // a quick fix for the old bug: "23 days ago" because "11 months" was discarded, ideally it should support "11 months"
+      },
     ])
 
     for (const {
