@@ -120,14 +120,27 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
   //
   // Returns a formatted time String.
   #getFormattedTitle(date: Date): string | undefined {
-    return new Intl.DateTimeFormat(this.#lang, {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-      timeZoneName: 'short',
-    }).format(date)
+    let dateTimeFormat
+    try {
+      dateTimeFormat = new Intl.DateTimeFormat(this.#lang, {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        timeZoneName: 'short',
+      })
+    } catch (_e) {
+      dateTimeFormat = new Intl.DateTimeFormat('default', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        timeZoneName: 'short',
+      })
+    }
+    return dateTimeFormat.format(date)
   }
 
   #resolveFormat(duration: Duration): ResolvedFormat {
@@ -172,10 +185,20 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
   }
 
   #getRelativeFormat(duration: Duration): string {
-    const relativeFormat = new Intl.RelativeTimeFormat(this.#lang, {
-      numeric: 'auto',
-      style: this.formatStyle,
-    })
+    let relativeFormat
+
+    try {
+      relativeFormat = new Intl.RelativeTimeFormat(this.#lang, {
+        numeric: 'auto',
+        style: this.formatStyle,
+      })
+    } catch (_e) {
+      relativeFormat = new Intl.RelativeTimeFormat('default', {
+        numeric: 'auto',
+        style: this.formatStyle,
+      })
+    }
+
     const tense = this.tense
     if (tense === 'future' && duration.sign !== 1) duration = emptyDuration
     if (tense === 'past' && duration.sign !== -1) duration = emptyDuration
@@ -187,16 +210,30 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
   }
 
   #getDateTimeFormat(date: Date): string {
-    const formatter = new Intl.DateTimeFormat(this.#lang, {
-      second: this.second,
-      minute: this.minute,
-      hour: this.hour,
-      weekday: this.weekday,
-      day: this.day,
-      month: this.month,
-      year: this.year,
-      timeZoneName: this.timeZoneName,
-    })
+    let formatter
+    try {
+      formatter = new Intl.DateTimeFormat(this.#lang, {
+        second: this.second,
+        minute: this.minute,
+        hour: this.hour,
+        weekday: this.weekday,
+        day: this.day,
+        month: this.month,
+        year: this.year,
+        timeZoneName: this.timeZoneName,
+      })
+    } catch (_e) {
+      formatter = new Intl.DateTimeFormat('default', {
+        second: this.second,
+        minute: this.minute,
+        hour: this.hour,
+        weekday: this.weekday,
+        day: this.day,
+        month: this.month,
+        year: this.year,
+        timeZoneName: this.timeZoneName,
+      })
+    }
     return `${this.prefix} ${formatter.format(date)}`.trim()
   }
 
