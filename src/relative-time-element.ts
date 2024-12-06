@@ -178,7 +178,6 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       numeric: 'auto',
       style: this.formatStyle,
     })
-
     const tense = this.tense
     if (tense === 'future' && duration.sign !== 1) duration = emptyDuration
     if (tense === 'past' && duration.sign !== -1) duration = emptyDuration
