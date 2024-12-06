@@ -82,8 +82,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
   #updating: false | Promise<void> = false
 
   get #lang() {
-    const lang = this.closest('[lang]')?.getAttribute('lang') ||
-      this.ownerDocument.documentElement.getAttribute('lang')
+    const lang = this.closest('[lang]')?.getAttribute('lang') || this.ownerDocument.documentElement.getAttribute('lang')
     try {
       return new Intl.Locale(lang ?? '').toString()
     } catch {
