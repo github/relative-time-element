@@ -82,11 +82,12 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
   #updating: false | Promise<void> = false
 
   get #lang() {
-    return (
-      this.closest('[lang]')?.getAttribute('lang') ||
-      this.ownerDocument.documentElement.getAttribute('lang') ||
-      'default'
-    )
+    const lang = this.closest('[lang]')?.getAttribute('lang') || this.ownerDocument.documentElement.getAttribute('lang')
+    try {
+      return new Intl.Locale(lang ?? '').toString()
+    } catch {
+      return 'default'
+    }
   }
 
   #renderRoot: Node = this.shadowRoot ? this.shadowRoot : this.attachShadow ? this.attachShadow({mode: 'open'}) : this
