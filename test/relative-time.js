@@ -434,6 +434,18 @@ suite('relative-time', function () {
     })
   }
 
+  test('renders correctly when given an invalid lang', async () => {
+    const now = new Date().toISOString()
+
+    const element = document.createElement('relative-time')
+    element.setAttribute('datetime', now)
+    element.setAttribute('lang', 'does-not-exist')
+    assert.doesNotThrow(() => element.attributeChangedCallback('lang', null, null))
+
+    await Promise.resolve()
+    assert.equal(element.shadowRoot.textContent, 'now')
+  })
+
   suite('[tense=past]', function () {
     test('always uses relative dates', async () => {
       freezeTime(new Date(2033, 1, 1))
