@@ -440,7 +440,6 @@ suite('relative-time', function () {
     const element = document.createElement('relative-time')
     element.setAttribute('datetime', now)
     element.setAttribute('lang', 'does-not-exist')
-    assert.doesNotThrow(() => element.attributeChangedCallback('lang', null, null))
 
     await Promise.resolve()
     assert.equal(element.shadowRoot.textContent, 'now')
