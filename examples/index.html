@@ -22,6 +22,14 @@
   </p>
 
   <p>
+    No title attribute:
+    <relative-time datetime="1970-01-01T00:00:00.000Z" format="datetime" hour="numeric" minute="2-digit" second="2-digit"
+      no-title>
+      Jan 1 1970
+    </relative-time>
+  </p>
+
+  <p>
     Customised options:
     <relative-time datetime="1970-01-01T00:00:00.000Z" format="datetime" weekday="narrow" year="2-digit" month="narrow" day="numeric" hour="numeric" minute="2-digit" second="2-digit">
       Jan 1 1970
@@ -185,6 +193,13 @@
     </relative-time>
   </p>
 
+  <p>
+    Lazily added datetime via setAttribute
+    <relative-time id="lazy" tense="past">
+      This will display in one second.
+    </relative-time>
+  </p>
+
   <!-- <script type="module" src="../dist/index.js"></script> -->
   <script type="module" src="https://unpkg.com/@github/relative-time-element@latest/dist/bundle.js"></script>
   <script>
@@ -195,6 +210,9 @@
     document.getElementById('dynamic2').date = new Date(Date.now() - 30000)
     document.getElementById('dynamic3').date = new Date(Date.now() + 5000)
     document.getElementById('dynamic4').date = new Date()
+    setTimeout(() => {
+      document.getElementById('lazy').setAttribute('datetime', new Date().toJSON())
+    }, 1000)
   </script>
 </body>
 </html>

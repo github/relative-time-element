@@ -291,8 +291,9 @@ suite('duration', function () {
         },
       ],
       ['P9M20DT25H', 'P10M', {relativeTo: new Date('2023-01-12T00:00:00Z')}],
-      ['P11M', 'P1Y', {relativeTo: new Date('2022-11-01T00:00:00Z')}],
-      ['-P11M', '-P1Y', {relativeTo: new Date('2022-11-01T00:00:00Z')}],
+      ['P11M', 'P11M', {relativeTo: new Date('2022-11-01T00:00:00Z')}],
+      ['-P11M', '-P11M', {relativeTo: new Date('2022-11-01T00:00:00Z')}],
+      ['-P11M15D', '-P1Y', {relativeTo: new Date('2024-01-06T00:00:00')}],
       ['P1Y4D', 'P1Y', {relativeTo: new Date('2022-11-01T00:00:00Z')}],
       ['P1Y5M13D', 'P1Y', {relativeTo: new Date('2023-01-01T00:00:00Z')}],
       ['P1Y5M15D', 'P1Y', {relativeTo: new Date('2023-01-01T00:00:00Z')}],
@@ -308,7 +309,12 @@ suite('duration', function () {
           relativeTo: new Date('2022-01-01T00:00:00Z'),
         },
       ],
-      ['-P27D', '-P1M', {relativeTo: new Date('2023-02-28T00:00:00Z')}],
+      ['-P27D', '-P27D', {relativeTo: new Date('2023-02-28T00:00:00Z')}],
+      ['-P27D', '-P1M', {relativeTo: new Date('2023-02-27T00:00:00Z')}],
+      ['P1Y2M1D', 'P2Y', {relativeTo: new Date('2022-12-31T12:00:00.000Z')}],
+      ['-P1Y8D', '-P1Y', {relativeTo: new Date('2024-01-11T12:00:00.000Z')}],
+      ['-P1Y7DT19H43M19S', '-P1Y', {relativeTo: new Date('2024-01-11T12:00:00.000Z')}],
+      ['-P1Y11D', '-P2Y', {relativeTo: new Date('2024-01-11T12:00:00.000Z')}],
     ])
     for (const [input, expected, opts] of roundTests) {
       test(`roundToSingleUnit(${input}) === ${expected}`, () => {
@@ -361,6 +367,9 @@ suite('duration', function () {
       ['-P55D', [-1, 'month'], {relativeTo: '2023-02-27T22:22:57Z'}],
       ['-P65D', [-3, 'month'], {relativeTo: '2023-02-28T22:22:57Z'}],
       ['-P75D', [-3, 'month'], {relativeTo: '2023-03-09T22:22:57Z'}],
+      ['P1M', [1, 'month'], {relativeTo: '2024-05-31T00:00:00Z'}],
+      ['-P1M', [-1, 'month'], {relativeTo: '2024-05-31T00:00:00Z'}],
+      ['-P3M', [-3, 'month'], {relativeTo: '2023-05-30T00:00:00Z'}],
       [
         'P8M',
         [8, 'month'],
@@ -390,6 +399,8 @@ suite('duration', function () {
         },
       ],
       ['P1M1D', [1, 'month'], {relativeTo: new Date('2022-12-01T00:00:00Z')}],
+      ['P1M1D', [2, 'month'], {relativeTo: new Date('2023-01-31T00:00:00Z')}],
+      ['P1M30D', [2, 'month'], {relativeTo: new Date('2023-01-31T00:00:00Z')}],
       [
         'P9M20DT25H',
         [9, 'month'],
@@ -418,7 +429,7 @@ suite('duration', function () {
           relativeTo: new Date('2022-12-01T00:00:00Z'),
         },
       ],
-      ['P11M', [1, 'year']],
+      ['P11M', [11, 'month']],
       ['P1Y4D', [1, 'year']],
       [
         'P1Y5M13D',
@@ -472,14 +483,14 @@ suite('duration', function () {
       ],
     ])
     for (const [input, [val, unit], opts] of relativeTests) {
-      test(`getRelativeTimeUnit(${input}) === [${val}, ${unit}]`, () => {
+      test(`getRelativeTimeUnit(${input}${opts ? `, ${JSON.stringify(opts)}` : ''}) === [${val}, ${unit}]`, () => {
         assert.deepEqual(
           getRelativeTimeUnit(Duration.from(input), opts || {relativeTo: new Date('2023-07-01T00:00:00')}),
           [val, unit],
         )
       })
       if (opts?.relativeTo) continue
-      test(`getRelativeTimeUnit(-${input}) === [-${val}, ${unit}]`, () => {
+      test(`getRelativeTimeUnit(-${input}${opts ? `, ${JSON.stringify(opts)}` : ''}) === [-${val}, ${unit}]`, () => {
         assert.deepEqual(
           getRelativeTimeUnit(Duration.from(`-${input}`), opts || {relativeTo: new Date('2023-07-01T00:00:00')}),
           [-val, unit],

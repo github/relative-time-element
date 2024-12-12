@@ -27,7 +27,7 @@ If the browser's JavaScript is disabled, the default text served in the cached m
 Available on [npm](https://www.npmjs.com/) as [**@github/relative-time-element**](https://www.npmjs.com/package/@github/relative-time-element).
 
 ```
-$ npm install @github/relative-time-element
+npm install @github/relative-time-element
 ```
 
 This element uses the `Intl.DateTimeFormat` & `Intl.RelativeTimeFormat` APIs, which are supported by all modern JS engines. If you need to support an older browser, you may need to introduce a polyfill for `Intl.DateTimeFormat` & `Intl.RelativeTimeFormat`.
@@ -65,7 +65,7 @@ So, a relative date phrase is used for up to a month and then the actual date is
 | Property Name  | Attribute Name   | Possible Values                                                                             | Default Value                    |
 |:---------------|:-----------------|:--------------------------------------------------------------------------------------------|:---------------------------------|
 | `datetime`     | `datetime`       | `string`                                                                                    | -                                |
-| `format`       | `format`         | `'datetime'\|'relative'\|'duration'`                                                        | `'auto'`                           |
+| `format`       | `format`         | `'datetime'\|'relative'\|'duration'`                                                        | `'auto'`                         |
 | `date`         | -                | `Date \| null`                                                                              | -                                |
 | `tense`        | `tense`          | `'auto'\|'past'\|'future'`                                                                  | `'auto'`                         |
 | `precision`    | `precision`      | `'year'\|'month'\|'day'\|'hour'\|'minute'\|'second'`                                        | `'second'`                       |
@@ -80,10 +80,11 @@ So, a relative date phrase is used for up to a month and then the actual date is
 | `month`        | `month`          | `'numeric'\|'2-digit'\|'short'\|'long'\|'narrow'\|undefined`                                | <sup>***</sup>                   |
 | `year`         | `year`           | `'numeric'\|'2-digit'\|undefined`                                                           | <sup>****</sup>                  |
 | `timeZoneName` | `time-zone-name` | `'long'\|'short'\|'shortOffset'\|'longOffset'` `\|'shortGeneric'\|'longGeneric'\|undefined` | `undefined`                      |
+| `noTitle`      | `no-title`       | `-`                                                                                         | `-`                              |
 
 <sup>*</sup>: If unspecified, `formatStyle` will return `'narrow'` if `format` is `'elapsed'` or `'micro'`, `'short'` if the format is `'relative'` or `'datetime'`, otherwise it will be `'long'`.
 
-<sup>**</sup>: If unspecified, `month` will return the same value as `formatStyle` whenever `format` is `'datetime'`, otherwise it wil be `'short'`.
+<sup>**</sup>: If unspecified, `month` will return the same value as `formatStyle` whenever `format` is `'datetime'`, otherwise it will be `'short'`.
 
 <sup>***</sup>: If unspecified, `weekday` will return the same value as `formatStyle` whenever `format` is `'datetime'`, otherwise it will be `undefined`.
 
@@ -122,7 +123,7 @@ Unless specified, it will consider `weekday` to be `'long'`, `month` to be `'lon
 
 ###### `format=relative`
 
-The default `relative` format will display dates relative to the current time (unless they are past the `threshold` value - see below). The values are rounded to display a single unit, for example if the time between the given `datetime` and the current wall clock time exceeds a day, then the format will _only_ ouput in days, and will not display hours, minutes or seconds. Some examples of this format with the default options and an `en` locale:
+The default `relative` format will display dates relative to the current time (unless they are past the `threshold` value - see below). The values are rounded to display a single unit, for example if the time between the given `datetime` and the current wall clock time exceeds a day, then the format will _only_ output in days, and will not display hours, minutes or seconds. Some examples of this format with the default options and an `en` locale:
 
  - `in 20 days`
  - `20 days ago`
@@ -146,7 +147,7 @@ This is similar to the `format=duration`, except the `formatStyle` defaults to `
 
 ###### `format=auto`
 
-This is identical to `format=relative`. Code that uses `format=auto` should migrae to `format=relative` as this will be the new default in a later version.
+This is identical to `format=relative`. Code that uses `format=auto` should migrate to `format=relative` as this will be the new default in a later version.
 
 ###### `format=micro`
 
@@ -198,21 +199,21 @@ Precision can be used to limit the display of an `relative` or `duration` format
 
 | `precision=`  | format=duration     |
 |:-------------:|:-------------------:|
-| seconds       | 2y 6m 10d 3h 20m 8s |
-| minutes       | 2y 6m 10d 3h 20m    |
-| hours         | 2y 6m 10d 3h        |
-| days          | 2y 6m 10d           |
-| months        | 2y 6m               |
-| years         | 2y                  |
+| second        | 2y 6m 10d 3h 20m 8s |
+| minute        | 2y 6m 10d 3h 20m    |
+| hour          | 2y 6m 10d 3h        |
+| day           | 2y 6m 10d           |
+| month         | 2y 6m               |
+| year          | 2y                  |
 
 | `precision=`  | format=relative     |
 |:-------------:|:-------------------:|
-| seconds       | 25 seconds          |
-| minutes       | now                 |
-| hours         | now                 |
-| days          | now                 |
-| months        | now                 |
-| years         | now                 |
+| second        | 25 seconds          |
+| minute        | now                 |
+| hour          | now                 |
+| day           | now                 |
+| month         | now                 |
+| year          | now                 |
 
 
 ##### threshold (`string`, default: `P30D`)
@@ -267,6 +268,10 @@ For dates outside of the specified `threshold`, the formatting of the date can b
 ##### lang
 
 Lang is a [built-in global attribute](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/lang). Relative Time will use this to provide an applicable language to the `Intl` APIs. If the individual element does not have a `lang` attribute then it will traverse upwards in the tree to find the closest element that does, or default the lang to `en`.
+
+##### noTitle
+
+Adding the `no-title` attribute will remove the `title` attribute from the `<relative-time>` element. The `title` attribute is inaccessible to screen reader and keyboard users, so not adding a title attribute allows a user to create a custom, accessible tooltip if one is desired.
 
 ## Browser Support
 

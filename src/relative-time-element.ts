@@ -82,11 +82,12 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
   #updating: false | Promise<void> = false
 
   get #lang() {
-    return (
-      this.closest('[lang]')?.getAttribute('lang') ||
-      this.ownerDocument.documentElement.getAttribute('lang') ||
-      'default'
-    )
+    const lang = this.closest('[lang]')?.getAttribute('lang') || this.ownerDocument.documentElement.getAttribute('lang')
+    try {
+      return new Intl.Locale(lang ?? '').toString()
+    } catch {
+      return 'default'
+    }
   }
 
   #renderRoot: Node = this.shadowRoot ? this.shadowRoot : this.attachShadow ? this.attachShadow({mode: 'open'}) : this
@@ -107,6 +108,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       'precision',
       'format',
       'format-style',
+      'no-title',
       'datetime',
       'lang',
       'title',
@@ -180,7 +182,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     if (tense === 'past' && duration.sign !== -1) duration = emptyDuration
     const [int, unit] = getRelativeTimeUnit(duration)
     if (unit === 'second' && int < 10) {
-      return relativeFormat.format(0, 'second')
+      return relativeFormat.format(0, this.precision === 'millisecond' ? 'second' : this.precision)
     }
     return relativeFormat.format(int, unit)
   }
@@ -382,6 +384,14 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     this.setAttribute('format-style', value)
   }
 
+  get noTitle(): boolean {
+    return this.hasAttribute('no-title')
+  }
+
+  set noTitle(value: boolean | undefined) {
+    this.toggleAttribute('no-title', value)
+  }
+
   get datetime() {
     return this.getAttribute('datetime') || ''
   }
@@ -417,6 +427,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       this.#updating = (async () => {
         await Promise.resolve()
         this.update()
+        this.#updating = false
       })()
     }
   }
@@ -433,7 +444,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     const now = Date.now()
     if (!this.#customTitle) {
       newTitle = this.#getFormattedTitle(date) || ''
-      if (newTitle) this.setAttribute('title', newTitle)
+      if (newTitle && !this.noTitle) this.setAttribute('title', newTitle)
     }
 
     const duration = elapsedTime(date, this.precision, now)
@@ -463,7 +474,6 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     } else {
       dateObserver.unobserve(this)
     }
-    this.#updating = false
   }
 }
 
