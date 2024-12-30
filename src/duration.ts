@@ -84,14 +84,35 @@ export class Duration {
   }
 }
 
+const durationApplicationActionsForward = [
+  (r: Date, duration: Duration) => {
+    r.setUTCFullYear(r.getUTCFullYear() + duration.years)
+  },
+  (r: Date, duration: Duration) => {
+    r.setUTCMonth(r.getUTCMonth() + duration.months)
+  },
+  (r: Date, duration: Duration) => {
+    r.setUTCDate(r.getUTCDate() + duration.weeks * 7 + duration.days)
+  },
+  (r: Date, duration: Duration) => {
+    r.setUTCHours(r.getUTCHours() + duration.hours)
+  },
+  (r: Date, duration: Duration) => {
+    r.setUTCMinutes(r.getUTCMinutes() + duration.minutes)
+  },
+  (r: Date, duration: Duration) => {
+    r.setUTCSeconds(r.getUTCSeconds() + duration.seconds)
+  },
+]
+const durationApplicationActionsBackward = [...durationApplicationActionsForward].reverse()
+
 export function applyDuration(date: Date | number, duration: Duration): Date {
   const r = new Date(date)
-  r.setFullYear(r.getFullYear() + duration.years)
-  r.setMonth(r.getMonth() + duration.months)
-  r.setDate(r.getDate() + duration.weeks * 7 + duration.days)
-  r.setHours(r.getHours() + duration.hours)
-  r.setMinutes(r.getMinutes() + duration.minutes)
-  r.setSeconds(r.getSeconds() + duration.seconds)
+  if (duration.sign < 0) {
+    for (const action of durationApplicationActionsBackward) action(r, duration)
+  } else {
+    for (const action of durationApplicationActionsForward) action(r, duration)
+  }
   return r
 }
 
