@@ -119,6 +119,72 @@ export function elapsedTime(date: Date, precision: Unit = 'second', now = Date.n
   )
 }
 
+const durationRoundingThresholds = [
+  Infinity, // Year
+  11, // Month
+  28, // Day
+  21, // Hour
+  55, // Minute
+  55, // Second
+  900, // Millisecond
+]
+
+export function relativeTime(
+  date: Date,
+  precision: Unit = 'second',
+  nowTimestamp: Date | number = Date.now(),
+): [number, Intl.RelativeTimeFormatUnit] {
+  let precisionIndex = unitNames.indexOf(precision)
+  if (precisionIndex === -1) {
+    precisionIndex = unitNames.length
+  }
+  const now = new Date(nowTimestamp)
+  const sign = Math.sign(date.getTime() - now.getTime())
+  const dateWithoutTime = new Date(date)
+  dateWithoutTime.setHours(0)
+  dateWithoutTime.setMinutes(0)
+  dateWithoutTime.setSeconds(0)
+  dateWithoutTime.setMilliseconds(0)
+  const nowWithoutTime = new Date(now)
+  nowWithoutTime.setHours(0)
+  nowWithoutTime.setMinutes(0)
+  nowWithoutTime.setSeconds(0)
+  nowWithoutTime.setMilliseconds(0)
+  if (
+    precisionIndex >= 4 && // At least hour.
+    (dateWithoutTime.getTime() === nowWithoutTime.getTime() ||
+      Math.abs(date.getTime() - now.getTime()) < 1000 * 60 * 60 * 12)
+  ) {
+    const difference = Math.round(((date.getTime() - now.getTime()) / 1000) * sign)
+    let hours = Math.floor(difference / 3600)
+    let minutes = Math.floor((difference % 3600) / 60)
+    const seconds = Math.floor(difference % 60)
+    if (hours === 0) {
+      if (seconds >= durationRoundingThresholds[5]) minutes += 1
+      if (minutes >= durationRoundingThresholds[4]) return [sign, 'hour']
+      if (precision === 'hour') return [0, 'hour']
+      if (minutes === 0 && precisionIndex >= 6) return [seconds * sign, 'second']
+      return [minutes * sign, 'minute']
+    } else {
+      if (hours < 23 && minutes >= durationRoundingThresholds[4]) hours += 1
+      return [hours * sign, 'hour']
+    }
+  }
+  const days = Math.round(((dateWithoutTime.getTime() - nowWithoutTime.getTime()) / (1000 * 60 * 60 * 24)) * sign)
+  const months = date.getFullYear() * 12 + date.getMonth() - (now.getFullYear() * 12 + now.getMonth())
+  if (
+    precisionIndex >= 2 && // At least week.
+    (months === 0 || days <= 26)
+  ) {
+    if (precision === 'week' || days >= 6) return [Math.floor((days + 1) / 7) * sign, 'week']
+    return [days * sign, 'day']
+  }
+  if (precision !== 'year' && Math.abs(months) < 12) {
+    return [months, 'month']
+  }
+  return [date.getFullYear() - now.getFullYear(), 'year']
+}
+
 interface RoundingOpts {
   relativeTo: Date | number
 }
