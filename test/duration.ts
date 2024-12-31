@@ -98,130 +98,244 @@ suite('duration', function () {
   })
 
   suite('elapsedTime', function () {
-    const elapsed = new Set([
+    const elapsedTests = [
       {
         now: '2022-01-21T16:48:44.104Z',
-        input: '2022-10-21T16:48:44.104Z',
-        expected: 'P9M3D',
+        input: '2022-01-21T16:48:45.104Z',
+        expected: 'PT1S',
       },
       {
         now: '2022-01-21T16:48:44.104Z',
-        input: '2022-10-21T16:48:45.104Z',
-        expected: 'P9M3DT1S',
+        input: '2022-01-21T16:49:43.104Z',
+        expected: 'PT59S',
       },
       {
         now: '2022-01-21T16:48:44.104Z',
-        input: '2022-10-21T16:48:45.104Z',
+        input: '2022-01-21T16:49:44.104Z',
+        expected: 'PT1M',
+      },
+      {
+        now: '2022-01-21T16:48:44.104Z',
+        input: '2022-01-21T16:49:46.104Z',
+        expected: 'PT1M2S',
+      },
+      {
+        now: '2022-01-21T16:48:44.104Z',
+        input: '2022-01-21T17:47:43.104Z',
+        expected: 'PT58M59S',
+      },
+      {
+        now: '2022-01-21T16:48:44.104Z',
+        input: '2022-01-21T17:48:44.104Z',
+        expected: 'PT1H',
+      },
+      {
+        now: '2022-01-21T16:48:44.104Z',
+        input: '2022-01-21T17:50:47.104Z',
+        expected: 'PT1H2M3S',
+      },
+      {
+        now: '2022-01-21T16:48:44.104Z',
+        input: '2022-01-22T15:47:43.104Z',
+        expected: 'PT22H58M59S',
+      },
+      {
+        now: '2022-01-21T16:48:44.104Z',
+        input: '2022-01-22T16:48:44.104Z',
+        expected: 'P1D',
+      },
+      {
+        now: '2022-01-21T16:48:44.104Z',
+        input: '2022-01-22T18:51:48.104Z',
+        expected: 'P1DT2H3M4S',
+      },
+      {
+        now: '2022-01-21T16:48:44.104Z',
+        input: '2022-02-20T15:47:43.104Z',
+        expected: 'P29DT22H58M59S',
+      },
+      {
+        now: '2022-01-21T16:48:44.104Z',
+        input: '2022-02-21T16:48:44.104Z',
+        expected: 'P1M',
+      },
+      {
+        now: '2022-01-21T16:48:44.104Z',
+        input: '2022-02-23T19:52:49.104Z',
+        expected: 'P1M2DT3H4M5S',
+      },
+      {
+        now: '2022-02-21T16:48:44.104Z',
+        input: '2023-01-20T15:47:43.104Z',
+        expected: 'P10M29DT22H58M59S',
+      },
+      {
+        now: '2022-01-21T16:48:44.104Z',
+        input: '2023-01-21T16:48:44.104Z',
+        expected: 'P1Y',
+      },
+      {
+        now: '2022-01-21T16:48:44.104Z',
+        input: '2023-03-24T20:53:50.104Z',
+        expected: 'P1Y2M3DT4H5M6S',
+      },
+
+      {
+        now: '2022-01-21T16:48:44.104Z',
+        input: '2023-03-24T20:53:50.104Z',
+        precision: 'second',
+        expected: 'P1Y2M3DT4H5M6S',
+      },
+      {
+        now: '2022-01-21T16:48:44.104Z',
+        input: '2023-03-24T20:53:50.104Z',
+        precision: 'minute',
+        expected: 'P1Y2M3DT4H5M',
+      },
+      {
+        now: '2022-01-21T16:48:44.104Z',
+        input: '2023-03-24T20:53:50.104Z',
+        precision: 'hour',
+        expected: 'P1Y2M3DT4H',
+      },
+      {
+        now: '2022-01-21T16:48:44.104Z',
+        input: '2023-03-24T20:53:50.104Z',
         precision: 'day',
-        expected: 'P9M3D',
+        expected: 'P1Y2M3D',
       },
       {
-        now: '2022-10-21T16:44:44.104Z',
-        input: '2022-10-21T16:48:44.104Z',
-        expected: 'PT4M',
+        now: '2022-01-21T16:48:44.104Z',
+        input: '2023-03-24T20:53:50.104Z',
+        precision: 'month',
+        expected: 'P1Y2M',
       },
       {
-        now: '2022-09-22T16:48:44.104Z',
-        input: '2022-10-21T16:48:44.104Z',
-        expected: 'P29D',
+        now: '2022-01-21T16:48:44.104Z',
+        input: '2023-03-24T20:53:50.104Z',
+        precision: 'year',
+        expected: 'P1Y',
       },
       {
-        now: '2022-10-24T14:46:00.000Z',
-        input: '2022-10-24T14:46:10.000Z',
-        expected: 'PT10S',
+        now: '2022-01-21T16:48:44.104Z',
+        input: '2023-03-24T20:53:50.104Z',
+        precision: 'garbage',
+        expected: 'P1Y2M3DT4H5M6S',
+      },
+
+      {
+        now: '2022-01-21T16:48:45.104Z',
+        input: '2022-01-21T16:48:44.104Z',
+        expected: '-PT1S',
       },
       {
-        now: '2022-10-24T14:46:00.000Z',
-        input: '2022-10-24T14:45:50.000Z',
-        expected: '-PT10S',
+        now: '2022-01-21T16:49:43.104Z',
+        input: '2022-01-21T16:48:44.104Z',
+        expected: '-PT59S',
       },
       {
-        now: '2022-10-24T14:46:00.000Z',
-        input: '2022-10-24T14:45:50.000Z',
-        precision: 'minute',
-        expected: 'PT0M',
-      },
-      {
-        now: '2022-10-24T14:46:00.000Z',
-        input: '2022-10-24T14:47:40.000Z',
-        expected: 'PT1M40S',
-      },
-      {
-        now: '2022-10-24T14:46:00.000Z',
-        input: '2022-10-24T14:44:20.000Z',
-        expected: '-PT1M40S',
-      },
-      {
-        now: '2022-10-24T14:46:00.000Z',
-        input: '2022-10-24T14:44:20.000Z',
-        precision: 'minute',
+        now: '2022-01-21T16:49:44.104Z',
+        input: '2022-01-21T16:48:44.104Z',
         expected: '-PT1M',
       },
       {
-        now: '2022-10-24T14:46:00.000Z',
-        input: '2022-10-24T15:51:40.000Z',
-        expected: 'PT1H5M40S',
+        now: '2022-01-21T16:49:46.104Z',
+        input: '2022-01-21T16:48:44.104Z',
+        expected: '-PT1M2S',
       },
       {
-        now: '2022-10-24T14:46:00.000Z',
-        input: '2022-10-24T15:51:40.000Z',
-        precision: 'minute',
-        expected: 'PT1H5M',
+        now: '2022-01-21T17:47:43.104Z',
+        input: '2022-01-21T16:48:44.104Z',
+        expected: '-PT58M59S',
       },
       {
-        now: '2022-10-24T14:46:00.000Z',
-        input: '2022-10-24T15:52:00.000Z',
-        expected: 'PT1H6M',
+        now: '2022-01-21T17:48:44.104Z',
+        input: '2022-01-21T16:48:44.104Z',
+        expected: '-PT1H',
       },
       {
-        now: '2022-10-24T14:46:00.000Z',
-        input: '2022-10-24T17:46:00.000Z',
-        expected: 'PT3H',
+        now: '2022-01-21T17:50:47.104Z',
+        input: '2022-01-21T16:48:44.104Z',
+        expected: '-PT1H2M3S',
       },
       {
-        now: '2022-10-24T14:46:00.000Z',
-        input: '2022-10-24T10:46:00.000Z',
-        expected: '-PT4H',
+        now: '2022-01-22T15:47:43.104Z',
+        input: '2022-01-21T16:48:44.104Z',
+        expected: '-PT22H58M59S',
       },
       {
-        now: '2022-10-24T14:46:00.000Z',
-        input: '2022-10-25T18:46:00.000Z',
-        expected: 'P1DT4H',
-      },
-      {
-        now: '2022-10-24T14:46:00.000Z',
-        input: '2022-10-23T10:46:00.000Z',
-        expected: '-P1DT4H',
-      },
-      {
-        now: '2022-10-24T14:46:00.000Z',
-        input: '2022-10-23T10:46:00.000Z',
-        precision: 'day',
+        now: '2022-01-22T16:48:44.104Z',
+        input: '2022-01-21T16:48:44.104Z',
         expected: '-P1D',
       },
       {
-        now: '2022-10-24T14:46:00.000Z',
-        input: '2021-10-30T14:46:00.000Z',
-        expected: '-P11M29D',
+        now: '2022-01-22T18:51:48.104Z',
+        input: '2022-01-21T16:48:44.104Z',
+        expected: '-P1DT2H3M4S',
       },
       {
-        now: '2022-10-24T14:46:00.000Z',
-        input: '2021-10-30T14:46:00.000Z',
-        precision: 'month',
-        expected: '-P11M',
+        now: '2022-02-20T15:47:43.104Z',
+        input: '2022-01-21T16:48:44.104Z',
+        expected: '-P29DT22H58M59S',
       },
       {
-        now: '2022-10-24T14:46:00.000Z',
-        input: '2021-10-29T14:46:00.000Z',
+        now: '2022-02-21T16:48:44.104Z',
+        input: '2022-01-21T16:48:44.104Z',
+        expected: '-P1M',
+      },
+      {
+        now: '2022-02-23T19:52:49.104Z',
+        input: '2022-01-21T16:48:44.104Z',
+        expected: '-P1M2DT3H4M5S',
+      },
+      {
+        now: '2023-01-20T15:47:43.104Z',
+        input: '2022-02-21T16:48:44.104Z',
+        expected: '-P10M29DT22H58M59S',
+      },
+      {
+        now: '2023-01-21T16:48:44.104Z',
+        input: '2022-01-21T16:48:44.104Z',
         expected: '-P1Y',
       },
       {
-        now: '2023-03-23T12:03:00.000Z',
-        input: '2023-03-21T16:03:00.000Z',
-        expected: '-P1DT20H',
+        now: '2023-03-24T20:53:50.104Z',
+        input: '2022-01-21T16:48:44.104Z',
+        expected: '-P1Y2M3DT4H5M6S',
       },
-    ])
-    for (const {input, now, precision = 'millisecond', expected} of elapsed) {
+
+      {
+        now: '2022-01-31T00:00:00.000Z',
+        input: '2022-02-28T00:00:00.000Z',
+        expected: 'P28D',
+      },
+      {
+        now: '2022-02-28T00:00:00.000Z',
+        input: '2022-03-31T00:00:00.000Z',
+        expected: 'P1M3D',
+      },
+      {
+        now: '2022-03-30T00:00:00.000Z',
+        input: '2022-05-01T00:00:00.000Z',
+        expected: 'P1M1D',
+      },
+      {
+        now: '2022-03-31T00:00:00.000Z',
+        input: '2022-05-01T00:00:00.000Z',
+        expected: 'P1M1D',
+      },
+      {
+        now: '2022-04-30T00:00:00.000Z',
+        input: '2022-06-01T00:00:00.000Z',
+        expected: 'P1M2D',
+      },
+      {
+        now: '2024-02-29T00:00:00.000Z',
+        input: '2025-02-28T00:00:00.000Z',
+        expected: 'P11M30D',
+      },
+    ]
+    for (const {input, now, precision = 'millisecond', expected} of elapsedTests) {
       test(`${input} is ${expected} elapsed from ${now} (precision ${precision})`, () => {
         assert.deepEqual(elapsedTime(new Date(input), precision, new Date(now).getTime()), Duration.from(expected))
       })
