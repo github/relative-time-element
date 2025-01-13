@@ -88,16 +88,19 @@ suite('duration', function () {
   })
 
   suite('applyDuration', function () {
-    const referenceDate = '2022-10-21T16:48:44.104Z'
     const tests = new Set([
-      {input: 'P4Y', expected: '2026-10-21T16:48:44.104Z'},
-      {input: '-P4Y', expected: '2018-10-21T16:48:44.104Z'},
-      {input: '-P3MT5M', expected: '2022-07-21T16:43:44.104Z'},
-      {input: 'P1Y2M3DT4H5M6S', expected: '2023-12-24T20:53:50.104Z'},
-      {input: 'P5W', expected: '2022-11-25T16:48:44.104Z'},
-      {input: '-P5W', expected: '2022-09-16T16:48:44.104Z'},
+      {referenceDate: '2022-10-21T16:48:44.104Z', input: 'P5W', expected: '2022-11-25T16:48:44.104Z'},
+      {referenceDate: '2022-11-25T16:48:44.104Z', input: '-P5W', expected: '2022-10-21T16:48:44.104Z'},
+      {referenceDate: '2022-07-21T16:43:44.104Z', input: 'P3MT5M', expected: '2022-10-21T16:48:44.104Z'},
+      {referenceDate: '2022-10-21T16:48:44.104Z', input: '-P3MT5M', expected: '2022-07-21T16:43:44.104Z'},
+      {referenceDate: '2022-10-21T16:48:44.104Z', input: 'P4Y', expected: '2026-10-21T16:48:44.104Z'},
+      {referenceDate: '2026-10-21T16:48:44.104Z', input: '-P4Y', expected: '2022-10-21T16:48:44.104Z'},
+      {referenceDate: '2022-10-21T16:48:44.104Z', input: 'P1Y2M3DT4H5M6S', expected: '2023-12-24T20:53:50.104Z'},
+      {referenceDate: '2023-12-24T20:53:50.104Z', input: '-P1Y2M3DT4H5M6S', expected: '2022-10-21T16:48:44.104Z'},
+      {referenceDate: '2023-08-15T00:00:00.000Z', input: 'P1Y3M25D', expected: '2024-12-10T00:00:00.000Z'},
+      {referenceDate: '2024-12-10T00:00:00.000Z', input: '-P1Y3M25D', expected: '2023-08-15T00:00:00.000Z'},
     ])
-    for (const {input, expected} of tests) {
+    for (const {referenceDate, input, expected} of tests) {
       test(`${referenceDate} -> ${input} -> ${expected}`, () => {
         assert.equal(applyDuration(new Date(referenceDate), Duration.from(input))?.toISOString(), expected)
       })
