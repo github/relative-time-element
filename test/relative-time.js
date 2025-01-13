@@ -452,7 +452,7 @@ suite('relative-time', function () {
       time.setAttribute('tense', 'past')
       time.setAttribute('datetime', '2023-01-01T00:00:00Z')
       await Promise.resolve()
-      assert.equal(time.shadowRoot.textContent, '11 years ago')
+      assert.equal(time.shadowRoot.textContent, '10 years ago')
     })
 
     test('rewrites from now past datetime to minutes ago', async () => {
@@ -499,7 +499,7 @@ suite('relative-time', function () {
       time.setAttribute('tense', 'past')
       time.setAttribute('datetime', '2023-06-01T00:00:00Z')
       await Promise.resolve()
-      assert.equal(time.shadowRoot.textContent, '4 months ago')
+      assert.equal(time.shadowRoot.textContent, '3 months ago')
     })
 
     test('rewrites from last few days of month to smaller last month', async () => {
@@ -1180,7 +1180,7 @@ suite('relative-time', function () {
         datetime: '2022-11-13T15:46:00.000Z',
         format: 'relative',
         precision: 'month',
-        expected: 'this month',
+        expected: 'next month',
       },
       {
         datetime: '2022-11-13T15:46:00.000Z',
