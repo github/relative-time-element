@@ -86,12 +86,21 @@ export class Duration {
 
 export function applyDuration(date: Date | number, duration: Duration): Date {
   const r = new Date(date)
-  r.setFullYear(r.getFullYear() + duration.years)
-  r.setMonth(r.getMonth() + duration.months)
-  r.setDate(r.getDate() + duration.weeks * 7 + duration.days)
-  r.setHours(r.getHours() + duration.hours)
-  r.setMinutes(r.getMinutes() + duration.minutes)
-  r.setSeconds(r.getSeconds() + duration.seconds)
+  if (duration.sign < 0) {
+    r.setUTCSeconds(r.getUTCSeconds() + duration.seconds)
+    r.setUTCMinutes(r.getUTCMinutes() + duration.minutes)
+    r.setUTCHours(r.getUTCHours() + duration.hours)
+    r.setUTCDate(r.getUTCDate() + duration.weeks * 7 + duration.days)
+    r.setUTCMonth(r.getUTCMonth() + duration.months)
+    r.setUTCFullYear(r.getUTCFullYear() + duration.years)
+  } else {
+    r.setUTCFullYear(r.getUTCFullYear() + duration.years)
+    r.setUTCMonth(r.getUTCMonth() + duration.months)
+    r.setUTCDate(r.getUTCDate() + duration.weeks * 7 + duration.days)
+    r.setUTCHours(r.getUTCHours() + duration.hours)
+    r.setUTCMinutes(r.getUTCMinutes() + duration.minutes)
+    r.setUTCSeconds(r.getUTCSeconds() + duration.seconds)
+  }
   return r
 }
 
