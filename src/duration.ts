@@ -84,34 +84,22 @@ export class Duration {
   }
 }
 
-const durationApplicationActionsForward = [
-  (r: Date, duration: Duration) => {
-    r.setUTCFullYear(r.getUTCFullYear() + duration.years)
-  },
-  (r: Date, duration: Duration) => {
-    r.setUTCMonth(r.getUTCMonth() + duration.months)
-  },
-  (r: Date, duration: Duration) => {
-    r.setUTCDate(r.getUTCDate() + duration.weeks * 7 + duration.days)
-  },
-  (r: Date, duration: Duration) => {
-    r.setUTCHours(r.getUTCHours() + duration.hours)
-  },
-  (r: Date, duration: Duration) => {
-    r.setUTCMinutes(r.getUTCMinutes() + duration.minutes)
-  },
-  (r: Date, duration: Duration) => {
-    r.setUTCSeconds(r.getUTCSeconds() + duration.seconds)
-  },
-]
-const durationApplicationActionsBackward = [...durationApplicationActionsForward].reverse()
-
 export function applyDuration(date: Date | number, duration: Duration): Date {
   const r = new Date(date)
   if (duration.sign < 0) {
-    for (const action of durationApplicationActionsBackward) action(r, duration)
+    r.setUTCSeconds(r.getUTCSeconds() + duration.seconds)
+    r.setUTCMinutes(r.getUTCMinutes() + duration.minutes)
+    r.setUTCHours(r.getUTCHours() + duration.hours)
+    r.setUTCDate(r.getUTCDate() + duration.weeks * 7 + duration.days)
+    r.setUTCMonth(r.getUTCMonth() + duration.months)
+    r.setUTCFullYear(r.getUTCFullYear() + duration.years)
   } else {
-    for (const action of durationApplicationActionsForward) action(r, duration)
+    r.setUTCFullYear(r.getUTCFullYear() + duration.years)
+    r.setUTCMonth(r.getUTCMonth() + duration.months)
+    r.setUTCDate(r.getUTCDate() + duration.weeks * 7 + duration.days)
+    r.setUTCHours(r.getUTCHours() + duration.hours)
+    r.setUTCMinutes(r.getUTCMinutes() + duration.minutes)
+    r.setUTCSeconds(r.getUTCSeconds() + duration.seconds)
   }
   return r
 }
