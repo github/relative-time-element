@@ -119,94 +119,74 @@ export function elapsedTime(date: Date, precision: Unit = 'second', now = Date.n
   )
 }
 
+const durationRoundingThresholds = [
+  Infinity, // Year
+  11, // Month
+  28, // Day
+  21, // Hour
+  55, // Minute
+  55, // Second
+  900, // Millisecond
+]
+
 interface RoundingOpts {
   relativeTo: Date | number
 }
 
 export function roundToSingleUnit(duration: Duration, {relativeTo = Date.now()}: Partial<RoundingOpts> = {}): Duration {
-  relativeTo = new Date(relativeTo)
   if (duration.blank) return duration
-  const sign = duration.sign
-  let years = Math.abs(duration.years)
-  let months = Math.abs(duration.months)
-  let weeks = Math.abs(duration.weeks)
-  let days = Math.abs(duration.days)
-  let hours = Math.abs(duration.hours)
-  let minutes = Math.abs(duration.minutes)
-  let seconds = Math.abs(duration.seconds)
-  let milliseconds = Math.abs(duration.milliseconds)
-
-  if (milliseconds >= 900) seconds += Math.round(milliseconds / 1000)
-  if (seconds || minutes || hours || days || weeks || months || years) {
-    milliseconds = 0
-  }
-
-  if (seconds >= 55) minutes += Math.round(seconds / 60)
-  if (minutes || hours || days || weeks || months || years) seconds = 0
-
-  if (minutes >= 55) hours += Math.round(minutes / 60)
-  if (hours || days || weeks || months || years) minutes = 0
-
-  if (days && hours >= 12) days += Math.round(hours / 24)
-  if (!days && hours >= 21) days += Math.round(hours / 24)
-  if (days || weeks || months || years) hours = 0
-
-  // Resolve calendar dates
-  const currentYear = relativeTo.getFullYear()
-  const currentMonth = relativeTo.getMonth()
-  const currentDate = relativeTo.getDate()
-  if (days >= 27 || years + months + days) {
-    const newMonthDate = new Date(relativeTo)
-    newMonthDate.setDate(1)
-    newMonthDate.setMonth(currentMonth + months * sign + 1)
-    newMonthDate.setDate(0)
-    const monthDateCorrection = Math.max(0, currentDate - newMonthDate.getDate())
-
-    const newDate = new Date(relativeTo)
-    newDate.setFullYear(currentYear + years * sign)
-    newDate.setDate(currentDate - monthDateCorrection)
-    newDate.setMonth(currentMonth + months * sign)
-    newDate.setDate(currentDate - monthDateCorrection + days * sign)
-    const yearDiff = newDate.getFullYear() - relativeTo.getFullYear()
-    const monthDiff = newDate.getMonth() - relativeTo.getMonth()
-    const daysDiff = Math.abs(Math.round((Number(newDate) - Number(relativeTo)) / 86400000)) + monthDateCorrection
-    const monthsDiff = Math.abs(yearDiff * 12 + monthDiff)
-    if (daysDiff < 27) {
-      if (days >= 6) {
-        weeks += Math.round(days / 7)
-        days = 0
-      } else {
-        days = daysDiff
+  const referenceDate = new Date(relativeTo)
+  const specifiedDate = applyDuration(referenceDate, duration)
+  const [sign, subtrahend, minuend] =
+    specifiedDate < referenceDate ? [-1, referenceDate, specifiedDate] : [1, specifiedDate, referenceDate]
+  const subtrahendWithoutTime = new Date(subtrahend)
+  subtrahendWithoutTime.setHours(0)
+  subtrahendWithoutTime.setMinutes(0)
+  subtrahendWithoutTime.setSeconds(0)
+  subtrahendWithoutTime.setMilliseconds(0)
+  const minuendWithoutTime = new Date(minuend)
+  minuendWithoutTime.setHours(0)
+  minuendWithoutTime.setMinutes(0)
+  minuendWithoutTime.setSeconds(0)
+  minuendWithoutTime.setMilliseconds(0)
+  if (
+    subtrahendWithoutTime.getTime() === minuendWithoutTime.getTime() ||
+    subtrahend.getTime() - minuend.getTime() < 1000 * 60 * 60 * 12
+  ) {
+    const difference = Math.round((subtrahend.getTime() - minuend.getTime()) / 1000)
+    let hours = Math.floor(difference / 3600)
+    let minutes = Math.floor((difference % 3600) / 60)
+    const seconds = Math.floor(difference % 60)
+    if (hours === 0) {
+      if (seconds >= durationRoundingThresholds[5]) minutes += 1
+      if (minutes >= durationRoundingThresholds[4]) {
+        return new Duration(0, 0, 0, 0, 1 * sign) // 1 hour.
       }
-      months = years = 0
-    } else if (monthsDiff <= 11) {
-      months = monthsDiff
-      years = 0
+      if (minutes === 0) {
+        return new Duration(0, 0, 0, 0, 0, 0, seconds * sign)
+      } else {
+        return new Duration(0, 0, 0, 0, 0, minutes * sign)
+      }
     } else {
-      months = 0
-      years = yearDiff * sign
+      if (hours < 23 && minutes >= durationRoundingThresholds[4]) hours += 1
+      return new Duration(0, 0, 0, 0, hours * sign)
     }
-    if (months || years) days = 0
   }
-  if (years) months = 0
-
-  if (weeks >= 4) months += Math.round(weeks / 4)
-  if (months || years) weeks = 0
-  if (days && weeks && !months && !years) {
-    weeks += Math.round(days / 7)
-    days = 0
+  const days = Math.round((subtrahendWithoutTime.getTime() - minuendWithoutTime.getTime()) / (1000 * 60 * 60 * 24))
+  const months =
+    subtrahend.getFullYear() * 12 + subtrahend.getMonth() - (minuend.getFullYear() * 12 + minuend.getMonth())
+  if (months === 0 || days <= 26) {
+    if (days >= 6) {
+      return new Duration(0, 0, Math.floor((days + 1) / 7) * sign) // Weeks.
+    } else {
+      return new Duration(0, 0, 0, days * sign)
+    }
   }
-
-  return new Duration(
-    years * sign,
-    months * sign,
-    weeks * sign,
-    days * sign,
-    hours * sign,
-    minutes * sign,
-    seconds * sign,
-    milliseconds * sign,
-  )
+  if (months < 12) {
+    return new Duration(0, months * sign)
+  } else {
+    return new Duration((subtrahend.getFullYear() - minuend.getFullYear()) * sign)
+  }
 }
 
 export function getRelativeTimeUnit(
