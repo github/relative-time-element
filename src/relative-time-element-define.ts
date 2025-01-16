@@ -22,6 +22,10 @@ declare global {
   interface HTMLElementTagNameMap {
     'relative-time': RelativeTimeElement
   }
+}
+
+// @ts-expect-error This is needed for consumers using React 19 and above but TypeScript complains because `react` isn't a dependency of the project.
+declare module 'react' {
   namespace JSX {
     interface IntrinsicElements {
       ['relative-time']: JSXBase['span'] & Partial<Omit<RelativeTimeElement, keyof HTMLElement>>
