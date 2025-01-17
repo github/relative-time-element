@@ -48,6 +48,11 @@
   "peerDependencies": {
     "@types/react": "18 || 19"
   },
+  "peerDependenciesMeta": {
+    "@types/react": {
+      "optional": true
+    }
+  },
   "eslintIgnore": [
     "dist/"
   ],
