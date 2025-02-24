@@ -104,27 +104,80 @@ export function applyDuration(date: Date | number, duration: Duration): Date {
   return r
 }
 
-export function elapsedTime(date: Date, precision: Unit = 'second', now = Date.now()): Duration {
-  const delta = date.getTime() - now
-  if (delta === 0) return new Duration()
-  const sign = Math.sign(delta)
-  const ms = Math.abs(delta)
-  const sec = Math.floor(ms / 1000)
-  const min = Math.floor(sec / 60)
-  const hr = Math.floor(min / 60)
-  const day = Math.floor(hr / 24)
-  const month = Math.floor(day / 30)
-  const year = Math.floor(month / 12)
-  const i = unitNames.indexOf(precision) || unitNames.length
+// Calculates the elapsed time from `now` to `date`.
+export function elapsedTime(
+  date: Date,
+  precision: Unit = 'second',
+  nowTimestamp: Date | number = Date.now(),
+): Duration {
+  const now = new Date(nowTimestamp)
+  // eslint-disable-next-line prefer-const
+  let [sign, subtrahend, minuend] = date < now ? [-1, now, date] : [1, date, now]
+  let ms: number
+  let sec: number
+  let min: number
+  let hr: number
+  let day: number
+  let month: number
+  let year: number
+  // Using UTC to avoid timezone-specific variations.
+  if (subtrahend.getUTCMilliseconds() >= minuend.getUTCMilliseconds()) {
+    ms = subtrahend.getUTCMilliseconds() - minuend.getUTCMilliseconds()
+  } else {
+    ms = 1000 + subtrahend.getUTCMilliseconds() - minuend.getUTCMilliseconds()
+    subtrahend = new Date(subtrahend.getTime() - 1000)
+  }
+
+  if (subtrahend.getUTCSeconds() >= minuend.getUTCSeconds()) {
+    sec = subtrahend.getUTCSeconds() - minuend.getUTCSeconds()
+  } else {
+    sec = 60 + subtrahend.getUTCSeconds() - minuend.getUTCSeconds()
+    subtrahend = new Date(subtrahend.getTime() - 1000 * 60)
+  }
+
+  if (subtrahend.getUTCMinutes() >= minuend.getUTCMinutes()) {
+    min = subtrahend.getUTCMinutes() - minuend.getUTCMinutes()
+  } else {
+    min = 60 + subtrahend.getUTCMinutes() - minuend.getUTCMinutes()
+    subtrahend = new Date(subtrahend.getTime() - 1000 * 60 * 60)
+  }
+
+  if (subtrahend.getUTCHours() >= minuend.getUTCHours()) {
+    hr = subtrahend.getUTCHours() - minuend.getUTCHours()
+  } else {
+    hr = 24 + subtrahend.getUTCHours() - minuend.getUTCHours()
+    subtrahend = new Date(subtrahend.getTime() - 1000 * 60 * 60 * 24)
+  }
+
+  if (subtrahend.getUTCDate() >= minuend.getUTCDate()) {
+    day = subtrahend.getUTCDate() - minuend.getUTCDate()
+  } else {
+    day = subtrahend.getUTCDate()
+    subtrahend = new Date(subtrahend.getTime() - 1000 * 60 * 60 * 24 * day)
+    day += Math.max(0, subtrahend.getUTCDate() - minuend.getUTCDate())
+  }
+
+  year = subtrahend.getUTCFullYear() - minuend.getUTCFullYear()
+  if (subtrahend.getUTCMonth() >= minuend.getUTCMonth()) {
+    month = subtrahend.getUTCMonth() - minuend.getUTCMonth()
+  } else {
+    month = 12 + subtrahend.getUTCMonth() - minuend.getUTCMonth()
+    year -= 1
+  }
+
+  let precisionIndex = unitNames.indexOf(precision)
+  if (precisionIndex === -1) {
+    precisionIndex = unitNames.length
+  }
   return new Duration(
-    i >= 0 ? year * sign : 0,
-    i >= 1 ? (month - year * 12) * sign : 0,
+    precisionIndex >= 0 ? year * sign : 0,
+    precisionIndex >= 1 ? month * sign : 0,
     0,
-    i >= 3 ? (day - month * 30) * sign : 0,
-    i >= 4 ? (hr - day * 24) * sign : 0,
-    i >= 5 ? (min - hr * 60) * sign : 0,
-    i >= 6 ? (sec - min * 60) * sign : 0,
-    i >= 7 ? (ms - sec * 1000) * sign : 0,
+    precisionIndex >= 3 ? day * sign : 0,
+    precisionIndex >= 4 ? hr * sign : 0,
+    precisionIndex >= 5 ? min * sign : 0,
+    precisionIndex >= 6 ? sec * sign : 0,
+    precisionIndex >= 7 ? ms * sign : 0,
   )
 }
 
