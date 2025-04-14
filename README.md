@@ -1,4 +1,4 @@
-# &lt;relative-time&gt; element
+# &lt;relative-time&gt; elementk
 
 Formats a timestamp as a localized string or as relative text that auto-updates in the user's browser.
 
