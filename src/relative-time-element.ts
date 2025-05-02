@@ -459,10 +459,14 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     }
 
     if (newText) {
-      this.#renderRoot.textContent = newText
+      if (this.hasAttribute('aria-hidden') && this.getAttribute('aria-hidden') === 'true') {
+        (this.#renderRoot as Element).innerHTML = `<span aria-hidden="true">${newText}</span>`;
+      } else {
+        this.#renderRoot.textContent = newText;
+      }
     } else if (this.shadowRoot === this.#renderRoot && this.textContent) {
       // Ensure invalid dates fall back to lightDOM text content
-      this.#renderRoot.textContent = this.textContent
+      this.#renderRoot.textContent = this.textContent;
     }
 
     if (newText !== oldText || newTitle !== oldTitle) {
