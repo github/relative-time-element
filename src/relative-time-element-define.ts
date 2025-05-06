@@ -22,9 +22,6 @@ declare global {
   interface HTMLElementTagNameMap {
     'relative-time': RelativeTimeElement
   }
-}
-
-declare module 'react' {
   namespace JSX {
     interface IntrinsicElements {
       ['relative-time']: JSXBase['span'] & Partial<Omit<RelativeTimeElement, keyof HTMLElement>>
