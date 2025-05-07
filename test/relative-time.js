@@ -1892,7 +1892,7 @@ suite('relative-time', function () {
       time.setAttribute('aria-hidden', 'false')
       await Promise.resolve()
 
-      assert.isNull(time.querySelector('[aria-hidden]'), 'Expected no aria-hidden to be present')
+      assert.isNull(time.shadowRoot.querySelector('[aria-hidden]'), 'Expected no aria-hidden to be present')
       assert.isNull(time.shadowRoot.querySelector('span'), 'Expected no span to be present')
     })
 
