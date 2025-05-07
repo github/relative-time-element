@@ -122,7 +122,7 @@ suite('relative-time', function () {
     assert.notEqual(nextDisplay, display)
   })
 
-  test('all observedAttributes have getters)', async () => {
+  test('all observedAttributes have getters', async () => {
     const members = [
       ...Object.getOwnPropertyNames(RelativeTimeElement.prototype).map(n =>
         n.replace(/([A-Z])/g, c => `-${c.toLowerCase()}`),
