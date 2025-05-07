@@ -200,6 +200,14 @@
     </relative-time>
   </p>
 
+  <h2>With Aria Hidden</h2>
+
+  <button class="js-toggle-aria-hidden">
+    With aria-hidden
+    <relative-time aria-hidden="true" datetime="1970-01-01T00:00:00.000Z">
+    </relative-time>
+  </button>
+
   <!-- <script type="module" src="../dist/index.js"></script> -->
   <script type="module" src="https://unpkg.com/@github/relative-time-element@latest/dist/bundle.js"></script>
   <script>
@@ -213,6 +221,17 @@
     setTimeout(() => {
       document.getElementById('lazy').setAttribute('datetime', new Date().toJSON())
     }, 1000)
+
+    const toggleAriaHidden = (event) => {
+      const relativeTimeElement = event.currentTarget.querySelector('relative-time')
+      if (relativeTimeElement.getAttribute('aria-hidden') === 'true') {
+        relativeTimeElement.setAttribute('aria-hidden', 'false')
+      } else {
+        relativeTimeElement.setAttribute('aria-hidden', 'true')
+      }
+    }
+    const button = document.querySelector('.js-toggle-aria-hidden')
+    button.addEventListener('click', toggleAriaHidden)
   </script>
 </body>
 </html>

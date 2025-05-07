@@ -112,6 +112,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       'datetime',
       'lang',
       'title',
+      'aria-hidden',
     ]
   }
 
@@ -199,6 +200,17 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       timeZoneName: this.timeZoneName,
     })
     return `${this.prefix} ${formatter.format(date)}`.trim()
+  }
+
+  #updateRenderRootContent(content: string | null): void {
+    if (this.hasAttribute('aria-hidden') && this.getAttribute('aria-hidden') === 'true') {
+      const span = document.createElement('span')
+      span.setAttribute('aria-hidden', 'true')
+      span.textContent = content
+      ;(this.#renderRoot as Element).replaceChildren(span)
+    } else {
+      this.#renderRoot.textContent = content
+    }
   }
 
   #onRelativeTimeUpdated: ((event: RelativeTimeUpdatedEvent) => void) | null = null
@@ -459,10 +471,10 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     }
 
     if (newText) {
-      this.#renderRoot.textContent = newText
+      this.#updateRenderRootContent(newText)
     } else if (this.shadowRoot === this.#renderRoot && this.textContent) {
       // Ensure invalid dates fall back to lightDOM text content
-      this.#renderRoot.textContent = this.textContent
+      this.#updateRenderRootContent(this.textContent)
     }
 
     if (newText !== oldText || newTitle !== oldTitle) {

@@ -130,6 +130,7 @@ suite('relative-time', function () {
       ...Object.getOwnPropertyNames(HTMLElement.prototype),
     ]
     const observedAttributes = new Set(RelativeTimeElement.observedAttributes)
+    observedAttributes.delete('aria-hidden') // Standard HTML attribute, no need for custom getter
     for (const member of members) observedAttributes.delete(member)
     assert.empty([...observedAttributes], 'observedAttributes that arent class members')
   })
@@ -1870,6 +1871,40 @@ suite('relative-time', function () {
         assert.equal(time.shadowRoot.textContent, expected)
       })
     }
+  })
+
+  suite('[aria-hidden]', async () => {
+    test('[aria-hidden="true"] applies to shadow root', async () => {
+      const now = new Date().toISOString()
+      const time = document.createElement('relative-time')
+      time.setAttribute('datetime', now)
+      time.setAttribute('aria-hidden', 'true')
+      await Promise.resolve()
+
+      const span = time.shadowRoot.querySelector('span')
+      assert.equal(span.getAttribute('aria-hidden'), 'true')
+    })
+
+    test('[aria-hidden="false"] applies to shadow root', async () => {
+      const now = new Date().toISOString()
+      const time = document.createElement('relative-time')
+      time.setAttribute('datetime', now)
+      time.setAttribute('aria-hidden', 'false')
+      await Promise.resolve()
+
+      assert.isNull(time.shadowRoot.querySelector('[aria-hidden]'), 'Expected no aria-hidden to be present')
+      assert.isNull(time.shadowRoot.querySelector('span'), 'Expected no span to be present')
+    })
+
+    test('no aria-hidden applies to shadow root', async () => {
+      const now = new Date().toISOString()
+      const time = document.createElement('relative-time')
+      time.setAttribute('datetime', now)
+      await Promise.resolve()
+
+      assert.isNull(time.shadowRoot.querySelector('[aria-hidden]'), 'Expected no aria-hidden to be present')
+      assert.isNull(time.shadowRoot.querySelector('span'), 'Expected no span to be present')
+    })
   })
 
   suite('legacy formats', function () {
