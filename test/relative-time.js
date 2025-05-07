@@ -1903,7 +1903,7 @@ suite('relative-time', function () {
       await Promise.resolve()
 
       assert.isNull(time.shadowRoot.querySelector('[aria-hidden]'), 'Expected no aria-hidden to be present')
-      assert.isNull(time.querySelector('span'), 'Expected no span to be present')
+      assert.isNull(time.shadowRoot.querySelector('span'), 'Expected no span to be present')
     })
   })
 
