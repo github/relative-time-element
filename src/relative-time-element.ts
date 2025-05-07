@@ -112,6 +112,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       'datetime',
       'lang',
       'title',
+      'aria-hidden',
     ]
   }
 
@@ -460,13 +461,16 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
 
     if (newText) {
       if (this.hasAttribute('aria-hidden') && this.getAttribute('aria-hidden') === 'true') {
-        (this.#renderRoot as Element).innerHTML = `<span aria-hidden="true">${newText}</span>`;
+        const span = document.createElement('span')
+        span.setAttribute('aria-hidden', 'true')
+        span.textContent = newText
+        ;(this.#renderRoot as Element).replaceChildren(span)
       } else {
-        this.#renderRoot.textContent = newText;
+        this.#renderRoot.textContent = newText
       }
     } else if (this.shadowRoot === this.#renderRoot && this.textContent) {
       // Ensure invalid dates fall back to lightDOM text content
-      this.#renderRoot.textContent = this.textContent;
+      this.#renderRoot.textContent = this.textContent
     }
 
     if (newText !== oldText || newTitle !== oldTitle) {
