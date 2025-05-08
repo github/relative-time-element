@@ -1,4 +1,4 @@
-import {Duration, elapsedTime, getRelativeTimeUnit, isDuration, roundToSingleUnit, Unit, unitNames} from './duration.js'
+import {Duration, Unit, elapsedTime, getRelativeTimeUnit, isDuration, roundToSingleUnit, unitNames} from './duration.js'
 const HTMLElement = globalThis.HTMLElement || (null as unknown as typeof window['HTMLElement'])
 
 export type DeprecatedFormat = 'auto' | 'micro' | 'elapsed'
@@ -158,6 +158,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     const tense = this.tense
     let empty = emptyDuration
     if (format === 'micro') {
+      // TODO: Switch to `roundBalancedToSingleUnit` after integrating the new `elapsedTime` implementation.
       duration = roundToSingleUnit(duration)
       empty = microEmptyDuration
       if ((this.tense === 'past' && duration.sign !== -1) || (this.tense === 'future' && duration.sign !== 1)) {
