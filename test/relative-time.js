@@ -2614,7 +2614,7 @@ suite('relative-time', function () {
       el.setAttribute('time-zone', 'Asia/Tokyo')
       await Promise.resolve()
       assert.notEqual(el.shadowRoot.textContent, initial)
-      assert.equal(el.shadowRoot.textContent, "Wed, Jan 1, 2020, 9:00:00 PM")
+      assert.equal(el.shadowRoot.textContent, 'Wed, Jan 1, 2020, 9:00:00 PM')
     })
 
     test('ignores empty time-zone attributes', async () => {
