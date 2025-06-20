@@ -90,6 +90,14 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     }
   }
 
+  get timeZone() {
+    // Prefer attribute, then closest, then document
+    const tz =
+      this.closest('[time-zone]')?.getAttribute('time-zone') ||
+      this.ownerDocument.documentElement.getAttribute('time-zone')
+    return tz || undefined
+  }
+
   #renderRoot: Node = this.shadowRoot ? this.shadowRoot : this.attachShadow ? this.attachShadow({mode: 'open'}) : this
 
   static get observedAttributes() {
@@ -113,6 +121,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       'lang',
       'title',
       'aria-hidden',
+      'time-zone',
     ]
   }
 
@@ -129,6 +138,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       hour: 'numeric',
       minute: '2-digit',
       timeZoneName: 'short',
+      timeZone: this.timeZone,
     }).format(date)
   }
 
@@ -198,6 +208,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       month: this.month,
       year: this.year,
       timeZoneName: this.timeZoneName,
+      timeZone: this.timeZone,
     })
     return `${this.prefix} ${formatter.format(date)}`.trim()
   }
