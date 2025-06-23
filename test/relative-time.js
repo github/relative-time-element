@@ -2629,5 +2629,19 @@ suite('relative-time', function () {
       // Should fallback to default or system time zone
       assert.equal(el.shadowRoot.textContent, 'Wed, Jan 1, 2020, 4:00:00 PM')
     })
+
+    test('uses html time-zone if element time-zone is empty', async () => {
+      const time = document.createElement('relative-time')
+      time.setAttribute('datetime', '2020-01-01T12:00:00.000Z')
+      time.setAttribute('time-zone', '')
+      document.documentElement.setAttribute('time-zone', 'Asia/Tokyo')
+      time.setAttribute('format', 'datetime')
+      time.setAttribute('hour', 'numeric')
+      time.setAttribute('minute', '2-digit')
+      time.setAttribute('second', '2-digit')
+      await Promise.resolve()
+      assert.equal(time.shadowRoot.textContent, 'Wed, Jan 1, 2020, 9:00:00 PM')
+      document.documentElement.removeAttribute('time-zone')
+    })
   })
 })
