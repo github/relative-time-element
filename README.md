@@ -80,6 +80,7 @@ So, a relative date phrase is used for up to a month and then the actual date is
 | `month`        | `month`          | `'numeric'\|'2-digit'\|'short'\|'long'\|'narrow'\|undefined`                                | <sup>***</sup>                   |
 | `year`         | `year`           | `'numeric'\|'2-digit'\|undefined`                                                           | <sup>****</sup>                  |
 | `timeZoneName` | `time-zone-name` | `'long'\|'short'\|'shortOffset'\|'longOffset'` `\|'shortGeneric'\|'longGeneric'\|undefined` | `undefined`                      |
+| `timeZone`     | `time-zone`      | `string\|undefined`                                                                          | Browser default time zone         |
 | `noTitle`      | `no-title`       | `-`                                                                                         | `-`                              |
 
 <sup>*</sup>: If unspecified, `formatStyle` will return `'narrow'` if `format` is `'elapsed'` or `'micro'`, `'short'` if the format is `'relative'` or `'datetime'`, otherwise it will be `'long'`.
@@ -138,6 +139,19 @@ The `duration` format will display the time remaining (or elapsed time) from the
 - `4 hours, 2 minutes, 30 seconds`
 - `4 hours`
 - `8 days, 30 minutes, 1 second`
+
+##### time-zone (`string`)
+
+The`time-zone` attribute allows you to specify the IANA time zone name (e.g., `America/New_York`, `Europe/London`) used for formatting the date and time. 
+
+You can set the time zone either as an attribute or property:
+```html
+<relative-time datetime="2024-06-01T12:00:00Z" ... time-zone="America/New_York">
+  June 1, 2024 8:00am EDT
+</relative-time>
+```
+
+If the individual element does not have a `time-zone` attribute then it will traverse upwards in the tree to find the closest element that does, or default the `time-zone` to the browsers default.
 
 ###### Deprecated Formats
 
