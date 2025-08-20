@@ -110,7 +110,11 @@ export default class DurationFormat {
           : unitStyle === 'numeric'
           ? {}
           : {style: 'unit', unit: nfUnit, unitDisplay: unitStyle}
-      list.push(new Intl.NumberFormat(locale, nfOpts).format(value))
+      list.push(
+        nfUnit === 'month' && unitStyle === 'narrow'
+          ? `${value}mo`
+          : new Intl.NumberFormat(locale, nfOpts).format(value),
+      )
     }
     return new ListFormat(locale, {
       type: 'unit',
