@@ -198,6 +198,8 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       month: this.month,
       year: this.year,
       timeZoneName: this.timeZoneName,
+      dateStyle: this.dateStyle,
+      timeStyle: this.timeStyle,
     })
     return `${this.prefix} ${formatter.format(date)}`.trim()
   }
@@ -324,6 +326,38 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     value: 'long' | 'short' | 'shortOffset' | 'longOffset' | 'shortGeneric' | 'longGeneric' | undefined,
   ) {
     this.setAttribute('time-zone-name', value || '')
+  }
+
+  get dateStyle() {
+    const dateStyle = this.getAttribute('date-style')
+
+    if (dateStyle === 'short' || dateStyle === 'long' || dateStyle === 'full' || dateStyle === 'medium') {
+      return dateStyle
+    }
+  }
+
+  set dateStyle(value: 'short' | 'long' | 'full' | 'medium' | undefined) {
+    if (value) {
+      this.setAttribute('date-style', value)
+    } else {
+      this.removeAttribute('date-style')
+    }
+  }
+
+  get timeStyle() {
+    const timeStyle = this.getAttribute('time-style')
+
+    if (timeStyle === 'short' || timeStyle === 'long' || timeStyle === 'full' || timeStyle === 'medium') {
+      return timeStyle
+    }
+  }
+
+  set timeStyle(value: 'short' | 'long' | 'full' | 'medium' | undefined) {
+    if (value) {
+      this.setAttribute('time-style', value)
+    } else {
+      this.removeAttribute('time-style')
+    }
   }
 
   /** @deprecated */
