@@ -561,6 +561,17 @@ suite('relative-time', function () {
       await Promise.resolve()
       assert.equal(time.shadowRoot.textContent, '1d')
     })
+
+    test('micro formats months', async () => {
+      const datetime = new Date()
+      datetime.setMonth(datetime.getMonth() - 2)
+      const time = document.createElement('relative-time')
+      time.setAttribute('tense', 'past')
+      time.setAttribute('datetime', datetime)
+      time.setAttribute('format', 'micro')
+      await Promise.resolve()
+      assert.equal(time.shadowRoot.textContent, '2mo')
+    })
   })
 
   suite('[tense=future]', function () {
