@@ -170,7 +170,11 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     if (format === 'micro') {
       duration = roundToSingleUnit(duration)
       empty = microEmptyDuration
-      if ((this.tense === 'past' && duration.sign !== -1) || (this.tense === 'future' && duration.sign !== 1)) {
+      // Allow month-level durations to pass through even with mismatched tense
+      if (
+        duration.months === 0 &&
+        ((this.tense === 'past' && duration.sign !== -1) || (this.tense === 'future' && duration.sign !== 1))
+      ) {
         duration = microEmptyDuration
       }
     } else if ((tense === 'past' && duration.sign !== -1) || (tense === 'future' && duration.sign !== 1)) {
