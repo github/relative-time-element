@@ -92,6 +92,20 @@ suite('duration format ponyfill', function () {
         {type: 'element', value: '8s'},
       ],
     },
+    {
+      duration: 'P1M2DT3M30S',
+      locale: 'en',
+      style: 'narrow',
+      parts: [
+        {type: 'element', value: '1mo'},
+        {type: 'literal', value: ' '},
+        {type: 'element', value: '2d'},
+        {type: 'literal', value: ' '},
+        {type: 'element', value: '3m'},
+        {type: 'literal', value: ' '},
+        {type: 'element', value: '30s'},
+      ],
+    },
   ])
 
   for (const {duration, locale, parts, ...opts} of tests) {

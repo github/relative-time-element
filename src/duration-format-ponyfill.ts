@@ -114,7 +114,7 @@ export default class DurationFormat {
       let formattedValue = new Intl.NumberFormat(locale, nfOpts).format(value)
 
       // Custom handling for narrow month formatting to use "mo" instead of "m"
-      if (unit === 'months' && unitStyle === 'narrow') {
+      if (unit === 'months' && (unitStyle === 'narrow' || (style === 'narrow' && formattedValue.endsWith('m')))) {
         formattedValue = formattedValue.replace(/(\d+)m$/, '$1mo')
       }
 
