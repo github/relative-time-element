@@ -37,7 +37,7 @@ suite('duration format ponyfill', function () {
       locale: 'en',
       style: 'narrow',
       parts: [
-        {type: 'element', value: '1m'},
+        {type: 'element', value: '1mo'},
         {type: 'literal', value: ' '},
         {type: 'element', value: '2d'},
         {type: 'literal', value: ' '},
@@ -90,6 +90,20 @@ suite('duration format ponyfill', function () {
         {type: 'element', value: '6h'},
         {type: 'literal', value: ' '},
         {type: 'element', value: '8s'},
+      ],
+    },
+    {
+      duration: 'P1M2DT3M30S',
+      locale: 'en',
+      style: 'narrow',
+      parts: [
+        {type: 'element', value: '1mo'},
+        {type: 'literal', value: ' '},
+        {type: 'element', value: '2d'},
+        {type: 'literal', value: ' '},
+        {type: 'element', value: '3m'},
+        {type: 'literal', value: ' '},
+        {type: 'element', value: '30s'},
       ],
     },
   ])

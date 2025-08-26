@@ -273,7 +273,7 @@ This will used to determine the length of the unit names. This value is passed t
 | relative   | narrow         | in 1 mo.                 |
 | duration   | long           | 1 month, 2 days, 4 hours |
 | duration   | short          | 1 mth, 2 days, 4 hr      |
-| duration   | narrow         | 1m 2d 4h                 |
+| duration   | narrow         | 1mo 2d 4h                |
 
 ##### second, minute, hour, weekday, day, month, year, timeZoneName
 
