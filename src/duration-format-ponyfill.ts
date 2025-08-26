@@ -110,14 +110,14 @@ export default class DurationFormat {
           : unitStyle === 'numeric'
           ? {}
           : {style: 'unit', unit: nfUnit, unitDisplay: unitStyle}
-      
+
       let formattedValue = new Intl.NumberFormat(locale, nfOpts).format(value)
-      
+
       // Custom handling for narrow month formatting to use "mo" instead of "m"
       if (unit === 'months' && unitStyle === 'narrow') {
         formattedValue = formattedValue.replace(/(\d+)m$/, '$1mo')
       }
-      
+
       list.push(formattedValue)
     }
     return new ListFormat(locale, {
