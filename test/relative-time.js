@@ -1941,7 +1941,7 @@ suite('relative-time', function () {
         datetime: '2022-09-24T14:46:00.000Z',
         tense: 'future',
         format: 'micro',
-        expected: '1m',
+        expected: '1mo',
       },
       {
         datetime: '2022-10-23T14:46:00.000Z',
@@ -1991,7 +1991,7 @@ suite('relative-time', function () {
         datetime: '2022-11-24T14:46:00.000Z',
         tense: 'future',
         format: 'micro',
-        expected: '1m',
+        expected: '1mo',
       },
       {
         datetime: '2023-10-23T14:46:00.000Z',
@@ -2023,7 +2023,7 @@ suite('relative-time', function () {
         datetime: '2022-11-24T14:46:00.000Z',
         tense: 'past',
         format: 'micro',
-        expected: '1m',
+        expected: '1mo',
       },
       {
         datetime: '2022-10-25T14:46:00.000Z',
@@ -2073,7 +2073,7 @@ suite('relative-time', function () {
         datetime: '2022-09-23T14:46:00.000Z',
         tense: 'past',
         format: 'micro',
-        expected: '1m',
+        expected: '1mo',
       },
       {
         datetime: '2021-10-25T14:46:00.000Z',
@@ -2178,13 +2178,13 @@ suite('relative-time', function () {
       {
         datetime: '2021-10-30T14:46:00.000Z',
         format: 'elapsed',
-        expected: '11m 29d',
+        expected: '11mo 29d',
       },
       {
         datetime: '2021-10-30T14:46:00.000Z',
         format: 'elapsed',
         precision: 'month',
-        expected: '11m',
+        expected: '11mo',
       },
       {
         datetime: '2021-10-29T14:46:00.000Z',

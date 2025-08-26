@@ -37,7 +37,7 @@ suite('duration format ponyfill', function () {
       locale: 'en',
       style: 'narrow',
       parts: [
-        {type: 'element', value: '1m'},
+        {type: 'element', value: '1mo'},
         {type: 'literal', value: ' '},
         {type: 'element', value: '2d'},
         {type: 'literal', value: ' '},
