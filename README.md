@@ -48,7 +48,7 @@ Depending on how far in the future this is being viewed, the element's text will
 - 20 days from now
 - 4 hours from now
 - 7 minutes from now
-- just now
+- now
 - 30 seconds ago
 - a minute ago
 - 30 minutes ago
