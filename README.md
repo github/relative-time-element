@@ -1,6 +1,6 @@
 # &lt;relative-time&gt; element
 
-Formats a timestamp as a localized string or as relative text that auto-updates in the user's browser.
+Formats a timestamp as a localized string or as relative text that -updates in the user's browser.
 
 This allows the server to cache HTML fragments containing dates and lets the browser choose how to localize the displayed time according to the user's preferences. For example, the server may have cached the following generated markup:
 
