@@ -1,5 +1,12 @@
 import {assert} from '@open-wc/testing'
-import {applyDuration, Duration, elapsedTime, getRelativeTimeUnit, roundToSingleUnit} from '../src/duration.ts'
+import {
+  Duration,
+  applyDuration,
+  elapsedTime,
+  getRelativeTimeUnit,
+  relativeTime,
+  roundToSingleUnit,
+} from '../src/duration.ts'
 import {Temporal} from '@js-temporal/polyfill'
 
 suite('duration', function () {
@@ -227,6 +234,259 @@ suite('duration', function () {
     for (const {input, now, precision = 'millisecond', expected} of elapsed) {
       test(`${input} is ${expected} elapsed from ${now} (precision ${precision})`, () => {
         assert.deepEqual(elapsedTime(new Date(input), precision, new Date(now).getTime()), Duration.from(expected))
+      })
+    }
+  })
+
+  suite('relativeTime', function () {
+    const relativeTests = [
+      {
+        now: '2024-10-15T12:00:00',
+        date: '2024-10-15T12:00:00',
+        expected: [0, 'second'],
+      },
+      {
+        now: '2024-10-15T12:00:00',
+        date: '2024-10-15T12:00:01',
+        expected: [1, 'second'],
+      },
+      {
+        now: '2024-10-15T12:00:00',
+        date: '2024-10-15T11:59:59',
+        expected: [-1, 'second'],
+      },
+      {
+        now: '2024-10-15T12:00:00',
+        date: '2024-10-15T12:00:58',
+        expected: [1, 'minute'],
+      },
+      {
+        now: '2024-10-15T12:00:00',
+        date: '2024-10-15T11:59:02',
+        expected: [-1, 'minute'],
+      },
+      {
+        now: '2024-10-15T12:00:00',
+        date: '2024-10-15T12:05:00',
+        expected: [5, 'minute'],
+      },
+      {
+        now: '2024-10-15T12:00:00',
+        date: '2024-10-15T11:55:00',
+        expected: [-5, 'minute'],
+      },
+      {
+        now: '2024-10-15T12:00:00',
+        date: '2024-10-15T12:58:00',
+        expected: [1, 'hour'],
+      },
+      {
+        now: '2024-10-15T12:00:00',
+        date: '2024-10-15T11:02:00',
+        expected: [-1, 'hour'],
+      },
+      {
+        now: '2024-10-15T12:00:00',
+        date: '2024-10-15T12:54:55',
+        expected: [1, 'hour'],
+      },
+      {
+        now: '2024-10-15T12:00:00',
+        date: '2024-10-15T11:05:05',
+        expected: [-1, 'hour'],
+      },
+      {
+        now: '2024-10-15T00:00:00',
+        date: '2024-10-15T23:59:59',
+        expected: [23, 'hour'],
+      },
+      {
+        now: '2024-10-15T23:59:59',
+        date: '2024-10-15T00:00:00',
+        expected: [-23, 'hour'],
+      },
+      {
+        now: '2024-10-15T18:00:00',
+        date: '2024-10-16T00:00:00',
+        expected: [6, 'hour'],
+      },
+      {
+        now: '2024-10-15T00:00:00',
+        date: '2024-10-14T18:00:00',
+        expected: [-6, 'hour'],
+      },
+      {
+        now: '2024-10-15T12:00:00',
+        date: '2024-10-16T00:00:00',
+        expected: [1, 'day'],
+      },
+      {
+        now: '2024-10-15T12:00:00',
+        date: '2024-10-14T23:00:00',
+        expected: [-1, 'day'],
+      },
+      {
+        now: '2024-10-15T12:00:00',
+        date: '2024-10-25T12:00:00',
+        expected: [1, 'week'],
+      },
+      {
+        now: '2024-10-15T12:00:00',
+        date: '2024-10-05T12:00:00',
+        expected: [-1, 'week'],
+      },
+      {
+        now: '2024-10-01T12:00:00',
+        date: '2024-10-21T12:00:00',
+        expected: [3, 'week'],
+      },
+      {
+        now: '2024-10-21T12:00:00',
+        date: '2024-10-01T12:00:00',
+        expected: [-3, 'week'],
+      },
+      {
+        now: '2024-10-05T12:00:00',
+        date: '2024-11-01T12:00:00',
+        expected: [1, 'month'],
+      },
+      {
+        now: '2024-10-01T12:00:00',
+        date: '2024-09-04T12:00:00',
+        expected: [-1, 'month'],
+      },
+      {
+        now: '2024-10-15T12:00:00',
+        date: '2024-12-15T12:00:00',
+        expected: [2, 'month'],
+      },
+      {
+        now: '2024-10-15T12:00:00',
+        date: '2024-08-15T12:00:00',
+        expected: [-2, 'month'],
+      },
+      {
+        now: '2024-10-15T12:00:00',
+        date: '2025-01-15T12:00:00',
+        expected: [3, 'month'],
+      },
+      {
+        now: '2025-01-15T12:00:00',
+        date: '2024-10-15T12:00:00',
+        expected: [-3, 'month'],
+      },
+      {
+        now: '2024-10-15T12:00:00Z',
+        date: '2025-09-15T12:00:00Z',
+        expected: [11, 'month'],
+      },
+      {
+        now: '2024-10-15T12:00:00Z',
+        date: '2023-11-15T12:00:00Z',
+        expected: [-11, 'month'],
+      },
+      {
+        now: '2024-10-15T12:00:00Z',
+        date: '2025-10-15T12:00:00Z',
+        expected: [1, 'year'],
+      },
+      {
+        now: '2024-10-15T12:00:00Z',
+        date: '2023-10-15T12:00:00Z',
+        expected: [-1, 'year'],
+      },
+      {
+        now: '2024-10-15T12:00:00Z',
+        date: '2029-01-15T12:00:00Z',
+        expected: [5, 'year'],
+      },
+      {
+        now: '2024-01-15T12:00:00Z',
+        date: '2019-10-15T12:00:00Z',
+        expected: [-5, 'year'],
+      },
+
+      {
+        now: '2024-10-15T12:00:00',
+        date: '2024-10-15T12:00:00',
+        precision: 'minute',
+        expected: [0, 'minute'],
+      },
+      {
+        now: '2024-10-15T12:00:00',
+        date: '2024-10-15T12:00:00',
+        precision: 'hour',
+        expected: [0, 'hour'],
+      },
+      {
+        now: '2024-10-15T12:00:00',
+        date: '2024-10-15T12:00:00',
+        precision: 'day',
+        expected: [0, 'day'],
+      },
+      {
+        now: '2024-10-15T12:00:00',
+        date: '2024-10-15T12:00:00',
+        precision: 'week',
+        expected: [0, 'week'],
+      },
+      {
+        now: '2024-10-15T12:00:00',
+        date: '2024-10-15T12:00:00',
+        precision: 'month',
+        expected: [0, 'month'],
+      },
+      {
+        now: '2024-10-15T12:00:00',
+        date: '2024-10-15T12:00:00',
+        precision: 'year',
+        expected: [0, 'year'],
+      },
+      {
+        now: '2024-10-15T12:00:00',
+        date: '2024-10-15T12:00:50',
+        precision: 'minute',
+        expected: [0, 'minute'],
+      },
+      {
+        now: '2024-10-15T12:00:00',
+        date: '2024-10-15T12:50:00',
+        precision: 'hour',
+        expected: [0, 'hour'],
+      },
+      {
+        now: '2024-10-15T12:00:00',
+        date: '2024-10-15T22:00:00',
+        precision: 'day',
+        expected: [0, 'day'],
+      },
+      {
+        now: '2024-10-15T12:00:00',
+        date: '2024-10-20T12:00:00',
+        precision: 'week',
+        expected: [0, 'week'],
+      },
+      {
+        now: '2024-10-15T12:00:00',
+        date: '2024-10-31T12:00:00',
+        precision: 'month',
+        expected: [0, 'month'],
+      },
+      {
+        now: '2024-10-15T12:00:00',
+        date: '2024-12-15T12:00:00',
+        precision: 'year',
+        expected: [0, 'year'],
+      },
+    ]
+    for (const {
+      now,
+      date,
+      precision = 'second',
+      expected: [val, unit],
+    } of relativeTests) {
+      test(`relativeTime(${date}, ${precision}, ${now}) === [${val}, ${unit}]`, () => {
+        assert.deepEqual(relativeTime(new Date(date), precision, new Date(now)), [val, unit])
       })
     }
   })
