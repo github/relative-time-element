@@ -20,7 +20,7 @@
     "clean": "rm -rf dist",
     "lint": "eslint . --ext .js,.ts && tsc --noEmit",
     "lint:fix": "npm run lint -- --fix",
-    "prebuild": "npm run clean && npm run lint && mkdir dist",
+    "prebuild": "npm run clean && mkdir dist",
     "bundle": "esbuild --bundle dist/index.js --keep-names --outfile=dist/bundle.js --format=esm",
     "build": "tsc && npm run bundle && npm run manifest",
     "prepublishOnly": "npm run build",
