@@ -122,6 +122,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       'title',
       'aria-hidden',
       'time-zone',
+      'enable-user-time-preference'
     ]
   }
 
@@ -215,6 +216,21 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       timeZone: this.timeZone,
     })
     return `${this.prefix} ${formatter.format(date)}`.trim()
+  }
+
+  #getUserPreferredFormat(date: Date): string {
+    const formatter = new Intl.DateTimeFormat(this.#lang, {
+      second: undefined,
+      minute: '2-digit',
+      year: '2-digit',
+      month: 'numeric',
+      day: 'numeric',
+      hour: 'numeric',
+      weekday: undefined,
+      timeZoneName: undefined,
+      timeZone: undefined,
+    })
+    return `${formatter.format(date)}`.trim()
   }
 
   #updateRenderRootContent(content: string | null): void {
@@ -339,6 +355,14 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     value: 'long' | 'short' | 'shortOffset' | 'longOffset' | 'shortGeneric' | 'longGeneric' | undefined,
   ) {
     this.setAttribute('time-zone-name', value || '')
+  }
+
+  get enableUserTimePreference(): boolean {
+    return this.hasAttribute('enable-user-time-preference')
+  }
+
+  set enableUserTimePreference(value: boolean | undefined) {
+    this.toggleAttribute('enable-user-time-preference', value)
   }
 
   /** @deprecated */
@@ -477,12 +501,24 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     const duration = elapsedTime(date, this.precision, now)
     const format = this.#resolveFormat(duration)
     let newText = oldText
-    if (format === 'duration') {
-      newText = this.#getDurationFormat(duration)
-    } else if (format === 'relative') {
-      newText = this.#getRelativeFormat(duration)
+
+    // Check if user preference is enabled.
+    const userPreferenceElement = document.querySelector('[data-prefers-absolute-time]')
+    let userPrefersAbsoluteTime = false
+    if (userPreferenceElement) {
+      userPrefersAbsoluteTime = userPreferenceElement.getAttribute('data-prefers-absolute-time') === 'true'
+    }
+    if (this.enableUserTimePreference && userPrefersAbsoluteTime) {
+      // return format
+      newText = this.#getUserPreferredFormat(date)
     } else {
-      newText = this.#getDateTimeFormat(date)
+      if (format === 'duration') {
+        newText = this.#getDurationFormat(duration)
+      } else if (format === 'relative') {
+        newText = this.#getRelativeFormat(duration)
+      } else {
+        newText = this.#getDateTimeFormat(date)
+      }
     }
 
     if (newText) {
