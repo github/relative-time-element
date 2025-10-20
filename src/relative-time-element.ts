@@ -80,6 +80,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
 
   #customTitle = false
   #updating: false | Promise<void> = false
+  #prefersAbsoluteTime: boolean | null = this.#checkUserPreference()
 
   get #lang() {
     const lang = this.closest('[lang]')?.getAttribute('lang') || this.ownerDocument.documentElement.getAttribute('lang')
@@ -124,6 +125,16 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       'time-zone',
     ]
   }
+
+  #checkUserPreference(): boolean {
+    const prefersAbsoluteTime = document.querySelector('[data-prefers-absolute-time]') as HTMLMetaElement
+    return prefersAbsoluteTime ? prefersAbsoluteTime.getAttribute('data-prefers-absolute-time') === 'true' : false
+  }
+
+  // #checkThresholdPreference(): string | null {
+  //   const thresholdPreference = document.querySelector('[data-relative-time-threshold-preference ]') as HTMLMetaElement
+  //   return thresholdPreference ? thresholdPreference.content : null
+  // }
 
   // Internal: Format the ISO 8601 timestamp according to the user agent's
   // locale-aware formatting rules. The element's existing `title` attribute
@@ -215,6 +226,35 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       timeZone: this.timeZone,
     })
     return `${this.prefix} ${formatter.format(date)}`.trim()
+  }
+
+  #getUserPreferredFormat(date: Date, duration?: Duration) {
+    // const thresholdPreference = this.#checkThresholdPreference()
+    // If has threshold preference and within threshold
+    // if (
+    //   thresholdPreference &&
+    //   isDuration(thresholdPreference) &&
+    //   Duration.compare(duration, thresholdPreference) <= 0
+    // ) {
+    //   const formatPref = this.format
+    //   if (formatPref === 'relative') {
+    //     return this.#getRelativeFormat(duration)
+    //   } else if (formatPref === 'duration' || formatPref === 'elapsed' || formatPref === 'micro') {
+    //     return this.#getDurationFormat(duration)
+    //   }
+    // }
+
+    // Otherwise, use our default absolute time format.
+    const formatter = new Intl.DateTimeFormat(this.#lang, {
+      year: '2-digit',
+      month: 'numeric',
+      day: 'numeric',
+      weekday: undefined,
+      minute: '2-digit',
+      hour: 'numeric',
+      second: undefined,
+    })
+    return `${formatter.format(date)}`.trim()
   }
 
   #updateRenderRootContent(content: string | null): void {
@@ -477,12 +517,18 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     const duration = elapsedTime(date, this.precision, now)
     const format = this.#resolveFormat(duration)
     let newText = oldText
-    if (format === 'duration') {
-      newText = this.#getDurationFormat(duration)
-    } else if (format === 'relative') {
-      newText = this.#getRelativeFormat(duration)
+
+    // If user explicitly prefers absolute time use that.
+    if (this.#prefersAbsoluteTime) {
+      newText = this.#getUserPreferredFormat(date)
     } else {
-      newText = this.#getDateTimeFormat(date)
+      if (format === 'duration') {
+        newText = this.#getDurationFormat(duration)
+      } else if (format === 'relative') {
+        newText = this.#getRelativeFormat(duration)
+      } else {
+        newText = this.#getDateTimeFormat(date)
+      }
     }
 
     if (newText) {
