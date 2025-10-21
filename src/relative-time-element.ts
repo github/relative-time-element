@@ -503,7 +503,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     let newText = oldText
 
     // Check if user preference is enabled.
-    const userPreferenceElement = document.querySelector('[data-prefers-absolute-time]')
+    const userPreferenceElement = this.ownerDocument.documentElement.querySelector('[data-prefers-absolute-time]')
     let userPrefersAbsoluteTime = false
     if (userPreferenceElement) {
       userPrefersAbsoluteTime = userPreferenceElement.getAttribute('data-prefers-absolute-time') === 'true'
