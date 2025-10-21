@@ -217,7 +217,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     return `${this.prefix} ${formatter.format(date)}`.trim()
   }
 
-  #getUserPrefersAbsoluteTime(date: Date): string {
+  #getUserPreferredAbsoluteTimeFormat(date: Date): string {
     return new Intl.DateTimeFormat(this.#lang, {
       day: 'numeric',
       month: 'short',
@@ -238,6 +238,16 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     } else {
       this.#renderRoot.textContent = content
     }
+  }
+
+  #shouldDisplayUserPreferredAbsoluteTime(format: ResolvedFormat): boolean {
+    // Never override duration format with absolute format.
+    if (format === 'duration') return false
+
+    return (
+      this.ownerDocument.documentElement.getAttribute('data-prefers-absolute-time') === 'true' ||
+      this.ownerDocument.body?.getAttribute('data-prefers-absolute-time') === 'true'
+    )
   }
 
   #onRelativeTimeUpdated: ((event: RelativeTimeUpdatedEvent) => void) | null = null
@@ -490,10 +500,10 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     const format = this.#resolveFormat(duration)
     let newText = oldText
 
-    // Experimental: Enable absolute time based on user preference
-    const userPrefersAbsoluteTime = (this.closest('[data-prefers-absolute-time]')?.getAttribute('data-prefers-absolute-time') === 'true') || this.ownerDocument.documentElement.getAttribute('data-prefers-absolute-time') === 'true'
-    if (userPrefersAbsoluteTime && format !== 'duration') {
-      newText = this.#getUserPrefersAbsoluteTime(date)
+    // Experimental: Enable absolute time if users prefers it, but never for `duration` format
+    const displayUserPreferredAbsoluteTime = this.#shouldDisplayUserPreferredAbsoluteTime(format)
+    if (displayUserPreferredAbsoluteTime) {
+      newText = this.#getUserPreferredAbsoluteTimeFormat(date)
     } else {
       if (format === 'duration') {
         newText = this.#getDurationFormat(duration)
@@ -515,7 +525,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       this.dispatchEvent(new RelativeTimeUpdatedEvent(oldText, newText, oldTitle, newTitle))
     }
 
-    if (format === 'relative' || format === 'duration') {
+    if ((format === 'relative' || format === 'duration') && !displayUserPreferredAbsoluteTime) {
       dateObserver.observe(this)
     } else {
       dateObserver.unobserve(this)

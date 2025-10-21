@@ -31,6 +31,7 @@ suite('relative-time', function () {
   })
 
   teardown(() => {
+    document.body.removeAttribute('data-prefers-absolute-time')
     fixture.innerHTML = ''
     if (dateNow) {
       // eslint-disable-next-line no-global-assign
@@ -1913,13 +1914,21 @@ suite('relative-time', function () {
       assert.equal(el.shadowRoot.textContent, '3 days ago')
     })
 
-    test('does not format with absolute time when data-prefers-absolute-time is not set', async () => {
-      document.documentElement.setAttribute('data-prefers-absolute-time', 'false')
+    test('does not format with absolute time when data-prefers-absolute-time attribute is not set', async () => {
       const el = document.createElement('relative-time')
       el.setAttribute('datetime', new Date(Date.now() - 3 * 60 * 60 * 24 * 1000).toISOString())
       await Promise.resolve()
 
       assert.equal(el.shadowRoot.textContent, '3 days ago')
+    })
+
+    test('supports data-prefers-absolute-time="true" on body element too', async () => {
+      document.body.setAttribute('data-prefers-absolute-time', 'true')
+      const el = document.createElement('relative-time')
+      el.setAttribute('datetime', '2022-01-01T12:00:00.000Z')
+      await Promise.resolve()
+
+      assert.match(el.shadowRoot.textContent, /[A-Z][a-z]{2} \d{1,2}, \d{4}, \d{1,2}:\d{2} (AM|PM)/)
     })
   })
 
