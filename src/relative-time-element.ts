@@ -122,7 +122,6 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       'title',
       'aria-hidden',
       'time-zone',
-      'enable-user-time-preference'
     ]
   }
 
@@ -354,14 +353,6 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     this.setAttribute('time-zone-name', value || '')
   }
 
-  get enableUserTimePreference(): boolean {
-    return this.hasAttribute('enable-user-time-preference')
-  }
-
-  set enableUserTimePreference(value: boolean | undefined) {
-    this.toggleAttribute('enable-user-time-preference', value)
-  }
-
   /** @deprecated */
   get prefix(): string {
     return this.getAttribute('prefix') ?? (this.format === 'datetime' ? '' : 'on')
@@ -499,9 +490,9 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     const format = this.#resolveFormat(duration)
     let newText = oldText
 
-    // Check if user preference is enabled.
-    const userPrefersAbsoluteTime = this.ownerDocument.documentElement.querySelector('[data-prefers-absolute-time]')?.getAttribute('data-prefers-absolute-time') === 'true'
-    if (userPrefersAbsoluteTime) {
+    // Experimental: Enable absolute time based on user preference
+    const userPrefersAbsoluteTime = (this.closest('[data-prefers-absolute-time]')?.getAttribute('data-prefers-absolute-time') === 'true') || this.ownerDocument.documentElement.getAttribute('data-prefers-absolute-time') === 'true'
+    if (userPrefersAbsoluteTime && format !== 'duration') {
       newText = this.#getUserPrefersAbsoluteTime(date)
     } else {
       if (format === 'duration') {
