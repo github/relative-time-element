@@ -83,6 +83,22 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
 
   get #lang() {
     const lang = this.closest('[lang]')?.getAttribute('lang') || this.ownerDocument.documentElement.getAttribute('lang')
+    // Experimental: Enable localized format.
+    const enableLocalizedFormat =
+      this.ownerDocument.documentElement.getAttribute('data-localized-relative-time') === 'true' ||
+      this.ownerDocument.body.getAttribute('data-localized-relative-time') === 'true'
+    if (lang && enableLocalizedFormat) {
+      const userPreferredLocale = navigator.languages.find(langCode => langCode.startsWith(lang))
+      if (userPreferredLocale) {
+        try {
+          return new Intl.Locale(userPreferredLocale).toString()
+        } catch {
+          // Specific locale is not supported.
+          // Fall through to using the specific lang attribute.
+        }
+      }
+    }
+
     try {
       return new Intl.Locale(lang ?? '').toString()
     } catch {
