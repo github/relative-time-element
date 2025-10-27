@@ -138,7 +138,6 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
   // value takes precedence over this custom format.
   //
   // Returns a formatted time String.
-
   #getFormattedTitle(date: Date): string | undefined {
     return new Intl.DateTimeFormat(this.#lang, {
       day: 'numeric',
