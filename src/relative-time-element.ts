@@ -32,6 +32,14 @@ function getUnitFactor(el: RelativeTimeElement): number {
   return 60 * 60 * 1000
 }
 
+// Determine whether the user has a 12 (vs. 24) hour cycle preference. This relies on the hour formatting in
+// a 12 hour preference being formatted like "1 AM" including a space, while with a 24 hour preference, the
+// same is formatted as "01" without a space. In the future `Intl.Locale.prototype.getHourCycles()` could be
+// used but in my testing it incorrectly returned a 12 hour preference with MacOS set to 24 hour format.
+function isBrowser12hCycle() {
+  return Boolean(new Intl.DateTimeFormat([], {hour: 'numeric'}).format(0).match(/\s/))
+}
+
 const dateObserver = new (class {
   elements: Set<RelativeTimeElement> = new Set()
   time = Infinity
@@ -130,6 +138,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
   // value takes precedence over this custom format.
   //
   // Returns a formatted time String.
+
   #getFormattedTitle(date: Date): string | undefined {
     return new Intl.DateTimeFormat(this.#lang, {
       day: 'numeric',
@@ -139,6 +148,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       minute: '2-digit',
       timeZoneName: 'short',
       timeZone: this.timeZone,
+      hour12: isBrowser12hCycle(),
     }).format(date)
   }
 
@@ -213,6 +223,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       year: this.year,
       timeZoneName: this.timeZoneName,
       timeZone: this.timeZone,
+      hour12: isBrowser12hCycle(),
     })
     return `${this.prefix} ${formatter.format(date)}`.trim()
   }
@@ -246,6 +257,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       minute: '2-digit',
       timeZoneName: 'short',
       timeZone: this.timeZone,
+      hour12: isBrowser12hCycle(),
     }
 
     if (this.#isToday(date)) {
