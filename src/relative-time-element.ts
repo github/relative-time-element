@@ -37,7 +37,7 @@ function getUnitFactor(el: RelativeTimeElement): number {
 // same is formatted as "01" without a space. In the future `Intl.Locale.prototype.getHourCycles()` could be
 // used but in my testing it incorrectly returned a 12 hour preference with MacOS set to 24 hour format.
 function isBrowser12hCycle() {
-  return Boolean(new Intl.DateTimeFormat([], {hour: 'numeric'}).format(0).match(/\s/))
+  return Boolean(/\s/.exec(new Intl.DateTimeFormat([], {hour: 'numeric'}).format(0)))
 }
 
 const dateObserver = new (class {
