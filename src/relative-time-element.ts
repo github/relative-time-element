@@ -540,7 +540,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       this.dispatchEvent(new RelativeTimeUpdatedEvent(oldText, newText, oldTitle, newTitle))
     }
 
-    if ((format === 'relative' || format === 'duration') && !displayUserPreferredAbsoluteTime) {
+    if (format === 'relative' || format === 'duration') {
       dateObserver.observe(this)
     } else {
       dateObserver.unobserve(this)
