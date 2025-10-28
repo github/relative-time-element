@@ -37,7 +37,7 @@ function getUnitFactor(el: RelativeTimeElement): number {
 // same is formatted as "01" without a space. In the future `Intl.Locale.prototype.getHourCycles()` could be
 // used but it is not as well-supported as this method.
 function isBrowser12hCycle() {
-  return Boolean(/\s/.exec(new Intl.DateTimeFormat([], {hour: 'numeric'}).format(0)))
+  return Boolean(/\s/.exec(new Intl.DateTimeFormat([], {hour: 'numeric'}).format(new Date(0))))
 }
 
 function isHour12(hourCycle: Intl.DateTimeFormatOptions['hourCycle']) {
