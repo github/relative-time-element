@@ -106,6 +106,14 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     return tz || undefined
   }
 
+  get hourCycle() {
+    // Prefer attribute, then closest, then document
+    const hc =
+      this.closest('[hour-cycle]')?.getAttribute('hour-cycle') ||
+      this.ownerDocument.documentElement.getAttribute('hour-cycle')
+    return (hc || (isBrowser12hCycle() ? 'h12' : 'h24')) as Intl.DateTimeFormatOptions['hourCycle']
+  }
+
   #renderRoot: Node = this.shadowRoot ? this.shadowRoot : this.attachShadow ? this.attachShadow({mode: 'open'}) : this
 
   static get observedAttributes() {
@@ -147,7 +155,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       minute: '2-digit',
       timeZoneName: 'short',
       timeZone: this.timeZone,
-      hour12: isBrowser12hCycle(),
+      hour12: this.hourCycle === 'h12',
     }).format(date)
   }
 
@@ -222,7 +230,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       year: this.year,
       timeZoneName: this.timeZoneName,
       timeZone: this.timeZone,
-      hour12: isBrowser12hCycle(),
+      hour12: this.hourCycle === 'h12',
     })
     return `${this.prefix} ${formatter.format(date)}`.trim()
   }
@@ -256,7 +264,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       minute: '2-digit',
       timeZoneName: 'short',
       timeZone: this.timeZone,
-      hour12: isBrowser12hCycle(),
+      hour12: this.hourCycle === 'h12',
     }
 
     if (this.#isToday(date)) {
