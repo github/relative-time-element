@@ -154,9 +154,19 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
 
     // 'auto' is an alias for 'relative'
     if ((format === 'auto' || format === 'relative') && typeof Intl !== 'undefined' && Intl.RelativeTimeFormat) {
-      const tense = this.tense
-      if (tense === 'past' || tense === 'future') return 'relative'
-      if (Duration.compare(duration, this.threshold) === 1) return 'relative'
+      // This attribute will only be present if the user has setting enabled
+      const userPreferredThreshold = this.ownerDocument.body?.getAttribute('data-preferred-threshold')
+      if (userPreferredThreshold) {
+        // "PT0S" would be at threshold of 0 seconds, corresponding to "always show absolute time"
+        if (isDuration(userPreferredThreshold)) {
+          if (Duration.compare(duration, userPreferredThreshold) === 1) return 'relative'
+        }
+        return 'datetime'
+      } else {
+        const tense = this.tense
+        if (tense === 'past' || tense === 'future') return 'relative'
+        if (Duration.compare(duration, this.threshold) === 1) return 'relative'
+      }
     }
     return 'datetime'
   }
