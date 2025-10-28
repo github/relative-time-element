@@ -40,6 +40,10 @@ function isBrowser12hCycle() {
   return Boolean(/\s/.exec(new Intl.DateTimeFormat([], {hour: 'numeric'}).format(0)))
 }
 
+function isHour12(hourCycle: Intl.DateTimeFormatOptions['hourCycle']) {
+  return hourCycle === 'h11' || hourCycle === 'h12'
+}
+
 const dateObserver = new (class {
   elements: Set<RelativeTimeElement> = new Set()
   time = Infinity
@@ -155,7 +159,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       minute: '2-digit',
       timeZoneName: 'short',
       timeZone: this.timeZone,
-      hour12: this.hourCycle === 'h12',
+      hour12: isHour12(this.hourCycle),
     }).format(date)
   }
 
@@ -230,7 +234,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       year: this.year,
       timeZoneName: this.timeZoneName,
       timeZone: this.timeZone,
-      hour12: this.hourCycle === 'h12',
+      hour12: isHour12(this.hourCycle),
     })
     return `${this.prefix} ${formatter.format(date)}`.trim()
   }
@@ -264,7 +268,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       minute: '2-digit',
       timeZoneName: 'short',
       timeZone: this.timeZone,
-      hour12: this.hourCycle === 'h12',
+      hour12: isHour12(this.hourCycle),
     }
 
     if (this.#isToday(date)) {
