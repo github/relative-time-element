@@ -35,7 +35,7 @@ function getUnitFactor(el: RelativeTimeElement): number {
 // Determine whether the user has a 12 (vs. 24) hour cycle preference. This relies on the hour formatting in
 // a 12 hour preference being formatted like "1 AM" including a space, while with a 24 hour preference, the
 // same is formatted as "01" without a space. In the future `Intl.Locale.prototype.getHourCycles()` could be
-// used but in my testing it incorrectly returned a 12 hour preference with MacOS set to 24 hour format.
+// used but it is not as well-supported as this method.
 function isBrowser12hCycle() {
   return Boolean(/\s/.exec(new Intl.DateTimeFormat([], {hour: 'numeric'}).format(0)))
 }
