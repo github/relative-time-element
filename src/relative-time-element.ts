@@ -157,7 +157,12 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       // This attribute will only be present if the user has setting enabled
       const userPreferredThreshold = this.ownerDocument.body?.getAttribute('data-preferred-threshold')
       if (userPreferredThreshold) {
-        // "PT0S" would be at threshold of 0 seconds, corresponding to "always show absolute time"
+        // Possible values of ISO 8601 durations for our cases are:
+        //  - "PT0S" (always) would be a threshold of 0 seconds, corresponding to always showing absolute time
+        //  - "P1D" (1 day)
+        //  - "P7D" (1 week)
+        //  - "P1M" (1 month)
+        //  - "P1Y" (1 year)
         if (isDuration(userPreferredThreshold)) {
           if (Duration.compare(duration, userPreferredThreshold) === 1) return 'relative'
         }
