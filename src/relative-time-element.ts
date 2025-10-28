@@ -32,6 +32,18 @@ function getUnitFactor(el: RelativeTimeElement): number {
   return 60 * 60 * 1000
 }
 
+// Determine whether the user has a 12 (vs. 24) hour cycle preference. This relies on the hour formatting in
+// a 12 hour preference being formatted like "1 AM" including a space, while with a 24 hour preference, the
+// same is formatted as "01" without a space. In the future `Intl.Locale.prototype.getHourCycles()` could be
+// used but it is not as well-supported as this method.
+function isBrowser12hCycle() {
+  return Boolean(/\s/.exec(new Intl.DateTimeFormat([], {hour: 'numeric'}).format(new Date(0))))
+}
+
+function isHour12(hourCycle: Intl.DateTimeFormatOptions['hourCycle']) {
+  return hourCycle === 'h11' || hourCycle === 'h12'
+}
+
 const dateObserver = new (class {
   elements: Set<RelativeTimeElement> = new Set()
   time = Infinity
@@ -98,6 +110,14 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     return tz || undefined
   }
 
+  get hourCycle() {
+    // Prefer attribute, then closest, then document
+    const hc =
+      this.closest('[hour-cycle]')?.getAttribute('hour-cycle') ||
+      this.ownerDocument.documentElement.getAttribute('hour-cycle')
+    return (hc || (isBrowser12hCycle() ? 'h12' : 'h23')) as Intl.DateTimeFormatOptions['hourCycle']
+  }
+
   #renderRoot: Node = this.shadowRoot ? this.shadowRoot : this.attachShadow ? this.attachShadow({mode: 'open'}) : this
 
   static get observedAttributes() {
@@ -139,6 +159,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       minute: '2-digit',
       timeZoneName: 'short',
       timeZone: this.timeZone,
+      hour12: isHour12(this.hourCycle),
     }).format(date)
   }
 
@@ -213,6 +234,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       year: this.year,
       timeZoneName: this.timeZoneName,
       timeZone: this.timeZone,
+      hour12: isHour12(this.hourCycle),
     })
     return `${this.prefix} ${formatter.format(date)}`.trim()
   }
@@ -226,6 +248,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       minute: '2-digit',
       timeZoneName: 'short',
       timeZone: this.timeZone,
+      hour12: isHour12(this.hourCycle),
     }).format(date)
   }
 
