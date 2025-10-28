@@ -80,7 +80,8 @@ So, a relative date phrase is used for up to a month and then the actual date is
 | `month`        | `month`          | `'numeric'\|'2-digit'\|'short'\|'long'\|'narrow'\|undefined`                                | <sup>***</sup>                   |
 | `year`         | `year`           | `'numeric'\|'2-digit'\|undefined`                                                           | <sup>****</sup>                  |
 | `timeZoneName` | `time-zone-name` | `'long'\|'short'\|'shortOffset'\|'longOffset'` `\|'shortGeneric'\|'longGeneric'\|undefined` | `undefined`                      |
-| `timeZone`     | `time-zone`      | `string\|undefined`                                                                          | Browser default time zone         |
+| `timeZone`     | `time-zone`      | `string\|undefined`                                                                         | Browser default time zone        |
+| `hourCycle`    | `hour-cycle`     | `'h11'\|'h12'\|'h23'\|'h24'\|undefined`                                                     | 'h12' or 'h24' based on browser  |
 | `noTitle`      | `no-title`       | `-`                                                                                         | `-`                              |
 
 <sup>*</sup>: If unspecified, `formatStyle` will return `'narrow'` if `format` is `'elapsed'` or `'micro'`, `'short'` if the format is `'relative'` or `'datetime'`, otherwise it will be `'long'`.
