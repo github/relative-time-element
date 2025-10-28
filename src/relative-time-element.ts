@@ -111,7 +111,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     const hc =
       this.closest('[hour-cycle]')?.getAttribute('hour-cycle') ||
       this.ownerDocument.documentElement.getAttribute('hour-cycle')
-    return (hc || (isBrowser12hCycle() ? 'h12' : 'h24')) as Intl.DateTimeFormatOptions['hourCycle']
+    return (hc || (isBrowser12hCycle() ? 'h12' : 'h23')) as Intl.DateTimeFormatOptions['hourCycle']
   }
 
   #renderRoot: Node = this.shadowRoot ? this.shadowRoot : this.attachShadow ? this.attachShadow({mode: 'open'}) : this
