@@ -154,9 +154,24 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
 
     // 'auto' is an alias for 'relative'
     if ((format === 'auto' || format === 'relative') && typeof Intl !== 'undefined' && Intl.RelativeTimeFormat) {
-      const tense = this.tense
-      if (tense === 'past' || tense === 'future') return 'relative'
-      if (Duration.compare(duration, this.threshold) === 1) return 'relative'
+      // This attribute will only be present if the user has setting enabled
+      const userPreferredThreshold = this.ownerDocument.body?.getAttribute('data-preferred-threshold')
+      if (userPreferredThreshold) {
+        // Possible values of ISO 8601 durations for our cases are:
+        //  - "PT0S" (always) would be a threshold of 0 seconds, corresponding to always showing absolute time
+        //  - "P1D" (1 day)
+        //  - "P7D" (1 week)
+        //  - "P1M" (1 month)
+        //  - "P1Y" (1 year)
+        if (isDuration(userPreferredThreshold)) {
+          if (Duration.compare(duration, userPreferredThreshold) === 1) return 'relative'
+        }
+        return 'datetime'
+      } else {
+        const tense = this.tense
+        if (tense === 'past' || tense === 'future') return 'relative'
+        if (Duration.compare(duration, this.threshold) === 1) return 'relative'
+      }
     }
     return 'datetime'
   }
@@ -503,7 +518,12 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     // Experimental: Enable absolute time if users prefers it, but never for `duration` format
     const displayUserPreferredAbsoluteTime = this.#shouldDisplayUserPreferredAbsoluteTime(format)
     if (displayUserPreferredAbsoluteTime) {
-      newText = this.#getUserPreferredAbsoluteTimeFormat(date)
+      if (format === 'relative') {
+        newText = this.#getRelativeFormat(duration)
+      } else {
+        // datetime
+        newText = this.#getUserPreferredAbsoluteTimeFormat(date)
+      }
     } else {
       if (format === 'duration') {
         newText = this.#getDurationFormat(duration)
@@ -525,7 +545,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       this.dispatchEvent(new RelativeTimeUpdatedEvent(oldText, newText, oldTitle, newTitle))
     }
 
-    if ((format === 'relative' || format === 'duration') && !displayUserPreferredAbsoluteTime) {
+    if (format === 'relative' || format === 'duration') {
       dateObserver.observe(this)
     } else {
       dateObserver.unobserve(this)
