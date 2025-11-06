@@ -244,6 +244,9 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     // Never override duration format with absolute format.
     if (format === 'duration') return false
 
+    // Override for user preferences; used sparingly to preserve intended relative formatting in some places
+    if (this.hasAttribute('ignore-user-time-preference')) return false
+
     return (
       this.ownerDocument.documentElement.getAttribute('data-prefers-absolute-time') === 'true' ||
       this.ownerDocument.body?.getAttribute('data-prefers-absolute-time') === 'true'
