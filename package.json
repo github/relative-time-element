@@ -24,7 +24,7 @@
     "bundle": "esbuild --bundle dist/index.js --keep-names --outfile=dist/bundle.js --format=esm",
     "build": "tsc && npm run bundle && npm run manifest",
     "prepublishOnly": "npm run build",
-    "pretest": "npm run build",
+    "pretest": "npx playwright install --with-deps && npm run build",
     "test": "web-test-runner",
     "postpublish": "npm publish --ignore-scripts --@github:registry='https://npm.pkg.github.com'",
     "manifest": "custom-elements-manifest analyze"
@@ -38,7 +38,7 @@
     "@open-wc/testing": "^3.2.2",
     "@web/dev-server-esbuild": "^0.3.6",
     "@web/test-runner": "^0.19.0",
-    "@web/test-runner-playwright": "^0.11.0",
+    "@web/test-runner-playwright": "^0.11.1",
     "esbuild": "^0.25.2",
     "eslint": "^8.38.0",
     "eslint-plugin-custom-elements": "^0.0.8",
