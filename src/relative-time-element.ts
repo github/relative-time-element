@@ -217,15 +217,57 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     return `${this.prefix} ${formatter.format(date)}`.trim()
   }
 
-  #getUserPreferredAbsoluteTimeFormat(date: Date): string {
-    return new Intl.DateTimeFormat(this.#lang, {
-      day: 'numeric',
-      month: 'short',
+  #isToday(date: Date): boolean {
+    const now = new Date()
+    const formatter = new Intl.DateTimeFormat(this.#lang, {
+      timeZone: this.timeZone,
       year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    })
+    return formatter.format(now) === formatter.format(date)
+  }
+
+  #isCurrentYear(date: Date): boolean {
+    const now = new Date()
+    const formatter = new Intl.DateTimeFormat(this.#lang, {
+      timeZone: this.timeZone,
+      year: 'numeric',
+    })
+    return formatter.format(now) === formatter.format(date)
+  }
+
+  // If current day, shows "Today" + time.
+  // If current year, shows date without year.
+  // In all other scenarios, show full date.
+  #getUserPreferredAbsoluteTimeFormat(date: Date): string {
+    const timeOnlyOptions: Intl.DateTimeFormatOptions = {
       hour: 'numeric',
       minute: '2-digit',
       timeZoneName: 'short',
       timeZone: this.timeZone,
+    }
+
+    if (this.#isToday(date)) {
+      const relativeFormatter = new Intl.RelativeTimeFormat(this.#lang, {numeric: 'auto'})
+      let todayText = relativeFormatter.format(0, 'day')
+      todayText = todayText.charAt(0).toLocaleUpperCase(this.#lang) + todayText.slice(1)
+      const timeOnly = new Intl.DateTimeFormat(this.#lang, timeOnlyOptions).format(date)
+
+      return `${todayText} ${timeOnly}`
+    }
+
+    const timeAndDateOptions: Intl.DateTimeFormatOptions = {
+      ...timeOnlyOptions,
+      day: 'numeric',
+      month: 'short',
+    }
+    if (this.#isCurrentYear(date)) {
+      return new Intl.DateTimeFormat(this.#lang, timeAndDateOptions).format(date)
+    }
+    return new Intl.DateTimeFormat(this.#lang, {
+      ...timeAndDateOptions,
+      year: 'numeric',
     }).format(date)
   }
 
@@ -525,7 +567,11 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       this.dispatchEvent(new RelativeTimeUpdatedEvent(oldText, newText, oldTitle, newTitle))
     }
 
-    if ((format === 'relative' || format === 'duration') && !displayUserPreferredAbsoluteTime) {
+    const shouldObserve =
+      format === 'relative' ||
+      format === 'duration' ||
+      (displayUserPreferredAbsoluteTime && (this.#isToday(date) || this.#isCurrentYear(date)))
+    if (shouldObserve) {
       dateObserver.observe(this)
     } else {
       dateObserver.unobserve(this)

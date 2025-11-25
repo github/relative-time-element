@@ -1886,6 +1886,10 @@ suite('relative-time', function () {
   })
 
   suite('experimental: [data-prefers-absolute-time]', async () => {
+    teardown(() => {
+      document.documentElement.removeAttribute('data-prefers-absolute-time')
+      document.body.removeAttribute('data-prefers-absolute-time')
+    })
     test('formats with absolute time when data-prefers-absolute-time="true"', async () => {
       document.documentElement.setAttribute('data-prefers-absolute-time', 'true')
       const el = document.createElement('relative-time')
@@ -1929,6 +1933,171 @@ suite('relative-time', function () {
       await Promise.resolve()
 
       assert.match(el.shadowRoot.textContent, /[A-Z][a-z]{2} \d{1,2}, \d{4}, \d{1,2}:\d{2} (AM|PM)/)
+    })
+
+    test('formats today dates with "Today" text', async () => {
+      freezeTime(new Date('2023-01-15T17:00:00.000Z'))
+
+      document.documentElement.setAttribute('data-prefers-absolute-time', 'true')
+      const el = document.createElement('relative-time')
+      el.setAttribute('lang', 'en-US')
+      el.setAttribute('time-zone', 'America/New_York')
+
+      el.setAttribute('datetime', '2023-01-15T17:00:00.000Z')
+      await Promise.resolve()
+
+      assert.equal(el.shadowRoot.textContent, 'Today 12:00 PM EST')
+    })
+
+    test('formats current year dates without year', async () => {
+      freezeTime(new Date('2023-06-15T12:00:00.000Z'))
+
+      document.documentElement.setAttribute('data-prefers-absolute-time', 'true')
+      const el = document.createElement('relative-time')
+      el.setAttribute('lang', 'en-US')
+      el.setAttribute('time-zone', 'America/New_York')
+      el.setAttribute('datetime', '2023-03-10T18:00:00.000Z')
+      await Promise.resolve()
+
+      assert.equal(el.shadowRoot.textContent, 'Mar 10, 1:00 PM EST')
+    })
+
+    test('formats different year dates as full date', async () => {
+      freezeTime(new Date('2023-06-15T12:00:00.000Z'))
+
+      document.documentElement.setAttribute('data-prefers-absolute-time', 'true')
+      const el = document.createElement('relative-time')
+      el.setAttribute('lang', 'en-US')
+      el.setAttribute('time-zone', 'America/New_York')
+      el.setAttribute('datetime', '2022-03-10T18:00:00.000Z')
+      await Promise.resolve()
+
+      assert.equal(el.shadowRoot.textContent, 'Mar 10, 2022, 1:00 PM EST')
+    })
+
+    test('respects locale formatting', async () => {
+      freezeTime(new Date('2023-01-15T17:00:00.000Z'))
+
+      document.documentElement.setAttribute('data-prefers-absolute-time', 'true')
+      const el = document.createElement('relative-time')
+      el.setAttribute('lang', 'es-ES')
+      el.setAttribute('time-zone', 'Europe/Madrid')
+
+      el.setAttribute('datetime', '2023-01-15T17:00:00.000Z')
+      await Promise.resolve()
+
+      // Spanish formatting - "hoy" = "today", 24-hour format
+      assert.equal(el.shadowRoot.textContent, 'Hoy 18:00 CET')
+    })
+
+    test('uses element time-zone attribute', async () => {
+      freezeTime(new Date('2023-01-15T17:00:00.000Z'))
+
+      document.documentElement.setAttribute('data-prefers-absolute-time', 'true')
+      const el = document.createElement('relative-time')
+      el.setAttribute('lang', 'en-US')
+      el.setAttribute('time-zone', 'Europe/Paris')
+      el.setAttribute('datetime', '2023-01-15T17:00:00.000Z')
+      await Promise.resolve()
+
+      assert.equal(el.shadowRoot.textContent, 'Today 6:00 PM GMT+1')
+    })
+
+    suite('format exclusions', function () {
+      test('does not activate for format="duration"', async () => {
+        freezeTime(new Date('2023-01-15T17:00:00.000Z'))
+        document.documentElement.setAttribute('data-prefers-absolute-time', 'true')
+
+        const el = document.createElement('relative-time')
+        el.setAttribute('lang', 'en-US')
+        el.setAttribute('datetime', '2023-01-15T16:00:00.000Z')
+        el.setAttribute('format', 'duration')
+        await Promise.resolve()
+
+        assert.equal(el.shadowRoot.textContent, '1 hour')
+      })
+
+      test('does not activate for format="elapsed"', async () => {
+        freezeTime(new Date('2023-01-15T17:00:00.000Z'))
+        document.documentElement.setAttribute('data-prefers-absolute-time', 'true')
+
+        const el = document.createElement('relative-time')
+        el.setAttribute('lang', 'en-US')
+        el.setAttribute('datetime', '2023-01-15T16:00:00.000Z')
+        el.setAttribute('format', 'elapsed')
+        await Promise.resolve()
+
+        assert.equal(el.shadowRoot.textContent, '1h')
+      })
+
+      test('does not activate for format="micro"', async () => {
+        freezeTime(new Date('2023-01-15T17:00:00.000Z'))
+        document.documentElement.setAttribute('data-prefers-absolute-time', 'true')
+
+        const el = document.createElement('relative-time')
+        el.setAttribute('lang', 'en-US')
+        el.setAttribute('datetime', '2023-01-15T16:00:00.000Z')
+        el.setAttribute('format', 'micro')
+        await Promise.resolve()
+
+        assert.equal(el.shadowRoot.textContent, '1h')
+      })
+
+      test('activates for format="relative" (default)', async () => {
+        freezeTime(new Date('2023-01-15T17:00:00.000Z'))
+        document.documentElement.setAttribute('data-prefers-absolute-time', 'true')
+
+        const el = document.createElement('relative-time')
+        el.setAttribute('lang', 'en-US')
+        el.setAttribute('time-zone', 'GMT')
+        el.setAttribute('datetime', '2023-01-15T17:00:00.000Z')
+        el.setAttribute('format', 'relative')
+        await Promise.resolve()
+
+        assert.equal(el.shadowRoot.textContent, 'Today 5:00 PM UTC')
+      })
+
+      test('activates for format="auto"', async () => {
+        freezeTime(new Date('2023-01-15T17:00:00.000Z'))
+        document.documentElement.setAttribute('data-prefers-absolute-time', 'true')
+
+        const el = document.createElement('relative-time')
+        el.setAttribute('lang', 'en-US')
+        el.setAttribute('time-zone', 'UTC')
+        el.setAttribute('datetime', '2023-01-15T17:00:00.000Z')
+        el.setAttribute('format', 'auto')
+        await Promise.resolve()
+
+        assert.equal(el.shadowRoot.textContent, 'Today 5:00 PM UTC')
+      })
+
+      test('activates for format="datetime" if current day', async () => {
+        freezeTime(new Date('2023-01-15T17:00:00.000Z'))
+        document.documentElement.setAttribute('data-prefers-absolute-time', 'true')
+
+        const el = document.createElement('relative-time')
+        el.setAttribute('lang', 'en-US')
+        el.setAttribute('time-zone', 'America/New_York')
+        el.setAttribute('datetime', '2023-01-15T17:00:00.000Z')
+        el.setAttribute('format', 'datetime')
+        await Promise.resolve()
+
+        assert.equal(el.shadowRoot.textContent, 'Today 12:00 PM EST')
+      })
+
+      test('activates for format="datetime" if current year but not today', async () => {
+        freezeTime(new Date('2023-06-15T17:00:00.000Z'))
+        document.documentElement.setAttribute('data-prefers-absolute-time', 'true')
+
+        const el = document.createElement('relative-time')
+        el.setAttribute('lang', 'en-US')
+        el.setAttribute('time-zone', 'America/New_York')
+        el.setAttribute('datetime', '2023-03-10T18:00:00.000Z') // 18:00 UTC = 1:00 PM EST
+        el.setAttribute('format', 'datetime')
+        await Promise.resolve()
+
+        assert.equal(el.shadowRoot.textContent, 'Mar 10, 1:00 PM EST')
+      })
     })
   })
 
