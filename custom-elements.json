@@ -1,0 +1,457 @@
+{
+  "schemaVersion": "1.0.0",
+  "readme": "",
+  "modules": [
+    {
+      "kind": "javascript-module",
+      "path": "src/relative-time-element.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "",
+          "name": "RelativeTimeUpdatedEvent",
+          "superclass": {
+            "name": "Event",
+            "module": "src/relative-time-element.ts"
+          }
+        },
+        {
+          "kind": "class",
+          "description": "",
+          "name": "RelativeTimeElement",
+          "members": [
+            {
+              "kind": "method",
+              "name": "define",
+              "static": true,
+              "parameters": [
+                {
+                  "name": "tag",
+                  "default": "'relative-time'"
+                },
+                {
+                  "name": "registry",
+                  "default": "customElements"
+                }
+              ]
+            },
+            {
+              "kind": "field",
+              "name": "#customTitle",
+              "privacy": "private",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "#updating",
+              "privacy": "private",
+              "type": {
+                "text": "false | Promise<void>"
+              },
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "#lang",
+              "privacy": "private",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "timeZone",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "#renderRoot",
+              "privacy": "private",
+              "type": {
+                "text": "Node"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "#getFormattedTitle",
+              "return": {
+                "type": {
+                  "text": "string | undefined"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "date",
+                  "type": {
+                    "text": "Date"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "#resolveFormat",
+              "return": {
+                "type": {
+                  "text": "ResolvedFormat"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "duration",
+                  "type": {
+                    "text": "Duration"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "#getDurationFormat",
+              "return": {
+                "type": {
+                  "text": "string"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "duration",
+                  "type": {
+                    "text": "Duration"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "#getRelativeFormat",
+              "return": {
+                "type": {
+                  "text": "string"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "duration",
+                  "type": {
+                    "text": "Duration"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "#getDateTimeFormat",
+              "return": {
+                "type": {
+                  "text": "string"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "date",
+                  "type": {
+                    "text": "Date"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "#isToday",
+              "return": {
+                "type": {
+                  "text": "boolean"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "date",
+                  "type": {
+                    "text": "Date"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "#isCurrentYear",
+              "return": {
+                "type": {
+                  "text": "boolean"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "date",
+                  "type": {
+                    "text": "Date"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "#getUserPreferredAbsoluteTimeFormat",
+              "return": {
+                "type": {
+                  "text": "string"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "date",
+                  "type": {
+                    "text": "Date"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "#updateRenderRootContent",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "content",
+                  "type": {
+                    "text": "string | null"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "#shouldDisplayUserPreferredAbsoluteTime",
+              "return": {
+                "type": {
+                  "text": "boolean"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "format",
+                  "type": {
+                    "text": "ResolvedFormat"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "field",
+              "name": "#onRelativeTimeUpdated",
+              "privacy": "private",
+              "type": {
+                "text": "((event: RelativeTimeUpdatedEvent) => void) | null"
+              },
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "onRelativeTimeUpdated"
+            },
+            {
+              "kind": "field",
+              "name": "second"
+            },
+            {
+              "kind": "field",
+              "name": "minute"
+            },
+            {
+              "kind": "field",
+              "name": "hour"
+            },
+            {
+              "kind": "field",
+              "name": "weekday"
+            },
+            {
+              "kind": "field",
+              "name": "day"
+            },
+            {
+              "kind": "field",
+              "name": "month"
+            },
+            {
+              "kind": "field",
+              "name": "year"
+            },
+            {
+              "kind": "field",
+              "name": "timeZoneName"
+            },
+            {
+              "kind": "field",
+              "name": "prefix",
+              "type": {
+                "text": "string"
+              },
+              "deprecated": "true"
+            },
+            {
+              "kind": "field",
+              "name": "threshold",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "tense",
+              "type": {
+                "text": "Tense"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "precision",
+              "type": {
+                "text": "Unit"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "format",
+              "type": {
+                "text": "Format"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "formatStyle",
+              "type": {
+                "text": "FormatStyle"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "noTitle",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "datetime"
+            },
+            {
+              "kind": "field",
+              "name": "date"
+            },
+            {
+              "kind": "method",
+              "name": "update"
+            }
+          ],
+          "events": [
+            {
+              "name": "oldText",
+              "type": {
+                "text": "RelativeTimeUpdatedEvent"
+              }
+            }
+          ],
+          "attributes": [
+            {
+              "name": "second"
+            },
+            {
+              "name": "minute"
+            },
+            {
+              "name": "hour"
+            },
+            {
+              "name": "weekday"
+            },
+            {
+              "name": "day"
+            },
+            {
+              "name": "month"
+            },
+            {
+              "name": "year"
+            },
+            {
+              "name": "time-zone-name"
+            },
+            {
+              "name": "prefix"
+            },
+            {
+              "name": "threshold"
+            },
+            {
+              "name": "tense"
+            },
+            {
+              "name": "precision"
+            },
+            {
+              "name": "format"
+            },
+            {
+              "name": "format-style"
+            },
+            {
+              "name": "no-title"
+            },
+            {
+              "name": "datetime"
+            },
+            {
+              "name": "lang"
+            },
+            {
+              "name": "title"
+            },
+            {
+              "name": "aria-hidden"
+            },
+            {
+              "name": "time-zone"
+            }
+          ],
+          "superclass": {
+            "name": "HTMLElement"
+          },
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "RelativeTimeUpdatedEvent",
+          "declaration": {
+            "name": "RelativeTimeUpdatedEvent",
+            "module": "src/relative-time-element.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "RelativeTimeElement",
+          "declaration": {
+            "name": "RelativeTimeElement",
+            "module": "src/relative-time-element.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "default",
+          "declaration": {
+            "name": "RelativeTimeElement",
+            "module": "src/relative-time-element.ts"
+          }
+        }
+      ]
+    }
+  ]
+}
