@@ -272,14 +272,13 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
   }
 
   #updateRenderRootContent(content: string | null): void {
+    const span = document.createElement('span')
+    span.setAttribute('part', 'text')
     if (this.hasAttribute('aria-hidden') && this.getAttribute('aria-hidden') === 'true') {
-      const span = document.createElement('span')
       span.setAttribute('aria-hidden', 'true')
-      span.textContent = content
-      ;(this.#renderRoot as Element).replaceChildren(span)
-    } else {
-      this.#renderRoot.textContent = content
     }
+    span.textContent = content
+    ;(this.#renderRoot as Element).replaceChildren(span)
   }
 
   #shouldDisplayUserPreferredAbsoluteTime(format: ResolvedFormat): boolean {
