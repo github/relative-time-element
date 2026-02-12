@@ -284,6 +284,17 @@ Lang is a [built-in global attribute](https://developer.mozilla.org/en-US/docs/W
 
 Adding the `no-title` attribute will remove the `title` attribute from the `<relative-time>` element. The `title` attribute is inaccessible to screen reader and keyboard users, so not adding a title attribute allows a user to create a custom, accessible tooltip if one is desired.
 
+## Styling
+
+The element renders its text inside a Shadow DOM `<span>` with a [`part="text"`](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/part) attribute. This allows you to style the displayed text from outside the shadow root using the `::part()` CSS pseudo-element:
+
+```css
+relative-time::part(text) {
+  color: rebeccapurple;
+  font-weight: bold;
+}
+```
+
 ## Browser Support
 
 Browsers without native [custom element support][support] require a [polyfill][ce-polyfill].

@@ -2143,6 +2143,18 @@ suite('relative-time', function () {
       const span = time.shadowRoot.querySelector('span')
       assert.equal(span.getAttribute('part'), 'text')
     })
+
+    test('shadow root span has part="text" alongside aria-hidden="true"', async () => {
+      const now = new Date().toISOString()
+      const time = document.createElement('relative-time')
+      time.setAttribute('datetime', now)
+      time.setAttribute('aria-hidden', 'true')
+      await Promise.resolve()
+
+      const span = time.shadowRoot.querySelector('span')
+      assert.equal(span.getAttribute('part'), 'text')
+      assert.equal(span.getAttribute('aria-hidden'), 'true')
+    })
   })
 
   suite('legacy formats', function () {
