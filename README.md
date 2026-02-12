@@ -293,6 +293,9 @@ relative-time::part(text) {
   color: rebeccapurple;
   font-weight: bold;
 }
+relative-time::part(text)::selection {
+  background: lightgreen;
+}
 ```
 
 ## Browser Support
