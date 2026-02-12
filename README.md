@@ -286,7 +286,7 @@ Adding the `no-title` attribute will remove the `title` attribute from the `<rel
 
 ## Styling
 
-The element renders its text inside a Shadow DOM `<span>` with a [`part="root"`](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/part) attribute. This allows you to style the displayed text from outside the shadow root using the `::part()` CSS pseudo-element:
+The element renders its text inside a Shadow DOM `<span>` with a [`part="root"`](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/part) attribute. This allows you to style the element inside the Shadow DOM from outside using the `::part()` CSS pseudo-element:
 
 ```css
 relative-time::part(root) {
