@@ -273,7 +273,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
 
   #updateRenderRootContent(content: string | null): void {
     const span = document.createElement('span')
-    span.setAttribute('part', 'text')
+    span.setAttribute('part', 'root')
     if (this.hasAttribute('aria-hidden') && this.getAttribute('aria-hidden') === 'true') {
       span.setAttribute('aria-hidden', 'true')
     }

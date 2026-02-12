@@ -2134,17 +2134,17 @@ suite('relative-time', function () {
   })
 
   suite('[part]', () => {
-    test('shadow root span has part="text"', async () => {
+    test('shadow root span has part="root"', async () => {
       const now = new Date().toISOString()
       const time = document.createElement('relative-time')
       time.setAttribute('datetime', now)
       await Promise.resolve()
 
       const span = time.shadowRoot.querySelector('span')
-      assert.equal(span.getAttribute('part'), 'text')
+      assert.equal(span.getAttribute('part'), 'root')
     })
 
-    test('shadow root span has part="text" alongside aria-hidden="true"', async () => {
+    test('shadow root span has part="root" alongside aria-hidden="true"', async () => {
       const now = new Date().toISOString()
       const time = document.createElement('relative-time')
       time.setAttribute('datetime', now)
@@ -2152,7 +2152,7 @@ suite('relative-time', function () {
       await Promise.resolve()
 
       const span = time.shadowRoot.querySelector('span')
-      assert.equal(span.getAttribute('part'), 'text')
+      assert.equal(span.getAttribute('part'), 'root')
       assert.equal(span.getAttribute('aria-hidden'), 'true')
     })
   })
