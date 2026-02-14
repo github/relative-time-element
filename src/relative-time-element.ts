@@ -142,6 +142,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       'title',
       'aria-hidden',
       'time-zone',
+      'hour-cycle',
     ]
   }
 
