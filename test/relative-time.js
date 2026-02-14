@@ -2866,6 +2866,7 @@ suite('relative-time', function () {
       el.setAttribute('hour-cycle', 'h24')
       await Promise.resolve()
       assert.notMatch(el.shadowRoot.textContent, /AM|PM/i)
+      assert.match(el.shadowRoot.textContent, /15:00/)
     })
 
     test('title uses hour-cycle setting', async () => {
