@@ -1846,6 +1846,66 @@ suite('relative-time', function () {
         tense: 'past',
         expected: '2 days ago',
       },
+
+      // Whole years shouldn't have extra days
+      {
+        reference: '2023-01-01T09:00:00.000Z',
+        datetime: '2022-01-01T10:00:00.000Z',
+        format: 'duration',
+        tense: 'past',
+        expected: '1 year',
+      },
+      {
+        reference: '2023-01-01T00:00:00.000Z',
+        datetime: '2021-01-01T00:00:00.000Z',
+        format: 'duration',
+        tense: 'past',
+        expected: '2 years',
+      },
+      {
+        reference: '2023-01-01T00:00:00.000Z',
+        datetime: '2003-01-01T00:00:00.000Z',
+        format: 'duration',
+        tense: 'past',
+        expected: '20 years',
+      },
+      {
+        reference: '2023-02-01T00:00:00.000Z',
+        datetime: '2022-02-01T00:00:00.000Z',
+        format: 'duration',
+        tense: 'past',
+        expected: '1 year',
+      },
+      {
+        reference: '2023-03-01T00:00:00.000Z',
+        datetime: '2022-03-01T00:00:00.000Z',
+        format: 'duration',
+        tense: 'past',
+        expected: '1 year',
+      },
+      {
+        reference: '2023-04-01T00:00:00.000Z',
+        datetime: '2022-04-01T00:00:00.000Z',
+        format: 'duration',
+        tense: 'past',
+        expected: '1 year',
+      },
+
+      // Whole months shouldn't have extra days
+      {
+        reference: '2023-07-01T00:00:00.000Z',
+        datetime: '2023-05-01T00:00:00.000Z',
+        format: 'duration',
+        tense: 'past',
+        expected: '2 months',
+      },
+      {
+        reference: '2023-06-01T00:00:00.000Z',
+        datetime: '2023-04-01T00:00:00.000Z',
+        format: 'duration',
+        tense: 'past',
+        expected: '2 months',
+      },
     ])
 
     for (const {
