@@ -13,6 +13,7 @@
   "exports": {
     ".": "./dist/index.js",
     "./define": "./dist/index.js",
+    "./duration": "./dist/duration.js",
     "./relative-time": "./dist/relative-time-element.js",
     "./relative-time/define": "./dist/relative-time-element-define.js"
   },
