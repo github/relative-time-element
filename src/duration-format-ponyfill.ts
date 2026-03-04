@@ -109,7 +109,7 @@ export default class DurationFormat {
           ? twoDigitFormatOptions
           : unitStyle === 'numeric'
           ? {}
-          : {style: 'unit', unit: nfUnit, unitDisplay: unitStyle}
+          : {style: 'unit' as const, unit: nfUnit, unitDisplay: unitStyle}
 
       let formattedValue = new Intl.NumberFormat(locale, nfOpts).format(value)
 
