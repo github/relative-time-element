@@ -18,8 +18,9 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: 22
-    - name: npm install, build, and test
-      run: |
-        npm it
-      env:
-        CI: true
+    - name: npm install
+      run: npm install
+    - name: Install Playwright browsers
+      run: npx playwright install --with-deps chromium
+    - name: Run tests
+      run: npm test
