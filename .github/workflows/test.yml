@@ -19,8 +19,8 @@ jobs:
       with:
         node-version: 22
     - name: npm install
-      run: npm it
+      run: npm install
     - name: Install Playwright browsers
       run: npx playwright install --with-deps chromium
-      env:
-        CI: true
+    - name: Run tests
+      run: npm test
