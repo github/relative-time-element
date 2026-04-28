@@ -32,6 +32,16 @@ function getUnitFactor(el: RelativeTimeElement): number {
   return 60 * 60 * 1000
 }
 
+// Determine whether the user has a 12 (vs. 24) hour cycle preference via the
+// browser's resolved DateTimeFormat options.
+function isBrowser12hCycle(): boolean {
+  try {
+    return new Intl.DateTimeFormat([], {hour: 'numeric'}).resolvedOptions().hour12 === true
+  } catch {
+    return false
+  }
+}
+
 const dateObserver = new (class {
   elements: Set<RelativeTimeElement> = new Set()
   time = Infinity
@@ -98,6 +108,15 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     return tz || undefined
   }
 
+  get hourCycle() {
+    // Prefer attribute, then closest, then document
+    const hc =
+      this.closest('[hour-cycle]')?.getAttribute('hour-cycle') ||
+      this.ownerDocument.documentElement.getAttribute('hour-cycle')
+    if (hc === 'h11' || hc === 'h12' || hc === 'h23' || hc === 'h24') return hc
+    return isBrowser12hCycle() ? 'h12' : 'h23'
+  }
+
   #renderRoot: Node = this.shadowRoot ? this.shadowRoot : this.attachShadow ? this.attachShadow({mode: 'open'}) : this
 
   static get observedAttributes() {
@@ -122,6 +141,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       'title',
       'aria-hidden',
       'time-zone',
+      'hour-cycle',
     ]
   }
 
@@ -139,6 +159,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       minute: '2-digit',
       timeZoneName: 'short',
       timeZone: this.timeZone,
+      hourCycle: this.hourCycle,
     }).format(date)
   }
 
@@ -213,6 +234,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       year: this.year,
       timeZoneName: this.timeZoneName,
       timeZone: this.timeZone,
+      hourCycle: this.hourCycle,
     })
     return `${this.prefix} ${formatter.format(date)}`.trim()
   }
@@ -246,6 +268,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       minute: '2-digit',
       timeZoneName: 'short',
       timeZone: this.timeZone,
+      hourCycle: this.hourCycle,
     }
 
     if (this.#isToday(date)) {
