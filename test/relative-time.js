@@ -2116,6 +2116,31 @@ suite('relative-time', function () {
         assert.equal(el.shadowRoot.textContent, 'Today 4:00 PM UTC')
       })
 
+      test('does not observe old format="micro" absolute-time preference output', async () => {
+        freezeTime(new Date('2023-01-15T17:00:00.000Z'))
+        document.documentElement.setAttribute('data-prefers-absolute-time', 'true')
+        const originalSetTimeout = window.setTimeout
+        const delays = []
+        globalThis.setTimeout = window.setTimeout = function (_, ms) {
+          delays.push(ms)
+          return 1
+        }
+        try {
+          const el = document.createElement('relative-time')
+          el.setAttribute('lang', 'en-US')
+          el.setAttribute('time-zone', 'GMT')
+          el.setAttribute('datetime', '2022-01-15T17:00:00.000Z')
+          el.setAttribute('format', 'micro')
+          await Promise.resolve()
+
+          assert.equal(el.shadowRoot.textContent, 'Jan 15, 2022, 5:00 PM UTC')
+          assert.empty(delays)
+          el.disconnectedCallback()
+        } finally {
+          globalThis.setTimeout = window.setTimeout = originalSetTimeout
+        }
+      })
+
       test('activates for format="relative" (default)', async () => {
         freezeTime(new Date('2023-01-15T17:00:00.000Z'))
         document.documentElement.setAttribute('data-prefers-absolute-time', 'true')

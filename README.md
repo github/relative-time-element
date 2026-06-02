@@ -232,7 +232,7 @@ Precision can be used to limit the display of an `relative` or `duration` format
 
 ##### threshold (`string`, default: `P30D`)
 
-If `tense` is anything other than `'auto'`, or `format` is `'relative'` (or the deprecated `'auto'` value), then this value will be ignored. For `format="micro"`, `threshold` is honored only when the `threshold` attribute is explicitly set.
+If `tense` is anything other than `'auto'`, or `format` is not `'relative'` (or the deprecated `'auto'` value), then this value will be ignored. For `format="micro"`, `threshold` is honored only when the `threshold` attribute is explicitly set.
 
 Threshold can be used to specify when a relative display (e.g. "5 days ago") should turn into an absolute display (i.e. the full date). This should be a valid [ISO8601 Time Duration](https://en.wikipedia.org/wiki/ISO_8601#Durations). If the difference between the current time and the specified `datetime` is _more_ than the duration, then the date will be displayed as an absolute value (i.e. the full date), otherwise it will be formatted to a relative display (e.g. "5 days ago").
 

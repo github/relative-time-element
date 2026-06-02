@@ -644,8 +644,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     }
 
     const shouldObserve =
-      format === 'relative' ||
-      format === 'duration' ||
+      (!displayUserPreferredAbsoluteTime && (format === 'relative' || format === 'duration')) ||
       (this.format === 'micro' && Boolean(this.#getExplicitThreshold()) && date.getTime() > now) ||
       (displayUserPreferredAbsoluteTime && (this.#isToday(date) || this.#isCurrentYear(date)))
     if (shouldObserve) {
