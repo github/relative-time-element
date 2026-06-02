@@ -384,6 +384,18 @@ suite('relative-time', function () {
       assert.equal(time.shadowRoot.textContent, 'on Nov 15, 2022')
     })
 
+    test('micro threshold datetime output does not include tense phrasing', async () => {
+      freezeTime(new Date('2023-01-01T00:00:00Z'))
+      const time = document.createElement('relative-time')
+      time.setAttribute('format', 'micro')
+      time.setAttribute('lang', 'en-US')
+      time.setAttribute('tense', 'past')
+      time.setAttribute('threshold', 'P30D')
+      time.setAttribute('datetime', '2022-11-15T00:00:00Z')
+      await Promise.resolve()
+      assert.equal(time.shadowRoot.textContent, 'on Nov 15, 2022')
+    })
+
     test('micro uses duration within explicit P30D threshold', async () => {
       freezeTime(new Date('2023-01-15T00:00:00Z'))
       const time = document.createElement('relative-time')
@@ -403,6 +415,17 @@ suite('relative-time', function () {
       time.setAttribute('datetime', '2022-11-15T00:00:00Z')
       await Promise.resolve()
       assert.equal(time.shadowRoot.textContent, '2mo')
+    })
+
+    test('micro with auto tense remains compact', async () => {
+      freezeTime(new Date('2023-01-15T00:00:00Z'))
+      const time = document.createElement('relative-time')
+      time.setAttribute('format', 'micro')
+      time.setAttribute('lang', 'en-US')
+      time.setAttribute('tense', 'auto')
+      time.setAttribute('datetime', '2023-01-01T00:00:00Z')
+      await Promise.resolve()
+      assert.equal(time.shadowRoot.textContent, '2w')
     })
 
     test('uses `prefix` attribute to customise prefix', async () => {
@@ -504,6 +527,17 @@ suite('relative-time', function () {
       await Promise.resolve()
       assert.equal(time.shadowRoot.textContent, 'hace 3 días')
     })
+
+    test('micro tense phrasing respects lang attribute', async () => {
+      const now = new Date(Date.now() + 3 * 60 * 60 * 24 * 1000).toISOString()
+      const time = document.createElement('relative-time')
+      time.setAttribute('datetime', now)
+      time.setAttribute('format', 'micro')
+      time.setAttribute('lang', 'es')
+      time.setAttribute('tense', 'future')
+      await Promise.resolve()
+      assert.equal(time.shadowRoot.textContent, 'dentro de 3 d')
+    })
   }
 
   test('renders correctly when given an invalid lang', async () => {
@@ -601,7 +635,7 @@ suite('relative-time', function () {
       time.setAttribute('datetime', now)
       time.setAttribute('format', 'micro')
       await Promise.resolve()
-      assert.equal(time.shadowRoot.textContent, '2y')
+      assert.equal(time.shadowRoot.textContent, '2y ago')
     })
 
     test('micro formats future times', async () => {
@@ -611,7 +645,7 @@ suite('relative-time', function () {
       time.setAttribute('datetime', now)
       time.setAttribute('format', 'micro')
       await Promise.resolve()
-      assert.equal(time.shadowRoot.textContent, '1m')
+      assert.equal(time.shadowRoot.textContent, '1m ago')
     })
 
     test('micro formats hours', async () => {
@@ -621,7 +655,7 @@ suite('relative-time', function () {
       time.setAttribute('datetime', now)
       time.setAttribute('format', 'micro')
       await Promise.resolve()
-      assert.equal(time.shadowRoot.textContent, '1h')
+      assert.equal(time.shadowRoot.textContent, '1h ago')
     })
 
     test('micro formats days', async () => {
@@ -631,7 +665,7 @@ suite('relative-time', function () {
       time.setAttribute('datetime', now)
       time.setAttribute('format', 'micro')
       await Promise.resolve()
-      assert.equal(time.shadowRoot.textContent, '1d')
+      assert.equal(time.shadowRoot.textContent, '1d ago')
     })
 
     test('micro formats months', async () => {
@@ -642,7 +676,7 @@ suite('relative-time', function () {
       time.setAttribute('datetime', datetime)
       time.setAttribute('format', 'micro')
       await Promise.resolve()
-      assert.equal(time.shadowRoot.textContent, '2mo')
+      assert.equal(time.shadowRoot.textContent, '2mo ago')
     })
   })
 
@@ -703,7 +737,7 @@ suite('relative-time', function () {
       time.setAttribute('datetime', now)
       time.setAttribute('format', 'micro')
       await Promise.resolve()
-      assert.equal(time.shadowRoot.textContent, '2y')
+      assert.equal(time.shadowRoot.textContent, 'in 2y')
     })
 
     test('micro formats past times', async () => {
@@ -713,7 +747,7 @@ suite('relative-time', function () {
       time.setAttribute('datetime', now)
       time.setAttribute('format', 'micro')
       await Promise.resolve()
-      assert.equal(time.shadowRoot.textContent, '1m')
+      assert.equal(time.shadowRoot.textContent, 'in 1m')
     })
 
     test('micro formats hours', async () => {
@@ -723,7 +757,7 @@ suite('relative-time', function () {
       time.setAttribute('datetime', now)
       time.setAttribute('format', 'micro')
       await Promise.resolve()
-      assert.equal(time.shadowRoot.textContent, '1h')
+      assert.equal(time.shadowRoot.textContent, 'in 1h')
     })
 
     test('micro formats days', async () => {
@@ -733,7 +767,7 @@ suite('relative-time', function () {
       time.setAttribute('datetime', now)
       time.setAttribute('format', 'micro')
       await Promise.resolve()
-      assert.equal(time.shadowRoot.textContent, '1d')
+      assert.equal(time.shadowRoot.textContent, 'in 1d')
     })
   })
 
@@ -2141,6 +2175,21 @@ suite('relative-time', function () {
         }
       })
 
+      test('format="micro" absolute-time preference output does not include tense phrasing', async () => {
+        freezeTime(new Date('2023-01-15T17:00:00.000Z'))
+        document.documentElement.setAttribute('data-prefers-absolute-time', 'true')
+
+        const el = document.createElement('relative-time')
+        el.setAttribute('lang', 'en-US')
+        el.setAttribute('time-zone', 'GMT')
+        el.setAttribute('datetime', '2023-01-15T16:00:00.000Z')
+        el.setAttribute('format', 'micro')
+        el.setAttribute('tense', 'past')
+        await Promise.resolve()
+
+        assert.equal(el.shadowRoot.textContent, 'Today 4:00 PM UTC')
+      })
+
       test('activates for format="relative" (default)', async () => {
         freezeTime(new Date('2023-01-15T17:00:00.000Z'))
         document.documentElement.setAttribute('data-prefers-absolute-time', 'true')
@@ -2263,13 +2312,13 @@ suite('relative-time', function () {
         datetime: '2022-10-24T14:46:00.000z',
         tense: 'future',
         format: 'micro',
-        expected: '1m',
+        expected: 'in 1m',
       },
       {
         datetime: '2022-10-24T14:46:00.000z',
         tense: 'past',
         format: 'micro',
-        expected: '1m',
+        expected: '1m ago',
       },
       {
         datetime: '2022-10-24T14:46:00.000z',
@@ -2289,19 +2338,19 @@ suite('relative-time', function () {
         datetime: '2022-09-24T14:46:00.000Z',
         tense: 'future',
         format: 'micro',
-        expected: '1mo',
+        expected: 'in 1mo',
       },
       {
         datetime: '2022-10-23T14:46:00.000Z',
         tense: 'future',
         format: 'micro',
-        expected: '1m',
+        expected: 'in 1m',
       },
       {
         datetime: '2022-10-24T13:46:00.000Z',
         tense: 'future',
         format: 'micro',
-        expected: '1m',
+        expected: 'in 1m',
       },
 
       // Dates in the future
@@ -2309,61 +2358,61 @@ suite('relative-time', function () {
         datetime: '2022-10-24T15:46:00.000Z',
         tense: 'future',
         format: 'micro',
-        expected: '1h',
+        expected: 'in 1h',
       },
       {
         datetime: '2022-10-24T16:00:00.000Z',
         tense: 'future',
         format: 'micro',
-        expected: '1h',
+        expected: 'in 1h',
       },
       {
         datetime: '2022-10-24T16:15:00.000Z',
         tense: 'future',
         format: 'micro',
-        expected: '1h',
+        expected: 'in 1h',
       },
       {
         datetime: '2022-10-24T16:31:00.000Z',
         tense: 'future',
         format: 'micro',
-        expected: '1h',
+        expected: 'in 1h',
       },
       {
         datetime: '2022-10-30T14:46:00.000Z',
         tense: 'future',
         format: 'micro',
-        expected: '1w',
+        expected: 'in 1w',
       },
       {
         datetime: '2022-11-24T14:46:00.000Z',
         tense: 'future',
         format: 'micro',
-        expected: '1mo',
+        expected: 'in 1mo',
       },
       {
         datetime: '2023-10-23T14:46:00.000Z',
         tense: 'future',
         format: 'micro',
-        expected: '1y',
+        expected: 'in 1y',
       },
       {
         datetime: '2023-10-24T14:46:00.000Z',
         tense: 'future',
         format: 'micro',
-        expected: '1y',
+        expected: 'in 1y',
       },
       {
         datetime: '2024-03-31T14:46:00.000Z',
         tense: 'future',
         format: 'micro',
-        expected: '2y',
+        expected: 'in 2y',
       },
       {
         datetime: '2024-04-01T14:46:00.000Z',
         tense: 'future',
         format: 'micro',
-        expected: '2y',
+        expected: 'in 2y',
       },
 
       // Dates in the future
@@ -2371,19 +2420,19 @@ suite('relative-time', function () {
         datetime: '2022-11-24T14:46:00.000Z',
         tense: 'past',
         format: 'micro',
-        expected: '1mo',
+        expected: '1mo ago',
       },
       {
         datetime: '2022-10-25T14:46:00.000Z',
         tense: 'past',
         format: 'micro',
-        expected: '1m',
+        expected: '1m ago',
       },
       {
         datetime: '2022-10-24T15:46:00.000Z',
         tense: 'past',
         format: 'micro',
-        expected: '1m',
+        expected: '1m ago',
       },
 
       // Dates in the past
@@ -2391,61 +2440,61 @@ suite('relative-time', function () {
         datetime: '2022-10-24T13:46:00.000Z',
         tense: 'past',
         format: 'micro',
-        expected: '1h',
+        expected: '1h ago',
       },
       {
         datetime: '2022-10-24T13:30:00.000Z',
         tense: 'past',
         format: 'micro',
-        expected: '1h',
+        expected: '1h ago',
       },
       {
         datetime: '2022-10-24T13:17:00.000Z',
         tense: 'past',
         format: 'micro',
-        expected: '1h',
+        expected: '1h ago',
       },
       {
         datetime: '2022-10-24T13:01:00.000Z',
         tense: 'past',
         format: 'micro',
-        expected: '1h',
+        expected: '1h ago',
       },
       {
         datetime: '2022-10-18T14:46:00.000Z',
         tense: 'past',
         format: 'micro',
-        expected: '1w',
+        expected: '1w ago',
       },
       {
         datetime: '2022-09-23T14:46:00.000Z',
         tense: 'past',
         format: 'micro',
-        expected: '1mo',
+        expected: '1mo ago',
       },
       {
         datetime: '2021-10-25T14:46:00.000Z',
         tense: 'past',
         format: 'micro',
-        expected: '1y',
+        expected: '1y ago',
       },
       {
         datetime: '2021-10-24T14:46:00.000Z',
         tense: 'past',
         format: 'micro',
-        expected: '1y',
+        expected: '1y ago',
       },
       {
         datetime: '2021-05-18T14:46:00.000Z',
         tense: 'past',
         format: 'micro',
-        expected: '1y',
+        expected: '1y ago',
       },
       {
         datetime: '2021-05-17T14:46:00.000Z',
         tense: 'past',
         format: 'micro',
-        expected: '1y',
+        expected: '1y ago',
       },
 
       // Elapsed Times
@@ -2857,14 +2906,14 @@ suite('relative-time', function () {
         datetime: '2021-12-31T12:00:00.000Z',
         tense: 'past',
         format: 'micro',
-        expected: '1d',
+        expected: '1d ago',
       },
       {
         reference: '2022-12-31T12:00:00.000Z',
         datetime: '2022-01-01T12:00:00.000Z',
         tense: 'past',
         format: 'micro',
-        expected: '1y',
+        expected: '1y ago',
       },
       {
         reference: '2022-12-31T12:00:00.000Z',
@@ -2878,14 +2927,14 @@ suite('relative-time', function () {
         datetime: '2024-03-01T12:00:00.000Z',
         tense: 'future',
         format: 'micro',
-        expected: '2y',
+        expected: 'in 2y',
       },
       {
         reference: '2021-04-24T12:00:00.000Z',
         datetime: '2023-02-01T12:00:00.000Z',
         tense: 'future',
         format: 'micro',
-        expected: '2y',
+        expected: 'in 2y',
       },
       {
         reference: '2024-01-04T12:00:00.000Z',
