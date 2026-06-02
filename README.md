@@ -166,6 +166,8 @@ The `micro` format displays relative dates in a more compact format. Similar to 
 
 If the `threshold` attribute is explicitly set, `micro` will display compact relative dates within the threshold and absolute dates outside of it. If `threshold` is not set, `micro` will continue to display compact relative dates without applying the default threshold.
 
+When `tense` is set to `past` or `future`, `micro` uses `Intl.RelativeTimeFormat` with `formatStyle=narrow` to include localized tense phrasing such as `2w ago` or `in 3d`. With the default `tense=auto`, `micro` preserves the compact duration output such as `2w`.
+
 Code that uses `format=micro` should consider migrating to `format=relative` (perhaps with `formatStyle=narrow`), as `format=micro` can be difficult for users to understand, and can cause issues with assistive technologies. For example some screen readers (such as VoiceOver for mac) will read out `1m` as `1 meter`.
 
 ###### Cheatsheet
@@ -182,15 +184,15 @@ Code that uses `format=micro` should consider migrating to `format=relative` (pe
 
 If `format` is `'datetime'` then this value will be ignored.
 
-Tense can be used to prevent `duration` or `relative` formatted dates displaying dates in a tense other than the one specified. Setting `tense=past` will always display future `relative` dates as `now` and `duration` dates as `0 seconds`, while setting it to `future` will always display past dates `relative` as `now` and past `duration` dates as `0 seconds`.
+Tense can be used to prevent `duration` or `relative` formatted dates displaying dates in a tense other than the one specified. Setting `tense=past` will always display future `relative` dates as `now` and `duration` dates as `0 seconds`, while setting it to `future` will always display past dates `relative` as `now` and past `duration` dates as `0 seconds`. For `format=micro`, `tense=past` and `tense=future` add localized compact tense phrasing.
 
 For example when the given `datetime` is 40 seconds behind of the current date:
 
-| `tense=` | format=duration | format=relative |
-| :------: | :-------------: | :-------------: |
-|  future  |       0s        |       now       |
-|   past   |       40s       |     40s ago     |
-|   auto   |       40s       |     40s ago     |
+| `tense=` | format=duration | format=relative | format=micro |
+| :------: | :-------------: | :-------------: | :----------: |
+|  future  |       0s        |       now       |    in 1m     |
+|   past   |       40s       |     40s ago     |    1m ago    |
+|   auto   |       40s       |     40s ago     |      1m      |
 
 ```html
 <relative-time datetime="2038-04-01T16:30:00-08:00" tense="past">
