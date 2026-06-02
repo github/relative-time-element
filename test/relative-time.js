@@ -61,6 +61,17 @@ suite('relative-time', function () {
       assert.match(time.shadowRoot.textContent, /on [A-Z][a-z]{2} \d{1,2}/)
       assert.isAbove(delays[0], 0)
       assert.isBelow(delays[0], 6000)
+
+      delays.length = 0
+      const pastTime = document.createElement('relative-time')
+      pastTime.setAttribute('format', 'micro')
+      pastTime.setAttribute('threshold', 'PT1H')
+      pastTime.setAttribute('datetime', new Date(Date.now() - 59 * 60 * 1000 - 58 * 1000).toISOString())
+      await Promise.resolve()
+      assert.equal(pastTime.shadowRoot.textContent, '1h')
+      assert.isAbove(delays[0], 0)
+      assert.isBelow(delays[0], 6000)
+      pastTime.disconnectedCallback()
     } finally {
       globalThis.setTimeout = window.setTimeout = originalSetTimeout
       time.disconnectedCallback()

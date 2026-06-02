@@ -45,25 +45,27 @@ function getUnitFactor(el: RelativeTimeElement): number {
     factor = 60 * 1000
   }
   const threshold = getExplicitThreshold(el)
-  if (el.format === 'micro' && threshold && date.getTime() > now) {
+  if (el.format === 'micro' && threshold) {
     const thresholdDuration = Duration.from(threshold)
-    const thresholdTime = applyDuration(
-      date,
-      new Duration(
-        -thresholdDuration.years,
-        -thresholdDuration.months,
-        -thresholdDuration.weeks,
-        -thresholdDuration.days,
-        -thresholdDuration.hours,
-        -thresholdDuration.minutes,
-        -thresholdDuration.seconds,
-        -thresholdDuration.milliseconds,
-      ),
-    ).getTime()
+    const signedThresholdDuration = date.getTime() > now ? negateDuration(thresholdDuration) : thresholdDuration
+    const thresholdTime = applyDuration(date, signedThresholdDuration).getTime()
     const msUntilThreshold = thresholdTime - now
     if (msUntilThreshold > 0) factor = Math.min(factor, msUntilThreshold)
   }
   return factor
+}
+
+function negateDuration(duration: Duration): Duration {
+  return new Duration(
+    -duration.years,
+    -duration.months,
+    -duration.weeks,
+    -duration.days,
+    -duration.hours,
+    -duration.minutes,
+    -duration.seconds,
+    -duration.milliseconds,
+  )
 }
 
 function getExplicitThreshold(el: RelativeTimeElement): string | null {
@@ -84,9 +86,11 @@ function isBrowser12hCycle(): boolean {
 const dateObserver = new (class {
   elements: Set<RelativeTimeElement> = new Set()
   time = Infinity
+  updating = false
 
   observe(element: RelativeTimeElement) {
     this.elements.add(element)
+    if (this.updating) return
     const date = element.date
     if (date && date.getTime()) {
       const ms = getUnitFactor(element)
@@ -110,9 +114,14 @@ const dateObserver = new (class {
     if (!this.elements.size) return
 
     let nearestDistance = Infinity
-    for (const timeEl of this.elements) {
-      nearestDistance = Math.min(nearestDistance, getUnitFactor(timeEl))
-      timeEl.update()
+    this.updating = true
+    try {
+      for (const timeEl of this.elements) {
+        nearestDistance = Math.min(nearestDistance, getUnitFactor(timeEl))
+        timeEl.update()
+      }
+    } finally {
+      this.updating = false
     }
     this.time = Math.min(60 * 60 * 1000, nearestDistance)
     this.timer = setTimeout(() => this.update(), this.time)
