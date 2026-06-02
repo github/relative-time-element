@@ -335,6 +335,38 @@ suite('relative-time', function () {
       assert.match(time.shadowRoot.textContent, /on [A-Z][a-z]{2} \d{1,2}/)
     })
 
+    test('micro switches to dates after explicit P30D threshold', async () => {
+      freezeTime(new Date('2023-01-01T00:00:00Z'))
+      const time = document.createElement('relative-time')
+      time.setAttribute('format', 'micro')
+      time.setAttribute('lang', 'en-US')
+      time.setAttribute('threshold', 'P30D')
+      time.setAttribute('datetime', '2022-11-15T00:00:00Z')
+      await Promise.resolve()
+      assert.equal(time.shadowRoot.textContent, 'on Nov 15, 2022')
+    })
+
+    test('micro uses duration within explicit P30D threshold', async () => {
+      freezeTime(new Date('2023-01-15T00:00:00Z'))
+      const time = document.createElement('relative-time')
+      time.setAttribute('format', 'micro')
+      time.setAttribute('lang', 'en-US')
+      time.setAttribute('threshold', 'P30D')
+      time.setAttribute('datetime', '2023-01-01T00:00:00Z')
+      await Promise.resolve()
+      assert.equal(time.shadowRoot.textContent, '2w')
+    })
+
+    test('micro ignores default P30D threshold unless threshold attribute is set', async () => {
+      freezeTime(new Date('2023-01-01T00:00:00Z'))
+      const time = document.createElement('relative-time')
+      time.setAttribute('format', 'micro')
+      time.setAttribute('lang', 'en-US')
+      time.setAttribute('datetime', '2022-11-15T00:00:00Z')
+      await Promise.resolve()
+      assert.equal(time.shadowRoot.textContent, '2mo')
+    })
+
     test('uses `prefix` attribute to customise prefix', async () => {
       freezeTime(new Date('2023-01-01T00:00:00Z'))
       const time = document.createElement('relative-time')
@@ -2032,17 +2064,18 @@ suite('relative-time', function () {
         assert.equal(el.shadowRoot.textContent, '1h')
       })
 
-      test('does not activate for format="micro"', async () => {
+      test('activates for format="micro"', async () => {
         freezeTime(new Date('2023-01-15T17:00:00.000Z'))
         document.documentElement.setAttribute('data-prefers-absolute-time', 'true')
 
         const el = document.createElement('relative-time')
         el.setAttribute('lang', 'en-US')
+        el.setAttribute('time-zone', 'GMT')
         el.setAttribute('datetime', '2023-01-15T16:00:00.000Z')
         el.setAttribute('format', 'micro')
         await Promise.resolve()
 
-        assert.equal(el.shadowRoot.textContent, '1h')
+        assert.equal(el.shadowRoot.textContent, 'Today 4:00 PM UTC')
       })
 
       test('activates for format="relative" (default)', async () => {

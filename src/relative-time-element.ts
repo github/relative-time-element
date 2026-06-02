@@ -170,8 +170,11 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
 
     // elapsed is an alias for 'duration'
     if (format === 'elapsed') return 'duration'
-    // 'micro' is an alias for 'duration'
-    if (format === 'micro') return 'duration'
+    if (format === 'micro') {
+      const threshold = this.getAttribute('threshold')
+      if (threshold && isDuration(threshold) && Duration.compare(duration, threshold) === -1) return 'datetime'
+      return 'duration'
+    }
 
     // 'auto' is an alias for 'relative'
     if ((format === 'auto' || format === 'relative') && typeof Intl !== 'undefined' && Intl.RelativeTimeFormat) {
@@ -305,8 +308,8 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
   }
 
   #shouldDisplayUserPreferredAbsoluteTime(format: ResolvedFormat): boolean {
-    // Never override duration format with absolute format.
-    if (format === 'duration') return false
+    // Never override duration or elapsed format with absolute format.
+    if (format === 'duration' && this.format !== 'micro') return false
 
     return (
       this.ownerDocument.documentElement.getAttribute('data-prefers-absolute-time') === 'true' ||

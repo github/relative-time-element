@@ -162,7 +162,9 @@ This is identical to `format=relative`. Code that uses `format=auto` should migr
 
 ###### `format=micro`
 
-The `micro` format which will display relative dates (within the threshold) in a more compact format. Similar to `relative`, the `micro` format rounds values to the nearest largest value. Additionally, `micro` format will not round _lower_ than 1 minute, as such a `datetime` which is less than a minute from the current wall clock time will display `'1m'`.
+The `micro` format displays relative dates in a more compact format. Similar to `relative`, the `micro` format rounds values to the nearest largest value. Additionally, `micro` format will not round _lower_ than 1 minute, as such a `datetime` which is less than a minute from the current wall clock time will display `'1m'`.
+
+If the `threshold` attribute is explicitly set, `micro` will display compact relative dates within the threshold and absolute dates outside of it. If `threshold` is not set, `micro` will continue to display compact relative dates without applying the default threshold.
 
 Code that uses `format=micro` should consider migrating to `format=relative` (perhaps with `formatStyle=narrow`), as `format=micro` can be difficult for users to understand, and can cause issues with assistive technologies. For example some screen readers (such as VoiceOver for mac) will read out `1m` as `1 meter`.
 
@@ -230,11 +232,11 @@ Precision can be used to limit the display of an `relative` or `duration` format
 
 ##### threshold (`string`, default: `P30D`)
 
-If `tense` is anything other than `'auto'`, or `format` is `'relative'` (or the deprecated `'auto'` or `'micro'` values), then this value will be ignored.
+If `tense` is anything other than `'auto'`, or `format` is `'relative'` (or the deprecated `'auto'` value), then this value will be ignored. For `format="micro"`, `threshold` is honored only when the `threshold` attribute is explicitly set.
 
 Threshold can be used to specify when a relative display (e.g. "5 days ago") should turn into an absolute display (i.e. the full date). This should be a valid [ISO8601 Time Duration](https://en.wikipedia.org/wiki/ISO_8601#Durations). If the difference between the current time and the specified `datetime` is _more_ than the duration, then the date will be displayed as an absolute value (i.e. the full date), otherwise it will be formatted to a relative display (e.g. "5 days ago").
 
-The default value for this is `P30D`, meaning if the current time is more than 30 days away from the specified date time, then an absolute date will be displayed.
+The default value for this is `P30D`, meaning if the current time is more than 30 days away from the specified date time, then an absolute date will be displayed. This default applies to relative/auto formatting; `format="micro"` only applies threshold behavior when the `threshold` attribute is present.
 
 ```html
 <relative-time datetime="1970-04-01T16:30:00-08:00" threshold="P100Y">
