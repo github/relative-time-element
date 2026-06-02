@@ -86,7 +86,6 @@ const dateObserver = new (class {
   time = Infinity
 
   observe(element: RelativeTimeElement) {
-    if (this.elements.has(element)) return
     this.elements.add(element)
     const date = element.date
     if (date && date.getTime()) {

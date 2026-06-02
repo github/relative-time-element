@@ -40,7 +40,7 @@ suite('relative-time', function () {
     }
   })
 
-  test('schedules future micro datetime updates at the explicit threshold boundary', async () => {
+  test('reschedules future micro datetime updates at the explicit threshold boundary', async () => {
     const originalSetTimeout = window.setTimeout
     const delays = []
     const time = document.createElement('relative-time')
@@ -50,8 +50,13 @@ suite('relative-time', function () {
     }
     try {
       time.setAttribute('format', 'micro')
-      time.setAttribute('threshold', 'PT1M')
       time.setAttribute('datetime', new Date(Date.now() + 65 * 1000).toISOString())
+      await Promise.resolve()
+      assert.equal(time.shadowRoot.textContent, '1m')
+      assert.isAtLeast(delays[0], 59000)
+
+      delays.length = 0
+      time.setAttribute('threshold', 'PT1M')
       await Promise.resolve()
       assert.match(time.shadowRoot.textContent, /on [A-Z][a-z]{2} \d{1,2}/)
       assert.isAbove(delays[0], 0)
