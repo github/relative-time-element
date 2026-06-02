@@ -166,7 +166,7 @@ The `micro` format displays relative dates in a more compact format. Similar to 
 
 If the `threshold` attribute is explicitly set, `micro` will display compact relative dates within the threshold and absolute dates outside of it. If `threshold` is not set, `micro` will continue to display compact relative dates without applying the default threshold.
 
-When `tense` is set to `past` or `future`, `micro` uses `Intl.RelativeTimeFormat` with `formatStyle=narrow` to include localized tense phrasing such as `2w ago` or `in 3d`. With the default `tense=auto`, `micro` preserves the compact duration output such as `2w`.
+When `tense` is set to `past` or `future`, `micro` uses `Intl.RelativeTimeFormat` with `style: 'narrow'` to include localized tense phrasing such as `2w ago` or `in 3d`. With the default `tense=auto`, `micro` preserves the compact duration output such as `2w`.
 
 Code that uses `format=micro` should consider migrating to `format=relative` (perhaps with `formatStyle=narrow`), as `format=micro` can be difficult for users to understand, and can cause issues with assistive technologies. For example some screen readers (such as VoiceOver for mac) will read out `1m` as `1 meter`.
 
