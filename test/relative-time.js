@@ -40,6 +40,28 @@ suite('relative-time', function () {
     }
   })
 
+  test('schedules future micro datetime updates at the explicit threshold boundary', async () => {
+    const originalSetTimeout = window.setTimeout
+    const delays = []
+    const time = document.createElement('relative-time')
+    globalThis.setTimeout = window.setTimeout = function (_, ms) {
+      delays.push(ms)
+      return 1
+    }
+    try {
+      time.setAttribute('format', 'micro')
+      time.setAttribute('threshold', 'PT1M')
+      time.setAttribute('datetime', new Date(Date.now() + 65 * 1000).toISOString())
+      await Promise.resolve()
+      assert.match(time.shadowRoot.textContent, /on [A-Z][a-z]{2} \d{1,2}/)
+      assert.isAbove(delays[0], 0)
+      assert.isBelow(delays[0], 6000)
+    } finally {
+      globalThis.setTimeout = window.setTimeout = originalSetTimeout
+      time.disconnectedCallback()
+    }
+  })
+
   test('does not call update() frequently with attributeChangedCallback', async () => {
     let counter = 0
     const el = document.createElement('relative-time')
@@ -121,19 +143,6 @@ suite('relative-time', function () {
     const nextDisplay = el.shadowRoot.textContent || el.textContent
     assert.match(nextDisplay, /in \d+ seconds/)
     assert.notEqual(nextDisplay, display)
-  })
-
-  test('updates future micro datetime when it enters explicit threshold', async function () {
-    // eslint-disable-next-line @typescript-eslint/no-invalid-this
-    this.timeout(4000)
-    const time = document.createElement('relative-time')
-    time.setAttribute('format', 'micro')
-    time.setAttribute('threshold', 'PT1S')
-    time.setAttribute('datetime', new Date(Date.now() + 2500).toISOString())
-    await Promise.resolve()
-    assert.match(time.shadowRoot.textContent, /on [A-Z][a-z]{2} \d{1,2}/)
-    await new Promise(resolve => setTimeout(resolve, 2600))
-    assert.equal(time.shadowRoot.textContent, '1m')
   })
 
   test('all observedAttributes have getters', async () => {

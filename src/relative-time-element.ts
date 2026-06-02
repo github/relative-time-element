@@ -1,4 +1,13 @@
-import {Duration, elapsedTime, getRelativeTimeUnit, isDuration, roundToSingleUnit, Unit, unitNames} from './duration.js'
+import {
+  Duration,
+  applyDuration,
+  elapsedTime,
+  getRelativeTimeUnit,
+  isDuration,
+  roundToSingleUnit,
+  Unit,
+  unitNames,
+} from './duration.js'
 const HTMLElement = globalThis.HTMLElement || (null as unknown as typeof window['HTMLElement'])
 
 export type DeprecatedFormat = 'auto' | 'micro' | 'elapsed'
@@ -17,7 +26,9 @@ export class RelativeTimeUpdatedEvent extends Event {
 }
 
 function getUnitFactor(el: RelativeTimeElement): number {
-  if (!el.date) return Infinity
+  const date = el.date
+  if (!date) return Infinity
+  const now = Date.now()
   if (el.format === 'duration' || el.format === 'elapsed') {
     const precision = el.precision
     if (precision === 'second') {
@@ -26,10 +37,38 @@ function getUnitFactor(el: RelativeTimeElement): number {
       return 60 * 1000
     }
   }
-  const ms = Math.abs(Date.now() - el.date.getTime())
-  if (ms < 60 * 1000) return 1000
-  if (ms < 60 * 60 * 1000) return 60 * 1000
-  return 60 * 60 * 1000
+  const ms = Math.abs(now - date.getTime())
+  let factor = 60 * 60 * 1000
+  if (ms < 60 * 1000) {
+    factor = 1000
+  } else if (ms < 60 * 60 * 1000) {
+    factor = 60 * 1000
+  }
+  const threshold = getExplicitThreshold(el)
+  if (el.format === 'micro' && threshold && date.getTime() > now) {
+    const thresholdDuration = Duration.from(threshold)
+    const thresholdTime = applyDuration(
+      date,
+      new Duration(
+        -thresholdDuration.years,
+        -thresholdDuration.months,
+        -thresholdDuration.weeks,
+        -thresholdDuration.days,
+        -thresholdDuration.hours,
+        -thresholdDuration.minutes,
+        -thresholdDuration.seconds,
+        -thresholdDuration.milliseconds,
+      ),
+    ).getTime()
+    const msUntilThreshold = thresholdTime - now
+    if (msUntilThreshold > 0) factor = Math.min(factor, msUntilThreshold)
+  }
+  return factor
+}
+
+function getExplicitThreshold(el: RelativeTimeElement): string | null {
+  const threshold = el.getAttribute('threshold')
+  return threshold && isDuration(threshold) ? threshold : null
 }
 
 // Determine whether the user has a 12 (vs. 24) hour cycle preference via the
@@ -53,7 +92,7 @@ const dateObserver = new (class {
     if (date && date.getTime()) {
       const ms = getUnitFactor(element)
       const time = Date.now() + ms
-      if (time < this.time) {
+      if (time < this.time || this.time <= Date.now()) {
         clearTimeout(this.timer)
         this.timer = setTimeout(() => this.update(), ms)
         this.time = time
@@ -164,8 +203,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
   }
 
   #getExplicitThreshold(): string | null {
-    const threshold = this.getAttribute('threshold')
-    return threshold && isDuration(threshold) ? threshold : null
+    return getExplicitThreshold(this)
   }
 
   #resolveFormat(duration: Duration, thresholdDuration = duration): ResolvedFormat {
