@@ -123,6 +123,20 @@ suite('relative-time', function () {
     assert.notEqual(nextDisplay, display)
   })
 
+  test('updates future micro datetime when it enters explicit threshold', async function () {
+    // eslint-disable-next-line @typescript-eslint/no-invalid-this
+    this.timeout(4000)
+    const time = document.createElement('relative-time')
+    time.setAttribute('format', 'micro')
+    time.setAttribute('threshold', 'PT1S')
+    time.setAttribute('precision', 'second')
+    time.setAttribute('datetime', new Date(Date.now() + 2500).toISOString())
+    await Promise.resolve()
+    assert.match(time.shadowRoot.textContent, /on [A-Z][a-z]{2} \d{1,2}/)
+    await new Promise(resolve => setTimeout(resolve, 2600))
+    assert.match(time.shadowRoot.textContent, /^1m/)
+  })
+
   test('all observedAttributes have getters', async () => {
     const members = [
       ...Object.getOwnPropertyNames(RelativeTimeElement.prototype).map(n =>

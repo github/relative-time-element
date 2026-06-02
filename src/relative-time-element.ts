@@ -163,6 +163,11 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     }).format(date)
   }
 
+  #getExplicitThreshold(): string | null {
+    const threshold = this.getAttribute('threshold')
+    return threshold && isDuration(threshold) ? threshold : null
+  }
+
   #resolveFormat(duration: Duration): ResolvedFormat {
     const format: string = this.format
     if (format === 'datetime') return 'datetime'
@@ -171,8 +176,8 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     // elapsed is an alias for 'duration'
     if (format === 'elapsed') return 'duration'
     if (format === 'micro') {
-      const threshold = this.getAttribute('threshold')
-      if (threshold && isDuration(threshold) && Duration.compare(duration, threshold) === -1) return 'datetime'
+      const threshold = this.#getExplicitThreshold()
+      if (threshold && Duration.compare(duration, threshold) === -1) return 'datetime'
       return 'duration'
     }
 
@@ -595,6 +600,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     const shouldObserve =
       format === 'relative' ||
       format === 'duration' ||
+      (this.format === 'micro' && Boolean(this.#getExplicitThreshold()) && date.getTime() > now) ||
       (displayUserPreferredAbsoluteTime && (this.#isToday(date) || this.#isCurrentYear(date)))
     if (shouldObserve) {
       dateObserver.observe(this)
