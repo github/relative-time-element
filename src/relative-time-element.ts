@@ -168,7 +168,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     return threshold && isDuration(threshold) ? threshold : null
   }
 
-  #resolveFormat(duration: Duration): ResolvedFormat {
+  #resolveFormat(duration: Duration, thresholdDuration = duration): ResolvedFormat {
     const format: string = this.format
     if (format === 'datetime') return 'datetime'
     if (format === 'duration') return 'duration'
@@ -177,7 +177,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     if (format === 'elapsed') return 'duration'
     if (format === 'micro') {
       const threshold = this.#getExplicitThreshold()
-      if (threshold && Duration.compare(duration, threshold) === -1) return 'datetime'
+      if (threshold && Duration.compare(thresholdDuration, threshold) === -1) return 'datetime'
       return 'duration'
     }
 
@@ -569,7 +569,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     }
 
     const duration = elapsedTime(date, this.precision, now)
-    const format = this.#resolveFormat(duration)
+    const format = this.#resolveFormat(duration, elapsedTime(date, 'millisecond', now))
     let newText = oldText
 
     // Experimental: Enable absolute time if users prefers it, but never for `duration` format
