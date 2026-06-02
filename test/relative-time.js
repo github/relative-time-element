@@ -740,7 +740,7 @@ suite('relative-time', function () {
       assert.equal(time.shadowRoot.textContent, 'in 2y')
     })
 
-    test('micro formats past times', async () => {
+    test('micro formats near-future times', async () => {
       const now = new Date(Date.now() + 3 * 1000).toISOString()
       const time = document.createElement('relative-time')
       time.setAttribute('tense', 'future')
