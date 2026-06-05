@@ -40,6 +40,44 @@ suite('relative-time', function () {
     }
   })
 
+  test('reschedules future micro datetime updates at the explicit threshold boundary', async () => {
+    const originalSetTimeout = window.setTimeout
+    const delays = []
+    const time = document.createElement('relative-time')
+    globalThis.setTimeout = window.setTimeout = function (_, ms) {
+      delays.push(ms)
+      return 1
+    }
+    try {
+      time.setAttribute('format', 'micro')
+      time.setAttribute('datetime', new Date(Date.now() + 65 * 1000).toISOString())
+      await Promise.resolve()
+      assert.equal(time.shadowRoot.textContent, '1m')
+      assert.isAtLeast(delays[0], 59000)
+
+      delays.length = 0
+      time.setAttribute('threshold', 'PT1M')
+      await Promise.resolve()
+      assert.match(time.shadowRoot.textContent, /on [A-Z][a-z]{2} \d{1,2}/)
+      assert.isAbove(delays[0], 0)
+      assert.isBelow(delays[0], 6000)
+
+      delays.length = 0
+      const pastTime = document.createElement('relative-time')
+      pastTime.setAttribute('format', 'micro')
+      pastTime.setAttribute('threshold', 'PT1H')
+      pastTime.setAttribute('datetime', new Date(Date.now() - 59 * 60 * 1000 - 58 * 1000).toISOString())
+      await Promise.resolve()
+      assert.equal(pastTime.shadowRoot.textContent, '1h')
+      assert.isAbove(delays[0], 0)
+      assert.isBelow(delays[0], 6000)
+      pastTime.disconnectedCallback()
+    } finally {
+      globalThis.setTimeout = window.setTimeout = originalSetTimeout
+      time.disconnectedCallback()
+    }
+  })
+
   test('does not call update() frequently with attributeChangedCallback', async () => {
     let counter = 0
     const el = document.createElement('relative-time')
@@ -333,6 +371,38 @@ suite('relative-time', function () {
       time.setAttribute('datetime', '2023-01-03T00:00:00Z')
       await Promise.resolve()
       assert.match(time.shadowRoot.textContent, /on [A-Z][a-z]{2} \d{1,2}/)
+    })
+
+    test('micro switches to dates after explicit P30D threshold', async () => {
+      freezeTime(new Date('2023-01-01T00:00:00Z'))
+      const time = document.createElement('relative-time')
+      time.setAttribute('format', 'micro')
+      time.setAttribute('lang', 'en-US')
+      time.setAttribute('threshold', 'P30D')
+      time.setAttribute('datetime', '2022-11-15T00:00:00Z')
+      await Promise.resolve()
+      assert.equal(time.shadowRoot.textContent, 'on Nov 15, 2022')
+    })
+
+    test('micro uses duration within explicit P30D threshold', async () => {
+      freezeTime(new Date('2023-01-15T00:00:00Z'))
+      const time = document.createElement('relative-time')
+      time.setAttribute('format', 'micro')
+      time.setAttribute('lang', 'en-US')
+      time.setAttribute('threshold', 'P30D')
+      time.setAttribute('datetime', '2023-01-01T00:00:00Z')
+      await Promise.resolve()
+      assert.equal(time.shadowRoot.textContent, '2w')
+    })
+
+    test('micro ignores default P30D threshold unless threshold attribute is set', async () => {
+      freezeTime(new Date('2023-01-01T00:00:00Z'))
+      const time = document.createElement('relative-time')
+      time.setAttribute('format', 'micro')
+      time.setAttribute('lang', 'en-US')
+      time.setAttribute('datetime', '2022-11-15T00:00:00Z')
+      await Promise.resolve()
+      assert.equal(time.shadowRoot.textContent, '2mo')
     })
 
     test('uses `prefix` attribute to customise prefix', async () => {
@@ -2032,17 +2102,43 @@ suite('relative-time', function () {
         assert.equal(el.shadowRoot.textContent, '1h')
       })
 
-      test('does not activate for format="micro"', async () => {
+      test('activates for format="micro"', async () => {
         freezeTime(new Date('2023-01-15T17:00:00.000Z'))
         document.documentElement.setAttribute('data-prefers-absolute-time', 'true')
 
         const el = document.createElement('relative-time')
         el.setAttribute('lang', 'en-US')
+        el.setAttribute('time-zone', 'GMT')
         el.setAttribute('datetime', '2023-01-15T16:00:00.000Z')
         el.setAttribute('format', 'micro')
         await Promise.resolve()
 
-        assert.equal(el.shadowRoot.textContent, '1h')
+        assert.equal(el.shadowRoot.textContent, 'Today 4:00 PM UTC')
+      })
+
+      test('does not observe old format="micro" absolute-time preference output', async () => {
+        freezeTime(new Date('2023-01-15T17:00:00.000Z'))
+        document.documentElement.setAttribute('data-prefers-absolute-time', 'true')
+        const originalSetTimeout = window.setTimeout
+        const delays = []
+        globalThis.setTimeout = window.setTimeout = function (_, ms) {
+          delays.push(ms)
+          return 1
+        }
+        try {
+          const el = document.createElement('relative-time')
+          el.setAttribute('lang', 'en-US')
+          el.setAttribute('time-zone', 'GMT')
+          el.setAttribute('datetime', '2022-01-15T17:00:00.000Z')
+          el.setAttribute('format', 'micro')
+          await Promise.resolve()
+
+          assert.equal(el.shadowRoot.textContent, 'Jan 15, 2022, 5:00 PM UTC')
+          assert.empty(delays)
+          el.disconnectedCallback()
+        } finally {
+          globalThis.setTimeout = window.setTimeout = originalSetTimeout
+        }
       })
 
       test('activates for format="relative" (default)', async () => {

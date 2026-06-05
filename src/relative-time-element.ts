@@ -1,4 +1,13 @@
-import {Duration, elapsedTime, getRelativeTimeUnit, isDuration, roundToSingleUnit, Unit, unitNames} from './duration.js'
+import {
+  Duration,
+  applyDuration,
+  elapsedTime,
+  getRelativeTimeUnit,
+  isDuration,
+  roundToSingleUnit,
+  Unit,
+  unitNames,
+} from './duration.js'
 const HTMLElement = globalThis.HTMLElement || (null as unknown as typeof window['HTMLElement'])
 
 export type DeprecatedFormat = 'auto' | 'micro' | 'elapsed'
@@ -17,7 +26,9 @@ export class RelativeTimeUpdatedEvent extends Event {
 }
 
 function getUnitFactor(el: RelativeTimeElement): number {
-  if (!el.date) return Infinity
+  const date = el.date
+  if (!date) return Infinity
+  const now = Date.now()
   if (el.format === 'duration' || el.format === 'elapsed') {
     const precision = el.precision
     if (precision === 'second') {
@@ -26,10 +37,40 @@ function getUnitFactor(el: RelativeTimeElement): number {
       return 60 * 1000
     }
   }
-  const ms = Math.abs(Date.now() - el.date.getTime())
-  if (ms < 60 * 1000) return 1000
-  if (ms < 60 * 60 * 1000) return 60 * 1000
-  return 60 * 60 * 1000
+  const ms = Math.abs(now - date.getTime())
+  let factor = 60 * 60 * 1000
+  if (ms < 60 * 1000) {
+    factor = 1000
+  } else if (ms < 60 * 60 * 1000) {
+    factor = 60 * 1000
+  }
+  const threshold = getExplicitThreshold(el)
+  if (el.format === 'micro' && threshold) {
+    const thresholdDuration = Duration.from(threshold)
+    const signedThresholdDuration = date.getTime() > now ? negateDuration(thresholdDuration) : thresholdDuration
+    const thresholdTime = applyDuration(date, signedThresholdDuration).getTime()
+    const msUntilThreshold = thresholdTime - now
+    if (msUntilThreshold > 0) factor = Math.min(factor, msUntilThreshold)
+  }
+  return factor
+}
+
+function negateDuration(duration: Duration): Duration {
+  return new Duration(
+    -duration.years,
+    -duration.months,
+    -duration.weeks,
+    -duration.days,
+    -duration.hours,
+    -duration.minutes,
+    -duration.seconds,
+    -duration.milliseconds,
+  )
+}
+
+function getExplicitThreshold(el: RelativeTimeElement): string | null {
+  const threshold = el.getAttribute('threshold')
+  return threshold && isDuration(threshold) ? threshold : null
 }
 
 // Determine whether the user has a 12 (vs. 24) hour cycle preference via the
@@ -45,15 +86,16 @@ function isBrowser12hCycle(): boolean {
 const dateObserver = new (class {
   elements: Set<RelativeTimeElement> = new Set()
   time = Infinity
+  updating = false
 
   observe(element: RelativeTimeElement) {
-    if (this.elements.has(element)) return
     this.elements.add(element)
+    if (this.updating) return
     const date = element.date
     if (date && date.getTime()) {
       const ms = getUnitFactor(element)
       const time = Date.now() + ms
-      if (time < this.time) {
+      if (time < this.time || this.time <= Date.now()) {
         clearTimeout(this.timer)
         this.timer = setTimeout(() => this.update(), ms)
         this.time = time
@@ -72,9 +114,14 @@ const dateObserver = new (class {
     if (!this.elements.size) return
 
     let nearestDistance = Infinity
-    for (const timeEl of this.elements) {
-      nearestDistance = Math.min(nearestDistance, getUnitFactor(timeEl))
-      timeEl.update()
+    this.updating = true
+    try {
+      for (const timeEl of this.elements) {
+        nearestDistance = Math.min(nearestDistance, getUnitFactor(timeEl))
+        timeEl.update()
+      }
+    } finally {
+      this.updating = false
     }
     this.time = Math.min(60 * 60 * 1000, nearestDistance)
     this.timer = setTimeout(() => this.update(), this.time)
@@ -163,15 +210,22 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     }).format(date)
   }
 
-  #resolveFormat(duration: Duration): ResolvedFormat {
+  #getExplicitThreshold(): string | null {
+    return getExplicitThreshold(this)
+  }
+
+  #resolveFormat(duration: Duration, thresholdDuration = duration): ResolvedFormat {
     const format: string = this.format
     if (format === 'datetime') return 'datetime'
     if (format === 'duration') return 'duration'
 
     // elapsed is an alias for 'duration'
     if (format === 'elapsed') return 'duration'
-    // 'micro' is an alias for 'duration'
-    if (format === 'micro') return 'duration'
+    if (format === 'micro') {
+      const threshold = this.#getExplicitThreshold()
+      if (threshold && Duration.compare(thresholdDuration, threshold) === -1) return 'datetime'
+      return 'duration'
+    }
 
     // 'auto' is an alias for 'relative'
     if ((format === 'auto' || format === 'relative') && typeof Intl !== 'undefined' && Intl.RelativeTimeFormat) {
@@ -305,8 +359,8 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
   }
 
   #shouldDisplayUserPreferredAbsoluteTime(format: ResolvedFormat): boolean {
-    // Never override duration format with absolute format.
-    if (format === 'duration') return false
+    // Never override duration or elapsed format with absolute format.
+    if (format === 'duration' && this.format !== 'micro') return false
 
     return (
       this.ownerDocument.documentElement.getAttribute('data-prefers-absolute-time') === 'true' ||
@@ -561,7 +615,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     }
 
     const duration = elapsedTime(date, this.precision, now)
-    const format = this.#resolveFormat(duration)
+    const format = this.#resolveFormat(duration, elapsedTime(date, 'millisecond', now))
     let newText = oldText
 
     // Experimental: Enable absolute time if users prefers it, but never for `duration` format
@@ -590,8 +644,8 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     }
 
     const shouldObserve =
-      format === 'relative' ||
-      format === 'duration' ||
+      (!displayUserPreferredAbsoluteTime && (format === 'relative' || format === 'duration')) ||
+      (this.format === 'micro' && Boolean(this.#getExplicitThreshold()) && date.getTime() > now) ||
       (displayUserPreferredAbsoluteTime && (this.#isToday(date) || this.#isCurrentYear(date)))
     if (shouldObserve) {
       dateObserver.observe(this)
