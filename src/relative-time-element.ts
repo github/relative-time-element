@@ -236,6 +236,28 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     return 'datetime'
   }
 
+  #getMicroDuration(duration: Duration): Duration {
+    duration = roundToSingleUnit(duration)
+    // Allow month-level durations to pass through even with mismatched tense
+    if (
+      duration.months === 0 &&
+      ((this.tense === 'past' && duration.sign !== -1) || (this.tense === 'future' && duration.sign !== 1))
+    ) {
+      return microEmptyDuration
+    }
+    return duration
+  }
+
+  #getMicroRelativeFormat(duration: Duration): string {
+    const relativeFormat = new Intl.RelativeTimeFormat(this.#lang, {
+      numeric: 'always',
+      style: 'narrow',
+    })
+    duration = this.#getMicroDuration(duration)
+    const [int, unit] = getRelativeTimeUnit(duration.blank ? microEmptyDuration : duration)
+    return relativeFormat.format(Math.abs(int) * (this.tense === 'past' ? -1 : 1), unit)
+  }
+
   #getDurationFormat(duration: Duration): string {
     const locale = this.#lang
     const format = this.format
@@ -243,15 +265,8 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     const tense = this.tense
     let empty = emptyDuration
     if (format === 'micro') {
-      duration = roundToSingleUnit(duration)
+      duration = this.#getMicroDuration(duration)
       empty = microEmptyDuration
-      // Allow month-level durations to pass through even with mismatched tense
-      if (
-        duration.months === 0 &&
-        ((this.tense === 'past' && duration.sign !== -1) || (this.tense === 'future' && duration.sign !== 1))
-      ) {
-        duration = microEmptyDuration
-      }
     } else if ((tense === 'past' && duration.sign !== -1) || (tense === 'future' && duration.sign !== 1)) {
       duration = empty
     }
@@ -624,7 +639,11 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       newText = this.#getUserPreferredAbsoluteTimeFormat(date)
     } else {
       if (format === 'duration') {
-        newText = this.#getDurationFormat(duration)
+        if (this.format === 'micro' && this.tense !== 'auto' && Intl.RelativeTimeFormat) {
+          newText = this.#getMicroRelativeFormat(duration)
+        } else {
+          newText = this.#getDurationFormat(duration)
+        }
       } else if (format === 'relative') {
         newText = this.#getRelativeFormat(duration)
       } else {
