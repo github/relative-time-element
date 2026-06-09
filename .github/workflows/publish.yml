@@ -48,4 +48,5 @@ jobs:
         env:
           TAG_NAME: ${{ github.event.release.tag_name }}
       - run: npm --ignore-scripts publish --provenance --access public
-
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
