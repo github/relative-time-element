@@ -181,8 +181,10 @@ export function roundToSingleUnit(duration: Duration, {relativeTo = Date.now()}:
     const daysDiff = Math.abs(Math.round((Number(newDate) - Number(relativeTo)) / 86400000)) + monthDateCorrection
     const monthsDiff = Math.abs(yearDiff * 12 + monthDiff)
     if (daysDiff < 27) {
-      if (days >= 6) {
-        weeks += Math.round(days / 7)
+      const roundedWeeks = Math.round(days / 7)
+      // Keep same-calendar-month spans as days instead of rounding 4 weeks to a month.
+      if (days >= 6 && (roundedWeeks < 4 || monthsDiff > 0)) {
+        weeks += roundedWeeks
         days = 0
       } else {
         days = daysDiff
