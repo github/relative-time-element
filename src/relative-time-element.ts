@@ -144,6 +144,24 @@ const dateObserver = new (class {
   }
 })()
 
+// Batch the initial render of newly-connected elements into a single microtask
+// flush. When N elements are inserted together, this avoids N synchronous
+// formatting passes on the insertion critical path.
+const pendingElements: Set<RelativeTimeElement> = new Set()
+let pendingFlush = false
+
+async function flushPending(): Promise<void> {
+  await Promise.resolve()
+  // Snapshot and clear before iterating so that any connections or disconnections
+  // triggered by update() calls do not interfere with the current batch.
+  const elements = [...pendingElements]
+  pendingElements.clear()
+  pendingFlush = false
+  for (const el of elements) {
+    el.update()
+  }
+}
+
 export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFormatOptions {
   static define(tag = 'relative-time', registry = customElements) {
     registry.define(tag, this)
@@ -641,11 +659,23 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
   }
 
   connectedCallback(): void {
-    this.update()
+    // Coalesce the initial render into a single microtask-flushed batch.
+    // If attributeChangedCallback already scheduled a microtask for this
+    // element (e.g. an attribute was set before connection), skip enqueuing
+    // here — that in-flight microtask will perform the first render.
+    if (this.#updating) return
+    pendingElements.add(this)
+    if (!pendingFlush) {
+      pendingFlush = true
+      flushPending()
+    }
   }
 
   disconnectedCallback(): void {
     dateObserver.unobserve(this)
+    // If the element is disconnected before the microtask flush runs, remove
+    // it from the pending set so update() is never called on a detached node.
+    pendingElements.delete(this)
   }
 
   // Internal: Refresh the time element's formatted date when an attribute changes.
@@ -657,6 +687,12 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
         (this.date && this.#getFormattedTitle(this.date, this.#lang, this.timeZone, this.hourCycle)) !== newValue
     }
     if (!this.#updating && !(attrName === 'title' && this.#customTitle)) {
+      if (pendingElements.has(this)) {
+        // This element is already queued in the batch flush. The flush will
+        // call update() with the latest attribute state, so no separate
+        // microtask is needed.
+        return
+      }
       this.#updating = (async () => {
         await Promise.resolve()
         this.update()

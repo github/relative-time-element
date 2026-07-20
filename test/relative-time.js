@@ -3262,4 +3262,72 @@ suite('relative-time', function () {
       document.documentElement.removeAttribute('time-zone')
     })
   })
+
+  suite('connectedCallback microtask batching', function () {
+    let fixture2
+    suiteSetup(() => {
+      fixture2 = document.createElement('div')
+      document.body.appendChild(fixture2)
+    })
+    suiteTeardown(() => {
+      document.body.removeChild(fixture2)
+    })
+    teardown(() => {
+      fixture2.innerHTML = ''
+    })
+
+    test('renders text and title after a single microtask when connected', async () => {
+      const el = document.createElement('relative-time')
+      el.setAttribute('datetime', new Date(Date.now() - 3 * 60 * 1000).toISOString())
+      fixture2.appendChild(el)
+      assert.equal(el.shadowRoot.textContent, '', 'should not have rendered synchronously')
+      await Promise.resolve()
+      assert.ok(el.shadowRoot.textContent.length > 0, 'should have rendered text after microtask')
+      assert.ok(el.getAttribute('title'), 'should have a title attribute after microtask')
+    })
+
+    test('renders all elements after a single microtask when multiple are inserted', async () => {
+      const count = 5
+      const elements = Array.from({length: count}, () => {
+        const el = document.createElement('relative-time')
+        el.setAttribute('datetime', new Date(Date.now() - 60 * 1000).toISOString())
+        fixture2.appendChild(el)
+        return el
+      })
+      // All should be unrendered synchronously
+      for (const el of elements) {
+        assert.equal(el.shadowRoot.textContent, '', 'should not have rendered synchronously')
+      }
+      await Promise.resolve()
+      for (const el of elements) {
+        assert.ok(el.shadowRoot.textContent.length > 0, 'should have rendered after microtask')
+      }
+    })
+
+    test('does not update an element that is disconnected before the microtask flush', async () => {
+      const el = document.createElement('relative-time')
+      // Connect the element first (no attributes yet, so connectedCallback enqueues
+      // the element in the batch and no attributeChangedCallback microtask is
+      // scheduled yet).
+      fixture2.appendChild(el)
+      // Set datetime AFTER connecting so attributeChangedCallback defers to the
+      // pending batch rather than scheduling a separate microtask.
+      el.setAttribute('datetime', new Date(Date.now() - 60 * 1000).toISOString())
+      // Disconnect before the batch microtask fires.
+      fixture2.removeChild(el)
+      await Promise.resolve()
+      assert.equal(el.shadowRoot.textContent, '', 'disconnected element must not have been updated')
+      assert.equal(el.getAttribute('title'), null, 'disconnected element must not have a title')
+    })
+
+    test('attribute change after connection is picked up by the batch flush', async () => {
+      const el = document.createElement('relative-time')
+      fixture2.appendChild(el)
+      // Set datetime AFTER connecting — attributeChangedCallback should defer
+      // to the pending batch flush rather than scheduling a separate microtask.
+      el.setAttribute('datetime', new Date(Date.now() - 2 * 60 * 1000).toISOString())
+      await Promise.resolve()
+      assert.ok(el.shadowRoot.textContent.length > 0, 'should have rendered with the latest datetime')
+    })
+  })
 })
