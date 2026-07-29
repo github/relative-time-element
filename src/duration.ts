@@ -156,7 +156,8 @@ export function elapsedTime(date: Date, precision: Unit = 'second', now = Date.n
   const day = Math.floor(hr / 24)
   const month = Math.floor(day / 30)
   const year = Math.floor(month / 12)
-  const i = unitNames.indexOf(precision) || unitNames.length
+  const precisionIndex = unitNames.indexOf(precision)
+  const i = precisionIndex === -1 ? unitNames.length : precisionIndex
   return new Duration(
     i >= 0 ? year * sign : 0,
     i >= 1 ? (month - year * 12) * sign : 0,

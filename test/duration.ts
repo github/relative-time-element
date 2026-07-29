@@ -224,6 +224,18 @@ suite('duration', function () {
         input: '2023-03-21T16:03:00.000Z',
         expected: '-P1DT20H',
       },
+      {
+        now: '2022-10-24T14:46:00.000Z',
+        input: '2024-10-24T14:46:00.000Z',
+        precision: 'year',
+        expected: 'P2Y',
+      },
+      {
+        now: '2022-10-24T14:46:00.000Z',
+        input: '2020-10-24T14:46:00.000Z',
+        precision: 'year',
+        expected: '-P2Y',
+      },
     ])
     for (const {input, now, precision = 'millisecond', expected} of elapsed) {
       test(`${input} is ${expected} elapsed from ${now} (precision ${precision})`, () => {
