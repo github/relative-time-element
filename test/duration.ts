@@ -1,5 +1,6 @@
 import {assert} from '@open-wc/testing'
 import {applyDuration, Duration, elapsedTime, getRelativeTimeUnit, roundToSingleUnit} from '../src/duration.ts'
+import type {Unit} from '../src/duration.ts'
 import type {DurationFormatOptions} from '../src/duration-format-ponyfill.ts'
 import {Temporal} from '@js-temporal/polyfill'
 
@@ -223,6 +224,24 @@ suite('duration', function () {
         now: '2023-03-23T12:03:00.000Z',
         input: '2023-03-21T16:03:00.000Z',
         expected: '-P1DT20H',
+      },
+      {
+        now: '2022-10-24T14:46:00.000Z',
+        input: '2024-10-24T14:46:00.000Z',
+        precision: 'year',
+        expected: 'P2Y',
+      },
+      {
+        now: '2022-10-24T14:46:00.000Z',
+        input: '2020-10-24T14:46:00.000Z',
+        precision: 'year',
+        expected: '-P2Y',
+      },
+      {
+        now: '2022-10-24T14:46:00.000Z',
+        input: '2024-10-24T14:46:00.000Z',
+        precision: 'unknown' as Unit,
+        expected: 'PT0S',
       },
     ])
     for (const {input, now, precision = 'millisecond', expected} of elapsed) {

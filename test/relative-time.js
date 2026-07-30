@@ -1564,6 +1564,12 @@ suite('relative-time', function () {
       {
         datetime: '2024-10-24T14:46:00.000Z',
         format: 'duration',
+        precision: 'year',
+        expected: '2 years',
+      },
+      {
+        datetime: '2024-10-24T14:46:00.000Z',
+        format: 'duration',
         precision: 'minute',
         expected: '2 years, 11 days',
       },
@@ -2679,6 +2685,12 @@ suite('relative-time', function () {
         datetime: '2021-10-29T14:46:00.000Z',
         format: 'elapsed',
         expected: '1y',
+      },
+      {
+        datetime: '2020-10-24T14:46:00.000Z',
+        format: 'elapsed',
+        precision: 'year',
+        expected: '2y',
       },
 
       // Dates in the past
