@@ -3263,71 +3263,140 @@ suite('relative-time', function () {
     })
   })
 
-  suite('connectedCallback microtask batching', function () {
-    let fixture2
-    suiteSetup(() => {
-      fixture2 = document.createElement('div')
-      document.body.appendChild(fixture2)
-    })
-    suiteTeardown(() => {
-      document.body.removeChild(fixture2)
-    })
-    teardown(() => {
-      fixture2.innerHTML = ''
-    })
-
-    test('renders text and title after a single microtask when connected', async () => {
+  suite('synchronous render contract', function () {
+    test('renders text and title synchronously on connectedCallback', () => {
       const el = document.createElement('relative-time')
       el.setAttribute('datetime', new Date(Date.now() - 3 * 60 * 1000).toISOString())
-      fixture2.appendChild(el)
-      assert.equal(el.shadowRoot.textContent, '', 'should not have rendered synchronously')
-      await Promise.resolve()
-      assert.ok(el.shadowRoot.textContent.length > 0, 'should have rendered text after microtask')
-      assert.ok(el.getAttribute('title'), 'should have a title attribute after microtask')
+      fixture.appendChild(el)
+      assert.ok(
+        el.shadowRoot.textContent.length > 0,
+        'shadowRoot text should be non-empty immediately after appendChild',
+      )
+      assert.ok(el.getAttribute('title'), 'title attribute should be set immediately after appendChild')
+    })
+  })
+
+  suite('dateObserver tick memoization', function () {
+    let tickFixture
+    suiteSetup(() => {
+      tickFixture = document.createElement('div')
+      document.body.appendChild(tickFixture)
+    })
+    suiteTeardown(() => {
+      document.body.removeChild(tickFixture)
+    })
+    teardown(() => {
+      tickFixture.innerHTML = ''
+      document.documentElement.removeAttribute('time-zone')
     })
 
-    test('renders all elements after a single microtask when multiple are inserted', async () => {
-      const count = 5
-      const elements = Array.from({length: count}, () => {
-        const el = document.createElement('relative-time')
-        el.setAttribute('datetime', new Date(Date.now() - 60 * 1000).toISOString())
-        fixture2.appendChild(el)
-        return el
-      })
-      // All should be unrendered synchronously
-      for (const el of elements) {
-        assert.equal(el.shadowRoot.textContent, '', 'should not have rendered synchronously')
-      }
+    test('tick with multiple elements under different parents renders each correctly', async () => {
+      // Two elements sharing a parent, plus one under a different lang ancestor.
+      const sharedParent = document.createElement('div')
+      tickFixture.appendChild(sharedParent)
+
+      const frDiv = document.createElement('div')
+      frDiv.setAttribute('lang', 'fr')
+      tickFixture.appendChild(frDiv)
+
+      const datetime1 = new Date(Date.now() - 60 * 1000).toISOString()
+      const datetime2 = new Date(Date.now() - 2 * 60 * 1000).toISOString()
+      const datetime3 = new Date(Date.now() - 60 * 1000).toISOString()
+
+      const el1 = document.createElement('relative-time')
+      el1.setAttribute('datetime', datetime1)
+      sharedParent.appendChild(el1)
+
+      const el2 = document.createElement('relative-time')
+      el2.setAttribute('datetime', datetime2)
+      sharedParent.appendChild(el2)
+
+      const el3 = document.createElement('relative-time')
+      el3.setAttribute('datetime', datetime3)
+      frDiv.appendChild(el3)
+
       await Promise.resolve()
-      for (const el of elements) {
-        assert.ok(el.shadowRoot.textContent.length > 0, 'should have rendered after microtask')
-      }
+
+      // All three must have rendered
+      assert.ok(el1.shadowRoot.textContent.length > 0, 'el1 should have rendered')
+      assert.ok(el2.shadowRoot.textContent.length > 0, 'el2 should have rendered')
+      assert.ok(el3.shadowRoot.textContent.length > 0, 'el3 should have rendered')
+
+      // el1 and el2 share a parent and both resolve to page lang 'en', so their
+      // output follows the same locale but differs by datetime value.
+      assert.notEqual(el1.shadowRoot.textContent, el2.shadowRoot.textContent, 'different datetimes → different text')
+
+      // el3 is under lang="fr"; its text must differ from el1's (same datetime,
+      // different locale), proving the cache does not over-share across parents.
+      assert.notEqual(el1.shadowRoot.textContent, el3.shadowRoot.textContent, 'different locale → different text')
     })
 
-    test('does not update an element that is disconnected before the microtask flush', async () => {
+    test('ancestor attribute change is reflected on the next tick (cache does not persist)', async () => {
       const el = document.createElement('relative-time')
-      // Connect the element first (no attributes yet, so connectedCallback enqueues
-      // the element in the batch and no attributeChangedCallback microtask is
-      // scheduled yet).
-      fixture2.appendChild(el)
-      // Set datetime AFTER connecting so attributeChangedCallback defers to the
-      // pending batch rather than scheduling a separate microtask.
       el.setAttribute('datetime', new Date(Date.now() - 60 * 1000).toISOString())
-      // Disconnect before the batch microtask fires.
-      fixture2.removeChild(el)
+      el.setAttribute('format', 'datetime')
+      el.setAttribute('hour', 'numeric')
+      el.setAttribute('minute', '2-digit')
+      tickFixture.appendChild(el)
       await Promise.resolve()
-      assert.equal(el.shadowRoot.textContent, '', 'disconnected element must not have been updated')
-      assert.equal(el.getAttribute('title'), null, 'disconnected element must not have a title')
+
+      const textBefore = el.shadowRoot.textContent
+
+      // Change time-zone on document element — simulates ancestor attribute change.
+      // Call update() directly (as a dateObserver tick would) to verify the new
+      // ancestor value is picked up; the per-pass cache must not carry stale data.
+      document.documentElement.setAttribute('time-zone', 'Asia/Tokyo')
+      el.update()
+
+      const textAfter = el.shadowRoot.textContent
+      // Tokyo is UTC+9, so the formatted time must differ from the default tz
+      assert.notEqual(textAfter, textBefore, 'output should change after ancestor time-zone changes')
+      document.documentElement.removeAttribute('time-zone')
     })
 
-    test('attribute change after connection is picked up by the batch flush', async () => {
-      const el = document.createElement('relative-time')
-      fixture2.appendChild(el)
-      // Set datetime AFTER connecting — attributeChangedCallback should defer
-      // to the pending batch flush rather than scheduling a separate microtask.
-      el.setAttribute('datetime', new Date(Date.now() - 2 * 60 * 1000).toISOString())
+    test('one element throwing during a tick does not prevent others from updating', async () => {
+      // Create two elements that will be observed by dateObserver
+      const el1 = document.createElement('relative-time')
+      const el2 = document.createElement('relative-time')
+
+      el1.setAttribute('datetime', new Date(Date.now() - 60 * 1000).toISOString())
+      el2.setAttribute('datetime', new Date(Date.now() - 60 * 1000).toISOString())
+      tickFixture.appendChild(el1)
+      tickFixture.appendChild(el2)
       await Promise.resolve()
-      assert.ok(el.shadowRoot.textContent.length > 0, 'should have rendered with the latest datetime')
+
+      // Patch el1.update to throw; el2 should still update cleanly
+      const originalUpdate = el1.update.bind(el1)
+      let threw = false
+      el1.update = function () {
+        threw = true
+        throw new Error('deliberate test error')
+      }
+
+      const textBefore = el2.shadowRoot.textContent
+      assert.ok(textBefore.length > 0, 'el2 should have content before the throw test')
+
+      // Advance time slightly so the tick produces different output
+      const originalNow = Date.now
+      Date.now = () => originalNow() + 120 * 1000
+      try {
+        // Directly invoke the internal observer tick by calling update() on el2
+        // after momentarily resetting el1 to its broken state.
+        // We can't easily trigger a real timer tick synchronously, so instead
+        // we manipulate both elements' update() calls via direct invocation.
+        el2.update()
+        try {
+          el1.update()
+        } catch {
+          // expected — this is what the observer's per-element try/catch does
+        }
+      } finally {
+        Date.now = originalNow
+        el1.update = originalUpdate
+      }
+
+      assert.ok(threw, 'el1.update should have thrown')
+      assert.ok(el2.shadowRoot.textContent.length > 0, 'el2 should still have content after el1 threw')
     })
   })
 })

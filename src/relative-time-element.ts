@@ -98,6 +98,50 @@ if (typeof window !== 'undefined' && typeof window.addEventListener === 'functio
   })
 }
 
+// Per-pass memoization of locale/timeZone/hourCycle resolution.
+//
+// During a single synchronous `dateObserver.update()` pass every element calls
+// `update()`, which resolves `#lang`, `timeZone`, and `hourCycle` — each
+// performing a `closest()` ancestor walk. For N elements on a typical page
+// all of them inherit the same values from `<html>`, so doing N independent
+// walks is pure redundancy.
+//
+// The cache is valid only for the duration of one synchronous pass. It is
+// enabled immediately before the element loop starts and cleared in the
+// `finally` block so it is always discarded, even if an element throws.
+//
+// Safety invariant: elements that carry `lang`, `time-zone`, or `hour-cycle`
+// directly on themselves are excluded from the cache (their own attribute
+// overrides the parent-chain value, so siblings under the same parent may
+// resolve differently). For all other elements, siblings under the same
+// `parentNode` share an identical ancestor chain, so one walk per unique
+// `parentNode` is sufficient.
+let localeCacheEnabled = false
+type ResolvedLocale = {
+  locale: string
+  timeZone: string | undefined
+  hourCycle: Intl.DateTimeFormatOptions['hourCycle']
+}
+const localePassCache = new Map<Node, ResolvedLocale>()
+
+// Memoize `intlLocale(rawLang).toString()` across calls. The normalisation is
+// stable for a given raw tag string, so this map is never cleared (unlike the
+// Intl formatter caches which must be invalidated on `languagechange`).
+const localeNormCache = new Map<string, string>()
+
+function normalizeLang(lang: string): string {
+  let normalized = localeNormCache.get(lang)
+  if (normalized === undefined) {
+    try {
+      normalized = intlLocale(lang).toString()
+    } catch {
+      normalized = 'default'
+    }
+    localeNormCache.set(lang, normalized)
+  }
+  return normalized
+}
+
 const dateObserver = new (class {
   elements: Set<RelativeTimeElement> = new Set()
   time = Infinity
@@ -130,37 +174,31 @@ const dateObserver = new (class {
 
     let nearestDistance = Infinity
     this.updating = true
+    localeCacheEnabled = true
     try {
       for (const timeEl of this.elements) {
         nearestDistance = Math.min(nearestDistance, getUnitFactor(timeEl))
-        timeEl.update()
+        try {
+          timeEl.update()
+        } catch (error) {
+          // Rethrow asynchronously so one element failing does not abort the
+          // remaining elements in this pass, while still surfacing the error
+          // as a global uncaught exception.
+          setTimeout(() => {
+            throw error
+          })
+        }
       }
     } finally {
       this.updating = false
+      localeCacheEnabled = false
+      localePassCache.clear()
     }
     this.time = Math.min(60 * 60 * 1000, nearestDistance)
     this.timer = setTimeout(() => this.update(), this.time)
     this.time += Date.now()
   }
 })()
-
-// Batch the initial render of newly-connected elements into a single microtask
-// flush. When N elements are inserted together, this avoids N synchronous
-// formatting passes on the insertion critical path.
-const pendingElements: Set<RelativeTimeElement> = new Set()
-let pendingFlush = false
-
-async function flushPending(): Promise<void> {
-  await Promise.resolve()
-  // Snapshot and clear before iterating so that any connections or disconnections
-  // triggered by update() calls do not interfere with the current batch.
-  const elements = [...pendingElements]
-  pendingElements.clear()
-  pendingFlush = false
-  for (const el of elements) {
-    el.update()
-  }
-}
 
 export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFormatOptions {
   static define(tag = 'relative-time', registry = customElements) {
@@ -174,11 +212,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
   get #lang() {
     const lang = this.closest('[lang]')?.getAttribute('lang') || this.ownerDocument.documentElement.getAttribute('lang')
     if (!lang) return 'default'
-    try {
-      return intlLocale(lang).toString()
-    } catch {
-      return 'default'
-    }
+    return normalizeLang(lang)
   }
 
   get timeZone() {
@@ -196,6 +230,32 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       this.ownerDocument.documentElement.getAttribute('hour-cycle')
     if (hc === 'h11' || hc === 'h12' || hc === 'h23' || hc === 'h24') return hc
     return isBrowser12hCycle() ? 'h12' : 'h23'
+  }
+
+  // Resolve locale, timeZone, and hourCycle for this element, using the
+  // per-pass memoization cache when inside a `dateObserver.update()` tick.
+  //
+  // Cache key: `parentNode`. Siblings under the same parent share an identical
+  // ancestor chain for inherited attributes (`lang`, `time-zone`, `hour-cycle`),
+  // so one walk per unique parent is sufficient. Elements that carry any of
+  // those attributes directly on themselves are excluded from the cache because
+  // their own attribute overrides the parent-chain resolution and siblings may
+  // resolve differently.
+  #resolveLocale(): ResolvedLocale {
+    const parent = this.parentNode
+    const hasOwnLocaleAttr =
+      this.hasAttribute('lang') || this.hasAttribute('time-zone') || this.hasAttribute('hour-cycle')
+
+    if (localeCacheEnabled && parent && !hasOwnLocaleAttr) {
+      let cached = localePassCache.get(parent)
+      if (!cached) {
+        cached = {locale: this.#lang, timeZone: this.timeZone, hourCycle: this.hourCycle}
+        localePassCache.set(parent, cached)
+      }
+      return cached
+    }
+
+    return {locale: this.#lang, timeZone: this.timeZone, hourCycle: this.hourCycle}
   }
 
   #renderRoot: Node & ParentNode = this.shadowRoot
@@ -659,23 +719,11 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
   }
 
   connectedCallback(): void {
-    // Coalesce the initial render into a single microtask-flushed batch.
-    // If attributeChangedCallback already scheduled a microtask for this
-    // element (e.g. an attribute was set before connection), skip enqueuing
-    // here — that in-flight microtask will perform the first render.
-    if (this.#updating) return
-    pendingElements.add(this)
-    if (!pendingFlush) {
-      pendingFlush = true
-      flushPending()
-    }
+    this.update()
   }
 
   disconnectedCallback(): void {
     dateObserver.unobserve(this)
-    // If the element is disconnected before the microtask flush runs, remove
-    // it from the pending set so update() is never called on a detached node.
-    pendingElements.delete(this)
   }
 
   // Internal: Refresh the time element's formatted date when an attribute changes.
@@ -687,12 +735,6 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
         (this.date && this.#getFormattedTitle(this.date, this.#lang, this.timeZone, this.hourCycle)) !== newValue
     }
     if (!this.#updating && !(attrName === 'title' && this.#customTitle)) {
-      if (pendingElements.has(this)) {
-        // This element is already queued in the batch flush. The flush will
-        // call update() with the latest attribute state, so no separate
-        // microtask is needed.
-        return
-      }
       this.#updating = (async () => {
         await Promise.resolve()
         this.update()
@@ -711,12 +753,9 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       return
     }
     const now = Date.now()
-    // Resolve the locale/time-zone/hour-cycle once per update. Each getter walks
-    // ancestors via `closest(...)`, and they are read by several formatters per
-    // tick, so resolving them a single time avoids repeated DOM traversal.
-    const locale = this.#lang
-    const timeZone = this.timeZone
-    const hourCycle = this.hourCycle
+    // Resolve locale/time-zone/hour-cycle once per update via #resolveLocale(),
+    // which shares cached values across siblings during a dateObserver tick.
+    const {locale, timeZone, hourCycle} = this.#resolveLocale()
     if (!this.#customTitle) {
       newTitle = this.#getFormattedTitle(date, locale, timeZone, hourCycle) || ''
       if (newTitle && !this.noTitle && newTitle !== oldTitle) this.setAttribute('title', newTitle)
