@@ -100,16 +100,25 @@ if (typeof window !== 'undefined' && typeof window.addEventListener === 'functio
 
 const dateObserver = new (class {
   elements: Set<RelativeTimeElement> = new Set()
+  // Per-element next-update deadline (ms since epoch). Looked up by iterating
+  // this.elements, so a WeakMap (no iteration needed, better GC) suffices.
+  deadlines: WeakMap<RelativeTimeElement, number> = new WeakMap()
   time = Infinity
   updating = false
 
   observe(element: RelativeTimeElement) {
     this.elements.add(element)
+    // During a tick, deadline management is handled by update() itself after
+    // each element's update() call completes.  Skip here to avoid clobbering
+    // the freshly-computed deadline.
     if (this.updating) return
     const date = element.date
     if (date && date.getTime()) {
       const ms = getUnitFactor(element)
       const time = Date.now() + ms
+      // Always refresh the deadline so that attribute/datetime changes are
+      // reflected immediately rather than retaining a stale value.
+      this.deadlines.set(element, time)
       if (time < this.time || this.time <= Date.now()) {
         clearTimeout(this.timer)
         this.timer = setTimeout(() => this.update(), ms)
@@ -121,6 +130,7 @@ const dateObserver = new (class {
   unobserve(element: RelativeTimeElement) {
     if (!this.elements.has(element)) return
     this.elements.delete(element)
+    this.deadlines.delete(element)
   }
 
   timer: ReturnType<typeof setTimeout> = -1 as unknown as ReturnType<typeof setTimeout>
@@ -128,17 +138,29 @@ const dateObserver = new (class {
     clearTimeout(this.timer)
     if (!this.elements.size) return
 
-    let nearestDistance = Infinity
+    const now = Date.now()
+    let nearest = Infinity
     this.updating = true
     try {
       for (const timeEl of this.elements) {
-        nearestDistance = Math.min(nearestDistance, getUnitFactor(timeEl))
-        timeEl.update()
+        let due = this.deadlines.get(timeEl) ?? 0
+        if (due <= now) {
+          try {
+            timeEl.update()
+          } catch (error) {
+            setTimeout(() => {
+              throw error
+            })
+          }
+          due = now + getUnitFactor(timeEl)
+          this.deadlines.set(timeEl, due)
+        }
+        nearest = Math.min(nearest, due - now)
       }
     } finally {
       this.updating = false
     }
-    this.time = Math.min(60 * 60 * 1000, nearestDistance)
+    this.time = Math.min(60 * 60 * 1000, Math.max(nearest, 0))
     this.timer = setTimeout(() => this.update(), this.time)
     this.time += Date.now()
   }
