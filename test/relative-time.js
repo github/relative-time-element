@@ -3263,71 +3263,63 @@ suite('relative-time', function () {
     })
   })
 
-  suite('connectedCallback microtask batching', function () {
-    let fixture2
-    suiteSetup(() => {
-      fixture2 = document.createElement('div')
-      document.body.appendChild(fixture2)
-    })
-    suiteTeardown(() => {
-      document.body.removeChild(fixture2)
-    })
-    teardown(() => {
-      fixture2.innerHTML = ''
-    })
+  test('renders text and title synchronously when connected', () => {
+    const el = document.createElement('relative-time')
+    el.setAttribute('datetime', new Date(Date.now() - 3 * 60 * 1000).toISOString())
+    fixture.appendChild(el)
+    assert.ok(el.shadowRoot.textContent.length > 0, 'should render text synchronously')
+    assert.ok(el.getAttribute('title'), 'should set title synchronously')
+  })
 
-    test('renders text and title after a single microtask when connected', async () => {
-      const el = document.createElement('relative-time')
-      el.setAttribute('datetime', new Date(Date.now() - 3 * 60 * 1000).toISOString())
-      fixture2.appendChild(el)
-      assert.equal(el.shadowRoot.textContent, '', 'should not have rendered synchronously')
-      await Promise.resolve()
-      assert.ok(el.shadowRoot.textContent.length > 0, 'should have rendered text after microtask')
-      assert.ok(el.getAttribute('title'), 'should have a title attribute after microtask')
-    })
+  test('isolates update errors and still reschedules observer timer', async function () {
+    // eslint-disable-next-line @typescript-eslint/no-invalid-this
+    this.timeout(5000)
+    const originalSetTimeout = window.setTimeout
+    const good1 = document.createElement('relative-time')
+    const bad = document.createElement('relative-time')
+    const good2 = document.createElement('relative-time')
+    const datetime = new Date(Date.now() - 15 * 1000).toISOString()
 
-    test('renders all elements after a single microtask when multiple are inserted', async () => {
-      const count = 5
-      const elements = Array.from({length: count}, () => {
-        const el = document.createElement('relative-time')
-        el.setAttribute('datetime', new Date(Date.now() - 60 * 1000).toISOString())
-        fixture2.appendChild(el)
-        return el
-      })
-      // All should be unrendered synchronously
-      for (const el of elements) {
-        assert.equal(el.shadowRoot.textContent, '', 'should not have rendered synchronously')
-      }
-      await Promise.resolve()
-      for (const el of elements) {
-        assert.ok(el.shadowRoot.textContent.length > 0, 'should have rendered after microtask')
-      }
-    })
+    for (const el of [good1, bad, good2]) {
+      el.setAttribute('format', 'duration')
+      el.setAttribute('precision', 'second')
+      el.setAttribute('datetime', datetime)
+      fixture.appendChild(el)
+    }
+    await Promise.resolve()
 
-    test('does not update an element that is disconnected before the microtask flush', async () => {
-      const el = document.createElement('relative-time')
-      // Connect the element first (no attributes yet, so connectedCallback enqueues
-      // the element in the batch and no attributeChangedCallback microtask is
-      // scheduled yet).
-      fixture2.appendChild(el)
-      // Set datetime AFTER connecting so attributeChangedCallback defers to the
-      // pending batch rather than scheduling a separate microtask.
-      el.setAttribute('datetime', new Date(Date.now() - 60 * 1000).toISOString())
-      // Disconnect before the batch microtask fires.
-      fixture2.removeChild(el)
-      await Promise.resolve()
-      assert.equal(el.shadowRoot.textContent, '', 'disconnected element must not have been updated')
-      assert.equal(el.getAttribute('title'), null, 'disconnected element must not have a title')
-    })
+    let good1Updates = 0
+    let good2Updates = 0
+    const prototypeUpdate = RelativeTimeElement.prototype.update
+    good1.update = function () {
+      good1Updates += 1
+      return prototypeUpdate.call(this)
+    }
+    good2.update = function () {
+      good2Updates += 1
+      return prototypeUpdate.call(this)
+    }
+    bad.update = () => {
+      throw new Error('expected test error')
+    }
 
-    test('attribute change after connection is picked up by the batch flush', async () => {
-      const el = document.createElement('relative-time')
-      fixture2.appendChild(el)
-      // Set datetime AFTER connecting — attributeChangedCallback should defer
-      // to the pending batch flush rather than scheduling a separate microtask.
-      el.setAttribute('datetime', new Date(Date.now() - 2 * 60 * 1000).toISOString())
-      await Promise.resolve()
-      assert.ok(el.shadowRoot.textContent.length > 0, 'should have rendered with the latest datetime')
-    })
+    globalThis.setTimeout = window.setTimeout = (fn, ms, ...args) => {
+      if (typeof ms !== 'number' || ms <= 0) return 0
+      return originalSetTimeout(fn, ms, ...args)
+    }
+
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1200))
+      assert.isAtLeast(good1Updates, 1, 'first non-throwing element should still update in the tick')
+      assert.isAtLeast(good2Updates, 1, 'later non-throwing element should still update in the tick')
+
+      good1Updates = 0
+      good2Updates = 0
+      await new Promise(resolve => setTimeout(resolve, 1200))
+      assert.isAtLeast(good1Updates, 1, 'observer should continue scheduling future ticks after an error')
+      assert.isAtLeast(good2Updates, 1, 'observer should continue scheduling future ticks after an error')
+    } finally {
+      globalThis.setTimeout = window.setTimeout = originalSetTimeout
+    }
   })
 })
