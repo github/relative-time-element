@@ -3274,4 +3274,235 @@ suite('relative-time', function () {
       document.documentElement.removeAttribute('time-zone')
     })
   })
+
+  suite('per-element deadline scheduling', () => {
+    // Helpers shared by all tests in this suite.
+    let currentTime
+    let originalDateNow
+    let originalSetTimeout
+    let originalClearTimeout
+    // Map from fake timer id → {cb, due} where due is the absolute timestamp
+    // at which the timer should fire (in terms of our frozen currentTime).
+    let pendingTimers
+    let nextTimerId
+    // Track the final fake-clock value from each test so that the next test's
+    // currentTime starts ahead of any stale dateObserver.time left by the
+    // previous test.  dateObserver.time ≤ prevFakeClock + maxInterval (1h), so
+    // adding 2h is always sufficient.
+    let lastCurrentTime = 0
+
+    // Advance simulated time by `ms` milliseconds and fire any timers that
+    // become due during that period, in chronological order.  New timers
+    // scheduled by a callback are eligible to fire within the same call.
+    function advanceTicks(ms) {
+      const targetTime = currentTime + ms
+      let moreToFire = true
+      while (moreToFire) {
+        moreToFire = false
+        let earliestId = -1
+        let earliestDue = Infinity
+        for (const [id, timer] of pendingTimers) {
+          if (timer.due < earliestDue) {
+            earliestDue = timer.due
+            earliestId = id
+          }
+        }
+        if (earliestId >= 0 && earliestDue <= targetTime) {
+          currentTime = earliestDue
+          const cb = pendingTimers.get(earliestId).cb
+          pendingTimers.delete(earliestId)
+          try {
+            cb()
+          } catch (_) {
+            // Per-element error-isolation in dateObserver.update() re-throws
+            // errors via setTimeout(0).  In a real browser those become
+            // unhandled-error events; in this synchronous simulator we swallow
+            // them so they don't abort advanceTicks and mask subsequent updates.
+          }
+          moreToFire = true
+        }
+      }
+      currentTime = targetTime
+    }
+
+    setup(() => {
+      // Start 2h ahead of the last fake-clock value from any previous test.
+      // dateObserver.time ≤ prevFakeClockEnd + maxInterval(1h), so +2h guarantees
+      // this.time <= Date.now() in observe(), which forces timer rescheduling
+      // when the first element is added in each test.
+      currentTime = Math.max(Date.now(), lastCurrentTime) + 2 * 60 * 60 * 1000
+      originalDateNow = Date.now
+      Date.now = () => currentTime
+
+      pendingTimers = new Map()
+      nextTimerId = 1
+
+      originalSetTimeout = window.setTimeout
+      originalClearTimeout = window.clearTimeout
+      globalThis.setTimeout = window.setTimeout = function (cb, ms) {
+        const id = nextTimerId++
+        pendingTimers.set(id, {cb, due: currentTime + (ms != null ? ms : 0)})
+        return id
+      }
+      globalThis.clearTimeout = window.clearTimeout = function (id) {
+        pendingTimers.delete(id)
+      }
+    })
+
+    teardown(() => {
+      // Save the final fake-clock value before restoring the real clock.
+      lastCurrentTime = currentTime
+      Date.now = originalDateNow
+      globalThis.setTimeout = window.setTimeout = originalSetTimeout
+      globalThis.clearTimeout = window.clearTimeout = originalClearTimeout
+      pendingTimers = null
+    })
+
+    test('slow elements are not re-formatted on fast-cadence ticks', async () => {
+      // One second-precision element forces a 1s tick interval.
+      const fastEl = document.createElement('relative-time')
+      fastEl.setAttribute('format', 'duration')
+      fastEl.setAttribute('precision', 'second')
+      fastEl.setAttribute('datetime', new Date(currentTime - 5000).toISOString())
+
+      // 3-day-old elements: unit factor = 1 h, still within the P30D threshold
+      // so shouldObserve is true.
+      const slowEls = Array.from({length: 5}, () => {
+        const el = document.createElement('relative-time')
+        el.setAttribute('datetime', new Date(currentTime - 3 * 24 * 60 * 60 * 1000).toISOString())
+        return el
+      })
+
+      try {
+        fixture.append(fastEl)
+        for (const el of slowEls) fixture.append(el)
+        await Promise.resolve()
+
+        // Install spies AFTER the initial synchronous render.
+        const slowUpdateCounts = slowEls.map(el => {
+          let count = 0
+          const orig = el.update.bind(el)
+          el.update = function () {
+            count++
+            return orig()
+          }
+          return {get: () => count}
+        })
+
+        // 5 simulated seconds → ~5 ticks at the 1s fast cadence.
+        advanceTicks(5000)
+
+        for (let i = 0; i < slowUpdateCounts.length; i++) {
+          assert.equal(slowUpdateCounts[i].get(), 0, `slow element ${i} must not update during fast ticks`)
+        }
+      } finally {
+        fastEl.disconnectedCallback()
+        for (const el of slowEls) el.disconnectedCallback()
+      }
+    })
+
+    test('slow elements still update when their own deadline passes', async () => {
+      const el = document.createElement('relative-time')
+      // 3-day-old timestamp → unit factor = 1 h.
+      el.setAttribute('datetime', new Date(currentTime - 3 * 24 * 60 * 60 * 1000).toISOString())
+
+      try {
+        fixture.append(el)
+        await Promise.resolve()
+
+        let updateCount = 0
+        const orig = el.update.bind(el)
+        el.update = function () {
+          updateCount++
+          return orig()
+        }
+
+        // Advance more than 1 hour so the element's 1h deadline is exceeded.
+        advanceTicks(61 * 60 * 1000)
+
+        assert.isAbove(updateCount, 0, 'slow element must update after its hour deadline passes')
+      } finally {
+        el.disconnectedCallback()
+      }
+    })
+
+    test('first render is synchronous on connectedCallback', () => {
+      const el = document.createElement('relative-time')
+      el.setAttribute('datetime', new Date(currentTime - 5000).toISOString())
+      assert.equal(el.shadowRoot.textContent, '')
+      el.connectedCallback()
+      // update() is called synchronously by connectedCallback.
+      assert.ok(el.shadowRoot.textContent.length > 0, 'expected rendered text right after connectedCallback')
+      el.disconnectedCallback()
+    })
+
+    test('datetime change resets the deadline to the new cadence', async () => {
+      const el = document.createElement('relative-time')
+      // Start with a 3-day-old timestamp (hour-cadence).
+      el.setAttribute('datetime', new Date(currentTime - 3 * 24 * 60 * 60 * 1000).toISOString())
+
+      try {
+        fixture.append(el)
+        await Promise.resolve()
+
+        let updateCount = 0
+        const orig = el.update.bind(el)
+        el.update = function () {
+          updateCount++
+          return orig()
+        }
+
+        // Change to a recent timestamp → deadline resets from 1 h → 1 s.
+        el.setAttribute('datetime', new Date(currentTime - 5000).toISOString())
+        await Promise.resolve()
+        // Discard the count from the microtask-triggered re-render.
+        updateCount = 0
+
+        // 3 simulated seconds → 3 ticks at the new 1s cadence.
+        advanceTicks(3000)
+
+        assert.isAbove(updateCount, 0, 'element must update after datetime change resets deadline to fast cadence')
+      } finally {
+        el.disconnectedCallback()
+      }
+    })
+
+    test('error in one element does not prevent others from updating', async () => {
+      const badEl = document.createElement('relative-time')
+      badEl.setAttribute('datetime', new Date(currentTime - 5000).toISOString())
+      badEl.setAttribute('format', 'duration')
+      badEl.setAttribute('precision', 'second')
+
+      const goodEl = document.createElement('relative-time')
+      goodEl.setAttribute('datetime', new Date(currentTime - 5000).toISOString())
+      goodEl.setAttribute('format', 'duration')
+      goodEl.setAttribute('precision', 'second')
+
+      try {
+        fixture.append(badEl)
+        fixture.append(goodEl)
+        await Promise.resolve()
+
+        badEl.update = function () {
+          throw new Error('simulated element error')
+        }
+
+        let goodUpdateCount = 0
+        const origGood = goodEl.update.bind(goodEl)
+        goodEl.update = function () {
+          goodUpdateCount++
+          return origGood()
+        }
+
+        // Advance 2 seconds — both elements' deadlines pass.
+        advanceTicks(2000)
+
+        assert.isAbove(goodUpdateCount, 0, 'goodEl must still update even though badEl threw')
+        assert.isAbove(pendingTimers.size, 0, 'observer must reschedule after an error')
+      } finally {
+        badEl.disconnectedCallback()
+        goodEl.disconnectedCallback()
+      }
+    })
+  })
 })
