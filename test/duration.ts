@@ -107,7 +107,7 @@ suite('duration', function () {
       {
         now: '2022-01-21T16:48:44.104Z',
         input: '2022-10-21T16:48:44.104Z',
-        expected: 'P9M3D',
+        expected: 'P9M',
       },
       {
         now: '2022-01-21T16:48:44.104Z',
@@ -118,7 +118,7 @@ suite('duration', function () {
         now: '2022-01-21T16:48:44.104Z',
         input: '2022-10-21T16:48:45.104Z',
         precision: 'day',
-        expected: 'P9M3D',
+        expected: 'P9M',
       },
       {
         now: '2022-10-21T16:44:44.104Z',

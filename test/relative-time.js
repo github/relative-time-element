@@ -1559,7 +1559,7 @@ suite('relative-time', function () {
       {
         datetime: '2024-10-24T14:46:00.000Z',
         format: 'duration',
-        expected: '2 years, 11 days',
+        expected: '2 years',
       },
       {
         datetime: '2024-10-24T14:46:00.000Z',
@@ -1571,19 +1571,19 @@ suite('relative-time', function () {
         datetime: '2024-10-24T14:46:00.000Z',
         format: 'duration',
         precision: 'minute',
-        expected: '2 years, 11 days',
+        expected: '2 years',
       },
       {
         datetime: '2024-10-24T14:46:00.000Z',
         format: 'duration',
         precision: 'day',
-        expected: '2 years, 11 days',
+        expected: '2 years',
       },
       {
         datetime: '2024-10-24T14:46:00.000Z',
         format: 'duration',
         tense: 'future',
-        expected: '2 years, 11 days',
+        expected: '2 years',
       },
       {
         datetime: '2024-10-24T14:46:00.000Z',
@@ -2015,19 +2015,19 @@ suite('relative-time', function () {
       {
         datetime: '2020-10-24T14:46:00.000Z',
         format: 'duration',
-        expected: '2 years, 10 days',
+        expected: '2 years',
       },
       {
         datetime: '2020-10-24T14:46:00.000Z',
         format: 'duration',
         precision: 'minute',
-        expected: '2 years, 10 days',
+        expected: '2 years',
       },
       {
         datetime: '2020-10-24T14:46:00.000Z',
         format: 'duration',
         precision: 'day',
-        expected: '2 years, 10 days',
+        expected: '2 years',
       },
       {
         datetime: '2020-10-24T14:46:00.000Z',
@@ -2039,7 +2039,7 @@ suite('relative-time', function () {
         datetime: '2020-10-24T14:46:00.000Z',
         format: 'duration',
         tense: 'past',
-        expected: '2 years, 10 days',
+        expected: '2 years',
       },
       {
         reference: '2023-03-23T12:03:00.000Z',
@@ -2047,6 +2047,66 @@ suite('relative-time', function () {
         format: 'relative',
         tense: 'past',
         expected: '2 days ago',
+      },
+
+      // Whole years shouldn't have extra days
+      {
+        reference: '2023-01-01T09:00:00.000Z',
+        datetime: '2022-01-01T10:00:00.000Z',
+        format: 'duration',
+        tense: 'past',
+        expected: '1 year',
+      },
+      {
+        reference: '2023-01-01T00:00:00.000Z',
+        datetime: '2021-01-01T00:00:00.000Z',
+        format: 'duration',
+        tense: 'past',
+        expected: '2 years',
+      },
+      {
+        reference: '2023-01-01T00:00:00.000Z',
+        datetime: '2003-01-01T00:00:00.000Z',
+        format: 'duration',
+        tense: 'past',
+        expected: '20 years',
+      },
+      {
+        reference: '2023-02-01T00:00:00.000Z',
+        datetime: '2022-02-01T00:00:00.000Z',
+        format: 'duration',
+        tense: 'past',
+        expected: '1 year',
+      },
+      {
+        reference: '2023-03-01T00:00:00.000Z',
+        datetime: '2022-03-01T00:00:00.000Z',
+        format: 'duration',
+        tense: 'past',
+        expected: '1 year',
+      },
+      {
+        reference: '2023-04-01T00:00:00.000Z',
+        datetime: '2022-04-01T00:00:00.000Z',
+        format: 'duration',
+        tense: 'past',
+        expected: '1 year',
+      },
+
+      // Whole months shouldn't have extra days
+      {
+        reference: '2023-07-01T00:00:00.000Z',
+        datetime: '2023-05-01T00:00:00.000Z',
+        format: 'duration',
+        tense: 'past',
+        expected: '2 months',
+      },
+      {
+        reference: '2023-06-01T00:00:00.000Z',
+        datetime: '2023-04-01T00:00:00.000Z',
+        format: 'duration',
+        tense: 'past',
+        expected: '2 months',
       },
     ])
 

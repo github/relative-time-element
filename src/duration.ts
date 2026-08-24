@@ -157,6 +157,23 @@ export function elapsedTime(date: Date, precision: Unit = 'second', now = Date.n
   const month = Math.floor(day / 30)
   const year = Math.floor(month / 12)
   const i = unitNames.indexOf(precision)
+
+  const nowDate = new Date(now)
+  const calendarMonths =
+    (date.getUTCFullYear() - nowDate.getUTCFullYear()) * 12 + date.getUTCMonth() - nowDate.getUTCMonth()
+  const sameTime =
+    i <= 3 ||
+    (date.getUTCHours() === nowDate.getUTCHours() &&
+      (i <= 4 ||
+        (date.getUTCMinutes() === nowDate.getUTCMinutes() &&
+          (i <= 5 ||
+            (date.getUTCSeconds() === nowDate.getUTCSeconds() &&
+              (i <= 6 || date.getUTCMilliseconds() === nowDate.getUTCMilliseconds()))))))
+  if (calendarMonths && date.getUTCDate() === nowDate.getUTCDate() && (sameTime || Math.abs(calendarMonths) >= 12)) {
+    const calendarYears = Math.trunc(calendarMonths / 12)
+    return new Duration(i >= 0 ? calendarYears : 0, i >= 1 ? calendarMonths - calendarYears * 12 : 0)
+  }
+
   return new Duration(
     i >= 0 ? year * sign : 0,
     i >= 1 ? (month - year * 12) * sign : 0,
