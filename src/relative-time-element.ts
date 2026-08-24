@@ -1,4 +1,14 @@
-import {Duration, elapsedTime, getRelativeTimeUnit, isDuration, roundToSingleUnit, Unit, unitNames} from './duration.js'
+import {
+  Duration,
+  applyDuration,
+  elapsedTime,
+  getRelativeTimeUnit,
+  isDuration,
+  roundToSingleUnit,
+  Unit,
+  unitNames,
+} from './duration.js'
+import {dateTimeFormat, relativeTimeFormat, getLocale as intlLocale} from './intl-cache.js'
 const HTMLElement = globalThis.HTMLElement || (null as unknown as typeof window['HTMLElement'])
 
 export type DeprecatedFormat = 'auto' | 'micro' | 'elapsed'
@@ -17,7 +27,9 @@ export class RelativeTimeUpdatedEvent extends Event {
 }
 
 function getUnitFactor(el: RelativeTimeElement): number {
-  if (!el.date) return Infinity
+  const date = el.date
+  if (!date) return Infinity
+  const now = Date.now()
   if (el.format === 'duration' || el.format === 'elapsed') {
     const precision = el.precision
     if (precision === 'second') {
@@ -26,24 +38,79 @@ function getUnitFactor(el: RelativeTimeElement): number {
       return 60 * 1000
     }
   }
-  const ms = Math.abs(Date.now() - el.date.getTime())
-  if (ms < 60 * 1000) return 1000
-  if (ms < 60 * 60 * 1000) return 60 * 1000
-  return 60 * 60 * 1000
+  const ms = Math.abs(now - date.getTime())
+  let factor = 60 * 60 * 1000
+  if (ms < 60 * 1000) {
+    factor = 1000
+  } else if (ms < 60 * 60 * 1000) {
+    factor = 60 * 1000
+  }
+  const threshold = getExplicitThreshold(el)
+  if (el.format === 'micro' && threshold) {
+    const thresholdDuration = Duration.from(threshold)
+    const signedThresholdDuration = date.getTime() > now ? negateDuration(thresholdDuration) : thresholdDuration
+    const thresholdTime = applyDuration(date, signedThresholdDuration).getTime()
+    const msUntilThreshold = thresholdTime - now
+    if (msUntilThreshold > 0) factor = Math.min(factor, msUntilThreshold)
+  }
+  return factor
+}
+
+function negateDuration(duration: Duration): Duration {
+  return new Duration(
+    -duration.years,
+    -duration.months,
+    -duration.weeks,
+    -duration.days,
+    -duration.hours,
+    -duration.minutes,
+    -duration.seconds,
+    -duration.milliseconds,
+  )
+}
+
+function getExplicitThreshold(el: RelativeTimeElement): string | null {
+  const threshold = el.getAttribute('threshold')
+  return threshold && isDuration(threshold) ? threshold : null
+}
+
+// Determine whether the user has a 12 (vs. 24) hour cycle preference via the
+// browser's resolved DateTimeFormat options. The result is environment-constant,
+// so it is computed once and memoized.
+let browser12hCycle: boolean | undefined
+function isBrowser12hCycle(): boolean {
+  if (browser12hCycle === undefined) {
+    try {
+      browser12hCycle = new Intl.DateTimeFormat([], {hour: 'numeric'}).resolvedOptions().hour12 === true
+    } catch {
+      browser12hCycle = false
+    }
+  }
+  return browser12hCycle
+}
+
+// The resolved hour-cycle preference can change when the host locale changes, so
+// drop the memoized value on `languagechange` (cached `Intl` formatters are
+// invalidated separately in intl-cache).
+if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+  window.addEventListener('languagechange', () => {
+    browser12hCycle = undefined
+  })
 }
 
 const dateObserver = new (class {
   elements: Set<RelativeTimeElement> = new Set()
   time = Infinity
+  updating = false
 
   observe(element: RelativeTimeElement) {
-    if (this.elements.has(element)) return
     this.elements.add(element)
+    if (this.updating) return
     const date = element.date
     if (date && date.getTime()) {
       const ms = getUnitFactor(element)
       const time = Date.now() + ms
-      if (time < this.time) {
+      if (time < this.time || this.time <= Date.now()) {
         clearTimeout(this.timer)
         this.timer = setTimeout(() => this.update(), ms)
         this.time = time
@@ -62,9 +129,14 @@ const dateObserver = new (class {
     if (!this.elements.size) return
 
     let nearestDistance = Infinity
-    for (const timeEl of this.elements) {
-      nearestDistance = Math.min(nearestDistance, getUnitFactor(timeEl))
-      timeEl.update()
+    this.updating = true
+    try {
+      for (const timeEl of this.elements) {
+        nearestDistance = Math.min(nearestDistance, getUnitFactor(timeEl))
+        timeEl.update()
+      }
+    } finally {
+      this.updating = false
     }
     this.time = Math.min(60 * 60 * 1000, nearestDistance)
     this.timer = setTimeout(() => this.update(), this.time)
@@ -83,14 +155,36 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
 
   get #lang() {
     const lang = this.closest('[lang]')?.getAttribute('lang') || this.ownerDocument.documentElement.getAttribute('lang')
+    if (!lang) return 'default'
     try {
-      return new Intl.Locale(lang ?? '').toString()
+      return intlLocale(lang).toString()
     } catch {
       return 'default'
     }
   }
 
-  #renderRoot: Node = this.shadowRoot ? this.shadowRoot : this.attachShadow ? this.attachShadow({mode: 'open'}) : this
+  get timeZone() {
+    // Prefer attribute, then closest, then document
+    const tz =
+      this.closest('[time-zone]')?.getAttribute('time-zone') ||
+      this.ownerDocument.documentElement.getAttribute('time-zone')
+    return tz || undefined
+  }
+
+  get hourCycle() {
+    // Prefer attribute, then closest, then document
+    const hc =
+      this.closest('[hour-cycle]')?.getAttribute('hour-cycle') ||
+      this.ownerDocument.documentElement.getAttribute('hour-cycle')
+    if (hc === 'h11' || hc === 'h12' || hc === 'h23' || hc === 'h24') return hc
+    return isBrowser12hCycle() ? 'h12' : 'h23'
+  }
+
+  #renderRoot: Node & ParentNode = this.shadowRoot
+    ? this.shadowRoot
+    : this.attachShadow
+    ? this.attachShadow({mode: 'open'})
+    : this
 
   static get observedAttributes() {
     return [
@@ -112,6 +206,9 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       'datetime',
       'lang',
       'title',
+      'aria-hidden',
+      'time-zone',
+      'hour-cycle',
     ]
   }
 
@@ -120,26 +217,40 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
   // value takes precedence over this custom format.
   //
   // Returns a formatted time String.
-  #getFormattedTitle(date: Date): string | undefined {
-    return new Intl.DateTimeFormat(this.#lang, {
+  #getFormattedTitle(
+    date: Date,
+    locale: string,
+    timeZone: string | undefined,
+    hourCycle: Intl.DateTimeFormatOptions['hourCycle'],
+  ): string | undefined {
+    return dateTimeFormat(locale, {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
       hour: 'numeric',
       minute: '2-digit',
       timeZoneName: 'short',
+      timeZone,
+      hourCycle,
     }).format(date)
   }
 
-  #resolveFormat(duration: Duration): ResolvedFormat {
+  #getExplicitThreshold(): string | null {
+    return getExplicitThreshold(this)
+  }
+
+  #resolveFormat(duration: Duration, thresholdDuration = duration): ResolvedFormat {
     const format: string = this.format
     if (format === 'datetime') return 'datetime'
     if (format === 'duration') return 'duration'
 
     // elapsed is an alias for 'duration'
     if (format === 'elapsed') return 'duration'
-    // 'micro' is an alias for 'duration'
-    if (format === 'micro') return 'duration'
+    if (format === 'micro') {
+      const threshold = this.#getExplicitThreshold()
+      if (threshold && Duration.compare(thresholdDuration, threshold) === -1) return 'datetime'
+      return 'duration'
+    }
 
     // 'auto' is an alias for 'relative'
     if ((format === 'auto' || format === 'relative') && typeof Intl !== 'undefined' && Intl.RelativeTimeFormat) {
@@ -150,18 +261,36 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     return 'datetime'
   }
 
-  #getDurationFormat(duration: Duration): string {
-    const locale = this.#lang
+  #getMicroDuration(duration: Duration): Duration {
+    duration = roundToSingleUnit(duration)
+    // Allow month-level durations to pass through even with mismatched tense
+    if (
+      duration.months === 0 &&
+      ((this.tense === 'past' && duration.sign !== -1) || (this.tense === 'future' && duration.sign !== 1))
+    ) {
+      return microEmptyDuration
+    }
+    return duration
+  }
+
+  #getMicroRelativeFormat(duration: Duration, locale: string): string {
+    const relativeFormat = relativeTimeFormat(locale, {
+      numeric: 'always',
+      style: 'narrow',
+    })
+    duration = this.#getMicroDuration(duration)
+    const [int, unit] = getRelativeTimeUnit(duration.blank ? microEmptyDuration : duration)
+    return relativeFormat.format(Math.abs(int) * (this.tense === 'past' ? -1 : 1), unit)
+  }
+
+  #getDurationFormat(duration: Duration, locale: string): string {
     const format = this.format
     const style = this.formatStyle
     const tense = this.tense
     let empty = emptyDuration
     if (format === 'micro') {
-      duration = roundToSingleUnit(duration)
+      duration = this.#getMicroDuration(duration)
       empty = microEmptyDuration
-      if ((this.tense === 'past' && duration.sign !== -1) || (this.tense === 'future' && duration.sign !== 1)) {
-        duration = microEmptyDuration
-      }
     } else if ((tense === 'past' && duration.sign !== -1) || (tense === 'future' && duration.sign !== 1)) {
       duration = empty
     }
@@ -172,8 +301,8 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     return duration.abs().toLocaleString(locale, {style})
   }
 
-  #getRelativeFormat(duration: Duration): string {
-    const relativeFormat = new Intl.RelativeTimeFormat(this.#lang, {
+  #getRelativeFormat(duration: Duration, locale: string): string {
+    const relativeFormat = relativeTimeFormat(locale, {
       numeric: 'auto',
       style: this.formatStyle,
     })
@@ -187,8 +316,13 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     return relativeFormat.format(int, unit)
   }
 
-  #getDateTimeFormat(date: Date): string {
-    const formatter = new Intl.DateTimeFormat(this.#lang, {
+  #getDateTimeFormat(
+    date: Date,
+    locale: string,
+    timeZone: string | undefined,
+    hourCycle: Intl.DateTimeFormatOptions['hourCycle'],
+  ): string {
+    const formatter = dateTimeFormat(locale, {
       second: this.second,
       minute: this.minute,
       hour: this.hour,
@@ -197,8 +331,105 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       month: this.month,
       year: this.year,
       timeZoneName: this.timeZoneName,
+      timeZone,
+      hourCycle,
     })
     return `${this.prefix} ${formatter.format(date)}`.trim()
+  }
+
+  #isToday(date: Date, locale: string, timeZone: string | undefined): boolean {
+    const now = new Date()
+    const formatter = dateTimeFormat(locale, {
+      timeZone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    })
+    return formatter.format(now) === formatter.format(date)
+  }
+
+  #isCurrentYear(date: Date, locale: string, timeZone: string | undefined): boolean {
+    const now = new Date()
+    const formatter = dateTimeFormat(locale, {
+      timeZone,
+      year: 'numeric',
+    })
+    return formatter.format(now) === formatter.format(date)
+  }
+
+  // If current day, shows "Today" + time.
+  // If current year, shows date without year.
+  // In all other scenarios, show full date.
+  #getUserPreferredAbsoluteTimeFormat(
+    date: Date,
+    locale: string,
+    timeZone: string | undefined,
+    hourCycle: Intl.DateTimeFormatOptions['hourCycle'],
+  ): string {
+    const timeOnlyOptions: Intl.DateTimeFormatOptions = {
+      hour: 'numeric',
+      minute: '2-digit',
+      timeZoneName: 'short',
+      timeZone,
+      hourCycle,
+    }
+
+    if (this.#isToday(date, locale, timeZone)) {
+      const relativeFormatter = relativeTimeFormat(locale, {numeric: 'auto'})
+      let todayText = relativeFormatter.format(0, 'day')
+      todayText = todayText.charAt(0).toLocaleUpperCase(locale) + todayText.slice(1)
+      const timeOnly = dateTimeFormat(locale, timeOnlyOptions).format(date)
+
+      return `${todayText} ${timeOnly}`
+    }
+
+    const timeAndDateOptions: Intl.DateTimeFormatOptions = {
+      ...timeOnlyOptions,
+      day: 'numeric',
+      month: 'short',
+    }
+    if (this.#isCurrentYear(date, locale, timeZone)) {
+      return dateTimeFormat(locale, timeAndDateOptions).format(date)
+    }
+    return dateTimeFormat(locale, {
+      ...timeAndDateOptions,
+      year: 'numeric',
+    }).format(date)
+  }
+
+  #updateRenderRootContent(content: string | null): void {
+    const root = this.#renderRoot
+    const ariaHidden = this.hasAttribute('aria-hidden') && this.getAttribute('aria-hidden') === 'true'
+    // Reuse the existing `part="root"` span across ticks and mutate it in place.
+    // Reading the DOM tree/attributes below does not force style or layout recalc
+    // (unlike geometry reads such as offsetWidth or innerText), so the only cost
+    // that matters is the write — which we skip when nothing actually changed.
+    // This is common on periodic ticks where the rendered text is identical to
+    // the previous tick (e.g. an item that still reads "3mo").
+    let span = root.firstElementChild
+    if (!span || span.getAttribute('part') !== 'root' || root.childNodes.length !== 1) {
+      span = document.createElement('span')
+      span.setAttribute('part', 'root')
+      root.replaceChildren(span)
+    }
+    if (ariaHidden) {
+      if (span.getAttribute('aria-hidden') !== 'true') span.setAttribute('aria-hidden', 'true')
+    } else if (span.hasAttribute('aria-hidden')) {
+      span.removeAttribute('aria-hidden')
+    }
+    if (span.textContent !== content) {
+      span.textContent = content
+    }
+  }
+
+  #shouldDisplayUserPreferredAbsoluteTime(format: ResolvedFormat): boolean {
+    // Never override duration or elapsed format with absolute format.
+    if (format === 'duration' && this.format !== 'micro') return false
+
+    return (
+      this.ownerDocument.documentElement.getAttribute('data-prefers-absolute-time') === 'true' ||
+      this.ownerDocument.body?.getAttribute('data-prefers-absolute-time') === 'true'
+    )
   }
 
   #onRelativeTimeUpdated: ((event: RelativeTimeUpdatedEvent) => void) | null = null
@@ -421,7 +652,9 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
   attributeChangedCallback(attrName: string, oldValue: unknown, newValue: unknown): void {
     if (oldValue === newValue) return
     if (attrName === 'title') {
-      this.#customTitle = newValue !== null && (this.date && this.#getFormattedTitle(this.date)) !== newValue
+      this.#customTitle =
+        newValue !== null &&
+        (this.date && this.#getFormattedTitle(this.date, this.#lang, this.timeZone, this.hourCycle)) !== newValue
     }
     if (!this.#updating && !(attrName === 'title' && this.#customTitle)) {
       this.#updating = (async () => {
@@ -442,34 +675,56 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       return
     }
     const now = Date.now()
+    // Resolve the locale/time-zone/hour-cycle once per update. Each getter walks
+    // ancestors via `closest(...)`, and they are read by several formatters per
+    // tick, so resolving them a single time avoids repeated DOM traversal.
+    const locale = this.#lang
+    const timeZone = this.timeZone
+    const hourCycle = this.hourCycle
     if (!this.#customTitle) {
-      newTitle = this.#getFormattedTitle(date) || ''
-      if (newTitle && !this.noTitle) this.setAttribute('title', newTitle)
+      newTitle = this.#getFormattedTitle(date, locale, timeZone, hourCycle) || ''
+      if (newTitle && !this.noTitle && newTitle !== oldTitle) this.setAttribute('title', newTitle)
     }
 
     const duration = elapsedTime(date, this.precision, now)
-    const format = this.#resolveFormat(duration)
+    const format = this.#resolveFormat(duration, elapsedTime(date, 'millisecond', now))
     let newText = oldText
-    if (format === 'duration') {
-      newText = this.#getDurationFormat(duration)
-    } else if (format === 'relative') {
-      newText = this.#getRelativeFormat(duration)
+
+    // Experimental: Enable absolute time if users prefers it, but never for `duration` format
+    const displayUserPreferredAbsoluteTime = this.#shouldDisplayUserPreferredAbsoluteTime(format)
+    if (displayUserPreferredAbsoluteTime) {
+      newText = this.#getUserPreferredAbsoluteTimeFormat(date, locale, timeZone, hourCycle)
     } else {
-      newText = this.#getDateTimeFormat(date)
+      if (format === 'duration') {
+        if (this.format === 'micro' && this.tense !== 'auto' && Intl.RelativeTimeFormat) {
+          newText = this.#getMicroRelativeFormat(duration, locale)
+        } else {
+          newText = this.#getDurationFormat(duration, locale)
+        }
+      } else if (format === 'relative') {
+        newText = this.#getRelativeFormat(duration, locale)
+      } else {
+        newText = this.#getDateTimeFormat(date, locale, timeZone, hourCycle)
+      }
     }
 
     if (newText) {
-      this.#renderRoot.textContent = newText
+      this.#updateRenderRootContent(newText)
     } else if (this.shadowRoot === this.#renderRoot && this.textContent) {
       // Ensure invalid dates fall back to lightDOM text content
-      this.#renderRoot.textContent = this.textContent
+      this.#updateRenderRootContent(this.textContent)
     }
 
     if (newText !== oldText || newTitle !== oldTitle) {
       this.dispatchEvent(new RelativeTimeUpdatedEvent(oldText, newText, oldTitle, newTitle))
     }
 
-    if (format === 'relative' || format === 'duration') {
+    const shouldObserve =
+      (!displayUserPreferredAbsoluteTime && (format === 'relative' || format === 'duration')) ||
+      (this.format === 'micro' && Boolean(this.#getExplicitThreshold()) && date.getTime() > now) ||
+      (displayUserPreferredAbsoluteTime &&
+        (this.#isToday(date, locale, timeZone) || this.#isCurrentYear(date, locale, timeZone)))
+    if (shouldObserve) {
       dateObserver.observe(this)
     } else {
       dateObserver.unobserve(this)

@@ -1,6 +1,44 @@
 import DurationFormat from './duration-format-ponyfill.js'
 import type {DurationFormatOptions} from './duration-format-ponyfill.js'
+import {createCache} from './intl-cache.js'
 const durationRe = /^[-+]?P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)W)?(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?$/
+
+// `DurationFormat` normalizes its options on construction, so reuse one instance
+// per (locale, options) combination rather than rebuilding it on every format.
+const durationFormats = createCache<DurationFormat>()
+
+// The option fields `DurationFormat` recognizes, in a fixed order. The cache key
+// is built by reading only these fields so it is a faithful, semantic key: it
+// ignores unrelated properties and never invokes caller-defined `toJSON`
+// (unlike `JSON.stringify`), which would otherwise mis-key formatters or throw
+// on circular structures for this public API.
+const durationFormatOptionFields = [
+  'style',
+  'years',
+  'yearsDisplay',
+  'months',
+  'monthsDisplay',
+  'weeks',
+  'weeksDisplay',
+  'days',
+  'daysDisplay',
+  'hours',
+  'hoursDisplay',
+  'minutes',
+  'minutesDisplay',
+  'seconds',
+  'secondsDisplay',
+  'milliseconds',
+  'millisecondsDisplay',
+] as const
+
+function durationFormatKey(locale: string, opts: DurationFormatOptions): string {
+  let key = locale
+  for (const field of durationFormatOptionFields) {
+    key += `\u0000${opts[field] ?? ''}`
+  }
+  return key
+}
 export const unitNames = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second', 'millisecond'] as const
 export type Unit = typeof unitNames[number]
 
@@ -80,18 +118,30 @@ export class Duration {
   }
 
   toLocaleString(locale: string, opts: DurationFormatOptions) {
-    return new DurationFormat(locale, opts).format(this)
+    const key = durationFormatKey(locale, opts)
+    let format = durationFormats.get(key)
+    if (!format) durationFormats.set(key, (format = new DurationFormat(locale, opts)))
+    return format.format(this)
   }
 }
 
 export function applyDuration(date: Date | number, duration: Duration): Date {
   const r = new Date(date)
-  r.setFullYear(r.getFullYear() + duration.years)
-  r.setMonth(r.getMonth() + duration.months)
-  r.setDate(r.getDate() + duration.weeks * 7 + duration.days)
-  r.setHours(r.getHours() + duration.hours)
-  r.setMinutes(r.getMinutes() + duration.minutes)
-  r.setSeconds(r.getSeconds() + duration.seconds)
+  if (duration.sign < 0) {
+    r.setUTCSeconds(r.getUTCSeconds() + duration.seconds)
+    r.setUTCMinutes(r.getUTCMinutes() + duration.minutes)
+    r.setUTCHours(r.getUTCHours() + duration.hours)
+    r.setUTCDate(r.getUTCDate() + duration.weeks * 7 + duration.days)
+    r.setUTCMonth(r.getUTCMonth() + duration.months)
+    r.setUTCFullYear(r.getUTCFullYear() + duration.years)
+  } else {
+    r.setUTCFullYear(r.getUTCFullYear() + duration.years)
+    r.setUTCMonth(r.getUTCMonth() + duration.months)
+    r.setUTCDate(r.getUTCDate() + duration.weeks * 7 + duration.days)
+    r.setUTCHours(r.getUTCHours() + duration.hours)
+    r.setUTCMinutes(r.getUTCMinutes() + duration.minutes)
+    r.setUTCSeconds(r.getUTCSeconds() + duration.seconds)
+  }
   return r
 }
 
@@ -106,7 +156,7 @@ export function elapsedTime(date: Date, precision: Unit = 'second', now = Date.n
   const day = Math.floor(hr / 24)
   const month = Math.floor(day / 30)
   const year = Math.floor(month / 12)
-  const i = unitNames.indexOf(precision) || unitNames.length
+  const i = unitNames.indexOf(precision)
   return new Duration(
     i >= 0 ? year * sign : 0,
     i >= 1 ? (month - year * 12) * sign : 0,

@@ -5,17 +5,13 @@ Formats a timestamp as a localized string or as relative text that auto-updates 
 This allows the server to cache HTML fragments containing dates and lets the browser choose how to localize the displayed time according to the user's preferences. For example, the server may have cached the following generated markup:
 
 ```html
-<relative-time datetime="2014-04-01T16:30:00-08:00">
-  April 1, 2014 4:30pm
-</relative-time>
+<relative-time datetime="2014-04-01T16:30:00-08:00"> April 1, 2014 4:30pm </relative-time>
 ```
 
 Every visitor is served the same markup from the server's cache. When it reaches the browser, the custom `relative-time` JavaScript localizes the element's text into the local timezone and formatting.
 
 ```html
-<relative-time datetime="2014-04-01T16:30:00-08:00">
-  1 Apr 2014 21:30
-</relative-time>
+<relative-time datetime="2014-04-01T16:30:00-08:00"> 1 Apr 2014 21:30 </relative-time>
 ```
 
 Dates are displayed before months, and a 24-hour clock is used, according to the user's browser settings.
@@ -37,9 +33,7 @@ This element uses the `Intl.DateTimeFormat` & `Intl.RelativeTimeFormat` APIs, wh
 Add a `<relative-time>` element to your markup. Provide a default formatted date as the element's text content (e.g. April 1, 2014). It also MUST have a `datetime` attribute set to an ISO 8601 formatted timestamp.
 
 ```html
-<relative-time datetime="2014-04-01T16:30:00-08:00">
-  April 1, 2014
-</relative-time>
+<relative-time datetime="2014-04-01T16:30:00-08:00"> April 1, 2014 </relative-time>
 ```
 
 Depending on how far in the future this is being viewed, the element's text will be replaced with one of the following formats:
@@ -48,7 +42,7 @@ Depending on how far in the future this is being viewed, the element's text will
 - 20 days from now
 - 4 hours from now
 - 7 minutes from now
-- just now
+- now
 - 30 seconds ago
 - a minute ago
 - 30 minutes ago
@@ -63,7 +57,7 @@ So, a relative date phrase is used for up to a month and then the actual date is
 #### Attributes
 
 | Property Name  | Attribute Name   | Possible Values                                                                             | Default Value                    |
-|:---------------|:-----------------|:--------------------------------------------------------------------------------------------|:---------------------------------|
+| :------------- | :--------------- | :------------------------------------------------------------------------------------------ | :------------------------------- |
 | `datetime`     | `datetime`       | `string`                                                                                    | -                                |
 | `format`       | `format`         | `'datetime'\|'relative'\|'duration'`                                                        | `'auto'`                         |
 | `date`         | -                | `Date \| null`                                                                              | -                                |
@@ -71,24 +65,26 @@ So, a relative date phrase is used for up to a month and then the actual date is
 | `precision`    | `precision`      | `'year'\|'month'\|'day'\|'hour'\|'minute'\|'second'`                                        | `'second'`                       |
 | `threshold`    | `threshold`      | `string`                                                                                    | `'P30D'`                         |
 | `prefix`       | `prefix`         | `string`                                                                                    | `'on'`                           |
-| `formatStyle`  | `format-style`   | `'long'\|'short'\|'narrow'`                                                                 | <sup>*</sup>                     |
+| `formatStyle`  | `format-style`   | `'long'\|'short'\|'narrow'`                                                                 | <sup>\*</sup>                    |
 | `second`       | `second`         | `'numeric'\|'2-digit'\|undefined`                                                           | `undefined`                      |
 | `minute`       | `minute`         | `'numeric'\|'2-digit'\|undefined`                                                           | `undefined`                      |
 | `hour`         | `hour`           | `'numeric'\|'2-digit'\|undefined`                                                           | `undefined`                      |
-| `weekday`      | `weekday`        | `'short'\|'long'\|'narrow'\|undefined`                                                      | <sup>**</sup>                    |
+| `weekday`      | `weekday`        | `'short'\|'long'\|'narrow'\|undefined`                                                      | <sup>\*\*</sup>                  |
 | `day`          | `day`            | `'numeric'\|'2-digit'\|undefined`                                                           | `'numeric'`                      |
-| `month`        | `month`          | `'numeric'\|'2-digit'\|'short'\|'long'\|'narrow'\|undefined`                                | <sup>***</sup>                   |
-| `year`         | `year`           | `'numeric'\|'2-digit'\|undefined`                                                           | <sup>****</sup>                  |
+| `month`        | `month`          | `'numeric'\|'2-digit'\|'short'\|'long'\|'narrow'\|undefined`                                | <sup>\*\*\*</sup>               |
+| `year`         | `year`           | `'numeric'\|'2-digit'\|undefined`                                                           | <sup>\*\*\*\*</sup>             |
 | `timeZoneName` | `time-zone-name` | `'long'\|'short'\|'shortOffset'\|'longOffset'` `\|'shortGeneric'\|'longGeneric'\|undefined` | `undefined`                      |
+| `timeZone`     | `time-zone`      | `string\|undefined`                                                                         | Browser default time zone        |
+| `hourCycle`    | `hour-cycle`     | `'h11'\|'h12'\|'h23'\|'h24'\|undefined`                                                     | `'h12'` or `'h23'` based on browser |
 | `noTitle`      | `no-title`       | `-`                                                                                         | `-`                              |
 
-<sup>*</sup>: If unspecified, `formatStyle` will return `'narrow'` if `format` is `'elapsed'` or `'micro'`, `'short'` if the format is `'relative'` or `'datetime'`, otherwise it will be `'long'`.
+<sup>\*</sup>: If unspecified, `formatStyle` will return `'narrow'` if `format` is `'elapsed'` or `'micro'`, `'short'` if the format is `'relative'` or `'datetime'`, otherwise it will be `'long'`.
 
-<sup>**</sup>: If unspecified, `month` will return the same value as `formatStyle` whenever `format` is `'datetime'`, otherwise it will be `'short'`.
+<sup>\*\*</sup>: If unspecified, `month` will return the same value as `formatStyle` whenever `format` is `'datetime'`, otherwise it will be `'short'`.
 
-<sup>***</sup>: If unspecified, `weekday` will return the same value as `formatStyle` whenever `format` is `'datetime'`, otherwise it will be `undefined`.
+<sup>\*\*\*</sup>: If unspecified, `weekday` will return the same value as `formatStyle` whenever `format` is `'datetime'`, otherwise it will be `undefined`.
 
-<sup>****</sup>: If unspecified, `year` will return `'numeric'` if `datetime` represents the same year as the current year. It will return `undefined` if unspecified and if `datetime` represents a different year to the current year.
+<sup>\*\*\*\*</sup>: If unspecified, `year` will return `'numeric'` if `datetime` represents the same year as the current year. It will return `undefined` if unspecified and if `datetime` represents a different year to the current year.
 
 ##### datetime (`string`)
 
@@ -96,13 +92,14 @@ This is the datetime that the element is meant to represent. This must be a vali
 
 ```html
 <relative-time datetime="2014-04-01T16:30:00-08:00" tense="past">
-  April 1, 2038 <!-- Will display "now" until April 1 2038 at 16:30:01! -->
+  April 1, 2038
+  <!-- Will display "now" until April 1 2038 at 16:30:01! -->
 </relative-time>
 <script>
   const el = document.querySelector('relative-time')
   console.assert(el.date.toISOString() === el.datetime)
   el.date = new Date()
-  console.assert(el.datetime !== "2014-04-01T16:30:00-08:00")
+  console.assert(el.datetime !== '2014-04-01T16:30:00-08:00')
 </script>
 ```
 
@@ -118,18 +115,18 @@ The `datetime` format will display a localised datetime, based on the other prop
 
 Unless specified, it will consider `weekday` to be `'long'`, `month` to be `'long'`, and `'year'` to be `numeric` if the `datetime` is the same as the given year. Overriding `formatStyle` will change both `weekday` and `month` default values. Examples of this format with the default options and an `en` locale:
 
- - `Wed, 26 Aug 2021` 
- - `Sat, 31 Dec` (assuming the `datetime` is same year as the current year)
+- `Wed, 26 Aug 2021`
+- `Sat, 31 Dec` (assuming the `datetime` is same year as the current year)
 
 ###### `format=relative`
 
 The default `relative` format will display dates relative to the current time (unless they are past the `threshold` value - see below). The values are rounded to display a single unit, for example if the time between the given `datetime` and the current wall clock time exceeds a day, then the format will _only_ output in days, and will not display hours, minutes or seconds. Some examples of this format with the default options and an `en` locale:
 
- - `in 20 days`
- - `20 days ago`
- - `in 1 minute`
- - `on 31 Aug` (assuming the current date is the same year as the current year, and is more than 30 days away from 31 Aug)
- - `on 26 Aug 2021` (assuming the current date is more than 30 days away from 26 Aug 2021)
+- `in 20 days`
+- `20 days ago`
+- `in 1 minute`
+- `on 31 Aug` (assuming the current date is the same year as the current year, and is more than 30 days away from 31 Aug)
+- `on 26 Aug 2021` (assuming the current date is more than 30 days away from 26 Aug 2021)
 
 ###### `format=duration`
 
@@ -139,11 +136,25 @@ The `duration` format will display the time remaining (or elapsed time) from the
 - `4 hours`
 - `8 days, 30 minutes, 1 second`
 
+##### time-zone (`string`)
+
+The`time-zone` attribute allows you to specify the IANA time zone name (e.g., `America/New_York`, `Europe/London`) used for formatting the date and time.
+
+You can set the time zone either as an attribute or property:
+
+```html
+<relative-time datetime="2024-06-01T12:00:00Z" ... time-zone="America/New_York">
+  June 1, 2024 8:00am EDT
+</relative-time>
+```
+
+If the individual element does not have a `time-zone` attribute then it will traverse upwards in the tree to find the closest element that does, or default the `time-zone` to the browsers default.
+
 ###### Deprecated Formats
 
 ###### `format=elapsed`
 
-This is similar to the `format=duration`, except the `formatStyle` defaults to `narrow`. Code that  uses `format=elapsed` should migrate to `format=duration formatStyle=narrow`, as it will be removed in a later version.
+This is similar to the `format=duration`, except the `formatStyle` defaults to `narrow`. Code that uses `format=elapsed` should migrate to `format=duration formatStyle=narrow`, as it will be removed in a later version.
 
 ###### `format=auto`
 
@@ -151,43 +162,49 @@ This is identical to `format=relative`. Code that uses `format=auto` should migr
 
 ###### `format=micro`
 
-The `micro` format which will display relative dates (within the threshold) in a more compact format. Similar to `relative`, the `micro` format rounds values to the nearest largest value. Additionally, `micro` format will not round _lower_ than 1 minute, as such a `datetime` which is less than a minute from the current wall clock time will display `'1m'`.
+The `micro` format displays relative dates in a more compact format. Similar to `relative`, the `micro` format rounds values to the nearest largest value. Additionally, `micro` format will not round _lower_ than 1 minute, as such a `datetime` which is less than a minute from the current wall clock time will display `'1m'`.
+
+If the `threshold` attribute is explicitly set, `micro` will display compact relative dates within the threshold and absolute dates outside of it. If `threshold` is not set, `micro` will continue to display compact relative dates without applying the default threshold.
+
+When `tense` is set to `past` or `future`, `micro` uses `Intl.RelativeTimeFormat` with `style: 'narrow'` to include localized tense phrasing such as `2w ago` or `in 3d`. With the default `tense=auto`, `micro` preserves the compact duration output such as `2w`.
 
 Code that uses `format=micro` should consider migrating to `format=relative` (perhaps with `formatStyle=narrow`), as `format=micro` can be difficult for users to understand, and can cause issues with assistive technologies. For example some screen readers (such as VoiceOver for mac) will read out `1m` as `1 meter`.
 
 ###### Cheatsheet
 
-| `format=datetime` | `format=relative` | `format=duration`                                | `format=micro`    | `format=elapsed` |
-|:-----------------:|:-----------------:|:------------------------------------------------:|:-----------------:|:----------------:|
-| Wed 26 May 2024   |  in 2 years       | 2 years, 10 days, 3 hours, 20 minutes, 8 seconds | 2y                | 2y 10d 3h 20m 8s |
-| Wed 26 Aug 2021   |  2 years ago      | 2 years, 10 days, 3 hours, 8 seconds             | 2y                | 2y 10d 3h 8s    |
-| Jan 15 2023       |  in 30 days       | 30 days, 4 hours, 20 minutes, 8 seconds          | 30d               | 30d 4h 20m 8s    |
-| Dec 15 2022       |  21 minutes ago   | 21 minutes, 30 seconds                           | 21m               | 21m 30s          |
-| Dec 15 2022       |  37 seconds ago   | 37 seconds                                       | 1m                | 37s              |
+| `format=datetime` | `format=relative` |                `format=duration`                 | `format=micro` | `format=elapsed` |
+| :---------------: | :---------------: | :----------------------------------------------: | :------------: | :--------------: |
+|  Wed 26 May 2024  |    in 2 years     | 2 years, 10 days, 3 hours, 20 minutes, 8 seconds |       2y       | 2y 10d 3h 20m 8s |
+|  Wed 26 Aug 2021  |    2 years ago    |       2 years, 10 days, 3 hours, 8 seconds       |       2y       |   2y 10d 3h 8s   |
+|    Jan 15 2023    |    in 30 days     |     30 days, 4 hours, 20 minutes, 8 seconds      |      30d       |  30d 4h 20m 8s   |
+|    Dec 15 2022    |  21 minutes ago   |              21 minutes, 30 seconds              |      21m       |     21m 30s      |
+|    Dec 15 2022    |  37 seconds ago   |                    37 seconds                    |       1m       |       37s        |
 
 ##### tense (`'auto'|'past'|'future'`, default: `auto`)
 
 If `format` is `'datetime'` then this value will be ignored.
 
-Tense can be used to prevent `duration` or `relative` formatted dates displaying dates in a tense other than the one specified. Setting `tense=past` will always display future `relative` dates as `now` and `duration` dates as `0 seconds`, while setting it to `future` will always display past dates `relative` as `now` and past `duration` dates as `0 seconds`.
+Tense can be used to prevent `duration` or `relative` formatted dates displaying dates in a tense other than the one specified. Setting `tense=past` will always display future `relative` dates as `now` and `duration` dates as `0 seconds`, while setting it to `future` will always display past dates `relative` as `now` and past `duration` dates as `0 seconds`. For `format=micro`, `tense=past` and `tense=future` add localized compact tense phrasing.
 
 For example when the given `datetime` is 40 seconds behind of the current date:
 
-| `tense=`| format=duration  | format=relative |
-|:-------:|:----------------:|:---------------:|
-| future  | 0s               | now             |
-| past    | 40s              | 40s ago         |
-| auto    | 40s              | 40s ago         |
+| `tense=` | format=duration | format=relative | format=micro |
+| :------: | :-------------: | :-------------: | :----------: |
+|  future  |       0s        |       now       |    in 1m     |
+|   past   |       40s       |     40s ago     |    1m ago    |
+|   auto   |       40s       |     40s ago     |      1m      |
 
 ```html
 <relative-time datetime="2038-04-01T16:30:00-08:00" tense="past">
-  April 1, 2038 <!-- Will display "now" until April 1 2038 at 16:30:01! -->
+  April 1, 2038
+  <!-- Will display "now" until April 1 2038 at 16:30:01! -->
 </relative-time>
 ```
 
 ```html
 <relative-time datetime="1970-04-01T16:30:00-08:00" tense="future">
-  April 1, 2038 <!-- Will display "now" unless you had a time machine and went back to 1970 -->
+  April 1, 2038
+  <!-- Will display "now" unless you had a time machine and went back to 1970 -->
 </relative-time>
 ```
 
@@ -197,32 +214,31 @@ If `format` is `datetime` then this value will be ignored.
 
 Precision can be used to limit the display of an `relative` or `duration` formatted time. By default times will display down to the `second` level of precision. Changing this value will truncate the display by zeroing out any unit lower than the given unit, as such units smaller than the given unit won't be displayed during `duration`, and `relative` will display `now` if the time away from the current time is less than the given precision unit.
 
-| `precision=`  | format=duration     |
-|:-------------:|:-------------------:|
-| second        | 2y 6m 10d 3h 20m 8s |
-| minute        | 2y 6m 10d 3h 20m    |
-| hour          | 2y 6m 10d 3h        |
-| day           | 2y 6m 10d           |
-| month         | 2y 6m               |
-| year          | 2y                  |
+| `precision=` |   format=duration   |
+| :----------: | :-----------------: |
+|    second    | 2y 6m 10d 3h 20m 8s |
+|    minute    |  2y 6m 10d 3h 20m   |
+|     hour     |    2y 6m 10d 3h     |
+|     day      |      2y 6m 10d      |
+|    month     |        2y 6m        |
+|     year     |         2y          |
 
-| `precision=`  | format=relative     |
-|:-------------:|:-------------------:|
-| second        | 25 seconds          |
-| minute        | now                 |
-| hour          | now                 |
-| day           | now                 |
-| month         | now                 |
-| year          | now                 |
-
+| `precision=` | format=relative |
+| :----------: | :-------------: |
+|    second    |   25 seconds    |
+|    minute    |       now       |
+|     hour     |       now       |
+|     day      |       now       |
+|    month     |       now       |
+|     year     |       now       |
 
 ##### threshold (`string`, default: `P30D`)
 
-If `tense` is anything other than `'auto'`, or `format` is `'relative'` (or the deprecated `'auto'` or `'micro'` values), then this value will be ignored.
+If `tense` is anything other than `'auto'`, or `format` is not `'relative'` (or the deprecated `'auto'` value), then this value will be ignored. For `format="micro"`, `threshold` is honored only when the `threshold` attribute is explicitly set.
 
 Threshold can be used to specify when a relative display (e.g. "5 days ago") should turn into an absolute display (i.e. the full date). This should be a valid [ISO8601 Time Duration](https://en.wikipedia.org/wiki/ISO_8601#Durations). If the difference between the current time and the specified `datetime` is _more_ than the duration, then the date will be displayed as an absolute value (i.e. the full date), otherwise it will be formatted to a relative display (e.g. "5 days ago").
 
-The default value for this is `P30D`, meaning if the current time is more than 30 days away from the specified date time, then an absolute date will be displayed.
+The default value for this is `P30D`, meaning if the current time is more than 30 days away from the specified date time, then an absolute date will be displayed. This default applies to relative/auto formatting; `format="micro"` only applies threshold behavior when the `threshold` attribute is present.
 
 ```html
 <relative-time datetime="1970-04-01T16:30:00-08:00" threshold="P100Y">
@@ -252,14 +268,14 @@ When formatting an absolute date (see above `threshold` for more details) it can
 
 This will used to determine the length of the unit names. This value is passed to the `Intl` objects as the `style` option. Some examples of how this can be used:
 
-| `format=`  | `formatStyle=` | Display                  |
-|:----------:|:--------------:|:------------------------:|
-| relative   | long           | in 1 month               |
-| relative   | short          | in 1 mo.                 |
-| relative   | narrow         | in 1 mo.                 |
-| duration   | long           | 1 month, 2 days, 4 hours |
-| duration   | short          | 1 mth, 2 days, 4 hr      |
-| duration   | narrow         | 1m 2d 4h                 |
+| `format=` | `formatStyle=` |         Display          |
+| :-------: | :------------: | :----------------------: |
+| relative  |      long      |        in 1 month        |
+| relative  |     short      |         in 1 mo.         |
+| relative  |     narrow     |         in 1 mo.         |
+| duration  |      long      | 1 month, 2 days, 4 hours |
+| duration  |     short      |   1 mth, 2 days, 4 hr    |
+| duration  |     narrow     |        1mo 2d 4h         |
 
 ##### second, minute, hour, weekday, day, month, year, timeZoneName
 
@@ -272,6 +288,20 @@ Lang is a [built-in global attribute](https://developer.mozilla.org/en-US/docs/W
 ##### noTitle
 
 Adding the `no-title` attribute will remove the `title` attribute from the `<relative-time>` element. The `title` attribute is inaccessible to screen reader and keyboard users, so not adding a title attribute allows a user to create a custom, accessible tooltip if one is desired.
+
+## Styling
+
+The element renders its text inside a Shadow DOM `<span>` with a [`part="root"`](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/part) attribute. This allows you to style the element inside the Shadow DOM from outside using the `::part()` CSS pseudo-element:
+
+```css
+relative-time::part(root) {
+  color: rebeccapurple;
+  font-weight: bold;
+}
+relative-time::part(root)::selection {
+  background: lightgreen;
+}
+```
 
 ## Browser Support
 
@@ -288,6 +318,23 @@ Browsers without native support for [`Intl.RelativeTimeFormat`][relativetimeform
 [relativetimeformat]: https://caniuse.com/mdn-javascript_builtins_intl_relativetimeformat_format
 [datetimeformat]: https://caniuse.com/mdn-javascript_builtins_intl_datetimeformat_format
 [ce-polyfill]: https://github.com/webcomponents/custom-elements
+
+## Usage with React
+
+You can use the `<relative-time>` element in a React project by importing the `RelativeTimeElement` class and declaring it under `React.JSX.IntrinsicElements`. For example:
+
+```ts
+import {RelativeTimeElement} from '@github/relative-time-element'
+
+declare module 'react' {
+  namespace JSX {
+    interface IntrinsicElements {
+      'relative-time': React.DetailedHTMLProps<React.HTMLAttributes<RelativeTimeElement>, RelativeTimeElement> &
+        Partial<Omit<RelativeTimeElement, keyof HTMLElement>>
+    }
+  }
+}
+```
 
 ## See Also
 

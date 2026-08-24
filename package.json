@@ -13,12 +13,13 @@
   "exports": {
     ".": "./dist/index.js",
     "./define": "./dist/index.js",
+    "./duration": "./dist/duration.js",
     "./relative-time": "./dist/relative-time-element.js",
     "./relative-time/define": "./dist/relative-time-element-define.js"
   },
   "scripts": {
     "clean": "rm -rf dist",
-    "lint": "eslint . --ext .js,.ts && tsc --noEmit",
+    "lint": "tsc --noEmit && eslint . --ext .js,.ts",
     "lint:fix": "npm run lint -- --fix",
     "prebuild": "npm run clean && npm run lint && mkdir dist",
     "bundle": "esbuild --bundle dist/index.js --keep-names --outfile=dist/bundle.js --format=esm",
@@ -39,7 +40,7 @@
     "@web/dev-server-esbuild": "^0.3.6",
     "@web/test-runner": "^0.19.0",
     "@web/test-runner-playwright": "^0.11.0",
-    "esbuild": "^0.17.17",
+    "esbuild": "^0.28.1",
     "eslint": "^8.38.0",
     "eslint-plugin-custom-elements": "^0.0.8",
     "eslint-plugin-github": "^4.7.0",

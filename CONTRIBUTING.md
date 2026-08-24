@@ -28,3 +28,9 @@ The QUnit test suite can also be ran in the browser.
 ```
 $ open test/test.html
 ```
+
+## Publishing
+
+To publish a new version to npm, [create a GitHub release](https://github.com/github/relative-time-element/releases/new) with the new version tag. If the tag does not exist yet, create it from the release page while creating the release.
+
+Publishing the release automatically triggers the [Publish workflow](https://github.com/github/relative-time-element/actions/workflows/publish.yml), which tests the package and publishes the tagged version to npm.

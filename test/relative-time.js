@@ -31,11 +31,50 @@ suite('relative-time', function () {
   })
 
   teardown(() => {
+    document.body.removeAttribute('data-prefers-absolute-time')
     fixture.innerHTML = ''
     if (dateNow) {
       // eslint-disable-next-line no-global-assign
       Date = dateNow
       dateNow = null
+    }
+  })
+
+  test('reschedules future micro datetime updates at the explicit threshold boundary', async () => {
+    const originalSetTimeout = window.setTimeout
+    const delays = []
+    const time = document.createElement('relative-time')
+    globalThis.setTimeout = window.setTimeout = function (_, ms) {
+      delays.push(ms)
+      return 1
+    }
+    try {
+      time.setAttribute('format', 'micro')
+      time.setAttribute('datetime', new Date(Date.now() + 65 * 1000).toISOString())
+      await Promise.resolve()
+      assert.equal(time.shadowRoot.textContent, '1m')
+      assert.isAtLeast(delays[0], 59000)
+
+      delays.length = 0
+      time.setAttribute('threshold', 'PT1M')
+      await Promise.resolve()
+      assert.match(time.shadowRoot.textContent, /on [A-Z][a-z]{2} \d{1,2}/)
+      assert.isAbove(delays[0], 0)
+      assert.isBelow(delays[0], 6000)
+
+      delays.length = 0
+      const pastTime = document.createElement('relative-time')
+      pastTime.setAttribute('format', 'micro')
+      pastTime.setAttribute('threshold', 'PT1H')
+      pastTime.setAttribute('datetime', new Date(Date.now() - 59 * 60 * 1000 - 58 * 1000).toISOString())
+      await Promise.resolve()
+      assert.equal(pastTime.shadowRoot.textContent, '1h')
+      assert.isAbove(delays[0], 0)
+      assert.isBelow(delays[0], 6000)
+      pastTime.disconnectedCallback()
+    } finally {
+      globalThis.setTimeout = window.setTimeout = originalSetTimeout
+      time.disconnectedCallback()
     }
   })
 
@@ -68,6 +107,98 @@ suite('relative-time', function () {
     el.setAttribute('minute', '2-digit')
     await Promise.resolve()
     assert.equal(counter, 1)
+  })
+
+  test('does not rebuild the render root when the displayed text is unchanged', async () => {
+    const el = document.createElement('relative-time')
+    el.setAttribute('datetime', new Date(Date.now() - 3 * 60 * 1000).toISOString())
+    fixture.append(el)
+    await Promise.resolve()
+    const root = el.shadowRoot.querySelector('[part="root"]')
+    assert.ok(root, 'expected a rendered [part="root"] element')
+    const text = root.textContent
+
+    // A subsequent update that produces the same text must not replace the node.
+    el.update()
+    await Promise.resolve()
+    const rootAfter = el.shadowRoot.querySelector('[part="root"]')
+    assert.equal(rootAfter, root, 'render root node should be reused when text is unchanged')
+    assert.equal(rootAfter.textContent, text)
+  })
+
+  test('reuses the render root node and updates text in place when the display changes', async () => {
+    const el = document.createElement('relative-time')
+    el.setAttribute('datetime', new Date(Date.now() - 3 * 60 * 1000).toISOString())
+    fixture.append(el)
+    await Promise.resolve()
+    const root = el.shadowRoot.querySelector('[part="root"]')
+    const text = root.textContent
+
+    el.setAttribute('datetime', new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString())
+    await Promise.resolve()
+    const rootAfter = el.shadowRoot.querySelector('[part="root"]')
+    assert.equal(rootAfter, root, 'render root node should be reused across a text change')
+    assert.notEqual(rootAfter.textContent, text, 'text should have changed')
+  })
+
+  test('emits no shadow-root mutations on a no-op update', async () => {
+    const el = document.createElement('relative-time')
+    el.setAttribute('datetime', new Date(Date.now() - 3 * 60 * 1000).toISOString())
+    fixture.append(el)
+    await Promise.resolve()
+
+    const records = []
+    const observer = new MutationObserver(mutations => records.push(...mutations))
+    observer.observe(el.shadowRoot, {subtree: true, childList: true, characterData: true, attributes: true})
+    try {
+      el.update()
+      await Promise.resolve()
+    } finally {
+      observer.disconnect()
+    }
+    assert.deepEqual(records, [], 'a no-op update must not mutate the shadow root')
+  })
+
+  test('emits no shadow-root mutations on a no-op update when aria-hidden', async () => {
+    const el = document.createElement('relative-time')
+    el.setAttribute('aria-hidden', 'true')
+    el.setAttribute('datetime', new Date(Date.now() - 3 * 60 * 1000).toISOString())
+    fixture.append(el)
+    await Promise.resolve()
+    const span = el.shadowRoot.querySelector('[part="root"]')
+    assert.equal(span.getAttribute('aria-hidden'), 'true', 'aria-hidden should be mirrored onto the span')
+
+    const records = []
+    const observer = new MutationObserver(mutations => records.push(...mutations))
+    observer.observe(el.shadowRoot, {subtree: true, childList: true, characterData: true, attributes: true})
+    try {
+      el.update()
+      await Promise.resolve()
+    } finally {
+      observer.disconnect()
+    }
+    assert.deepEqual(records, [], 'a no-op update must not rewrite aria-hidden or text')
+  })
+
+  test('does not rewrite the title attribute on a no-op update', async () => {
+    const el = document.createElement('relative-time')
+    el.setAttribute('datetime', new Date(Date.now() - 3 * 60 * 1000).toISOString())
+    fixture.append(el)
+    await Promise.resolve()
+    const title = el.getAttribute('title')
+    assert.ok(title, 'expected a formatted title to be set')
+
+    const records = []
+    const observer = new MutationObserver(mutations => records.push(...mutations))
+    observer.observe(el, {attributes: true, attributeFilter: ['title']})
+    try {
+      el.update()
+      await Promise.resolve()
+    } finally {
+      observer.disconnect()
+    }
+    assert.deepEqual(records, [], 'an unchanged formatted title must not be written again')
+    assert.equal(el.getAttribute('title'), title)
   })
 
   test('calls update even after nullish datetime', async () => {
@@ -130,6 +261,7 @@ suite('relative-time', function () {
       ...Object.getOwnPropertyNames(HTMLElement.prototype),
     ]
     const observedAttributes = new Set(RelativeTimeElement.observedAttributes)
+    observedAttributes.delete('aria-hidden') // Standard HTML attribute, no need for custom getter
     for (const member of members) observedAttributes.delete(member)
     assert.empty([...observedAttributes], 'observedAttributes that arent class members')
   })
@@ -333,6 +465,61 @@ suite('relative-time', function () {
       assert.match(time.shadowRoot.textContent, /on [A-Z][a-z]{2} \d{1,2}/)
     })
 
+    test('micro switches to dates after explicit P30D threshold', async () => {
+      freezeTime(new Date('2023-01-01T00:00:00Z'))
+      const time = document.createElement('relative-time')
+      time.setAttribute('format', 'micro')
+      time.setAttribute('lang', 'en-US')
+      time.setAttribute('threshold', 'P30D')
+      time.setAttribute('datetime', '2022-11-15T00:00:00Z')
+      await Promise.resolve()
+      assert.equal(time.shadowRoot.textContent, 'on Nov 15, 2022')
+    })
+
+    test('micro threshold datetime output does not include tense phrasing', async () => {
+      freezeTime(new Date('2023-01-01T00:00:00Z'))
+      const time = document.createElement('relative-time')
+      time.setAttribute('format', 'micro')
+      time.setAttribute('lang', 'en-US')
+      time.setAttribute('tense', 'past')
+      time.setAttribute('threshold', 'P30D')
+      time.setAttribute('datetime', '2022-11-15T00:00:00Z')
+      await Promise.resolve()
+      assert.equal(time.shadowRoot.textContent, 'on Nov 15, 2022')
+    })
+
+    test('micro uses duration within explicit P30D threshold', async () => {
+      freezeTime(new Date('2023-01-15T00:00:00Z'))
+      const time = document.createElement('relative-time')
+      time.setAttribute('format', 'micro')
+      time.setAttribute('lang', 'en-US')
+      time.setAttribute('threshold', 'P30D')
+      time.setAttribute('datetime', '2023-01-01T00:00:00Z')
+      await Promise.resolve()
+      assert.equal(time.shadowRoot.textContent, '2w')
+    })
+
+    test('micro ignores default P30D threshold unless threshold attribute is set', async () => {
+      freezeTime(new Date('2023-01-01T00:00:00Z'))
+      const time = document.createElement('relative-time')
+      time.setAttribute('format', 'micro')
+      time.setAttribute('lang', 'en-US')
+      time.setAttribute('datetime', '2022-11-15T00:00:00Z')
+      await Promise.resolve()
+      assert.equal(time.shadowRoot.textContent, '2mo')
+    })
+
+    test('micro with auto tense remains compact', async () => {
+      freezeTime(new Date('2023-01-15T00:00:00Z'))
+      const time = document.createElement('relative-time')
+      time.setAttribute('format', 'micro')
+      time.setAttribute('lang', 'en-US')
+      time.setAttribute('tense', 'auto')
+      time.setAttribute('datetime', '2023-01-01T00:00:00Z')
+      await Promise.resolve()
+      assert.equal(time.shadowRoot.textContent, '2w')
+    })
+
     test('uses `prefix` attribute to customise prefix', async () => {
       freezeTime(new Date('2023-01-01T00:00:00Z'))
       const time = document.createElement('relative-time')
@@ -432,6 +619,17 @@ suite('relative-time', function () {
       await Promise.resolve()
       assert.equal(time.shadowRoot.textContent, 'hace 3 días')
     })
+
+    test('micro tense phrasing respects lang attribute', async () => {
+      const now = new Date(Date.now() + 3 * 60 * 60 * 24 * 1000).toISOString()
+      const time = document.createElement('relative-time')
+      time.setAttribute('datetime', now)
+      time.setAttribute('format', 'micro')
+      time.setAttribute('lang', 'es')
+      time.setAttribute('tense', 'future')
+      await Promise.resolve()
+      assert.equal(time.shadowRoot.textContent, 'dentro de 3 d')
+    })
   }
 
   test('renders correctly when given an invalid lang', async () => {
@@ -521,14 +719,15 @@ suite('relative-time', function () {
     })
 
     test('micro formats years', async () => {
-      const datetime = new Date()
-      datetime.setFullYear(datetime.getFullYear() - 10)
+      // FIXME: there is still a bug, if the duration is long enough (say, 10 or 100 years)
+      // then the `month = Math.floor(day / 30)` in elapsedTime causes errors, then "10 years" would output "11y"
+      const now = new Date(Date.now() - 2 * 365 * 24 * 60 * 60 * 1000).toISOString()
       const time = document.createElement('relative-time')
       time.setAttribute('tense', 'past')
-      time.setAttribute('datetime', datetime)
+      time.setAttribute('datetime', now)
       time.setAttribute('format', 'micro')
       await Promise.resolve()
-      assert.equal(time.shadowRoot.textContent, '10y')
+      assert.equal(time.shadowRoot.textContent, '2y ago')
     })
 
     test('micro formats future times', async () => {
@@ -538,7 +737,7 @@ suite('relative-time', function () {
       time.setAttribute('datetime', now)
       time.setAttribute('format', 'micro')
       await Promise.resolve()
-      assert.equal(time.shadowRoot.textContent, '1m')
+      assert.equal(time.shadowRoot.textContent, '1m ago')
     })
 
     test('micro formats hours', async () => {
@@ -548,7 +747,7 @@ suite('relative-time', function () {
       time.setAttribute('datetime', now)
       time.setAttribute('format', 'micro')
       await Promise.resolve()
-      assert.equal(time.shadowRoot.textContent, '1h')
+      assert.equal(time.shadowRoot.textContent, '1h ago')
     })
 
     test('micro formats days', async () => {
@@ -558,7 +757,18 @@ suite('relative-time', function () {
       time.setAttribute('datetime', now)
       time.setAttribute('format', 'micro')
       await Promise.resolve()
-      assert.equal(time.shadowRoot.textContent, '1d')
+      assert.equal(time.shadowRoot.textContent, '1d ago')
+    })
+
+    test('micro formats months', async () => {
+      const datetime = new Date()
+      datetime.setMonth(datetime.getMonth() - 2)
+      const time = document.createElement('relative-time')
+      time.setAttribute('tense', 'past')
+      time.setAttribute('datetime', datetime)
+      time.setAttribute('format', 'micro')
+      await Promise.resolve()
+      assert.equal(time.shadowRoot.textContent, '2mo ago')
     })
   })
 
@@ -619,17 +829,17 @@ suite('relative-time', function () {
       time.setAttribute('datetime', now)
       time.setAttribute('format', 'micro')
       await Promise.resolve()
-      assert.equal(time.shadowRoot.textContent, '2y')
+      assert.equal(time.shadowRoot.textContent, 'in 2y')
     })
 
-    test('micro formats past times', async () => {
+    test('micro formats near-future times', async () => {
       const now = new Date(Date.now() + 3 * 1000).toISOString()
       const time = document.createElement('relative-time')
       time.setAttribute('tense', 'future')
       time.setAttribute('datetime', now)
       time.setAttribute('format', 'micro')
       await Promise.resolve()
-      assert.equal(time.shadowRoot.textContent, '1m')
+      assert.equal(time.shadowRoot.textContent, 'in 1m')
     })
 
     test('micro formats hours', async () => {
@@ -639,7 +849,7 @@ suite('relative-time', function () {
       time.setAttribute('datetime', now)
       time.setAttribute('format', 'micro')
       await Promise.resolve()
-      assert.equal(time.shadowRoot.textContent, '1h')
+      assert.equal(time.shadowRoot.textContent, 'in 1h')
     })
 
     test('micro formats days', async () => {
@@ -649,7 +859,7 @@ suite('relative-time', function () {
       time.setAttribute('datetime', now)
       time.setAttribute('format', 'micro')
       await Promise.resolve()
-      assert.equal(time.shadowRoot.textContent, '1d')
+      assert.equal(time.shadowRoot.textContent, 'in 1d')
     })
   })
 
@@ -1016,7 +1226,7 @@ suite('relative-time', function () {
         datetime: '2022-10-24T14:46:50.000Z',
         format: 'relative',
         formatStyle: 'narrow',
-        expected: 'in 50 sec.',
+        expected: 'in 50s',
       },
       {
         datetime: '2022-10-24T14:46:50.000Z',
@@ -1095,7 +1305,7 @@ suite('relative-time', function () {
         datetime: '2022-10-24T14:47:30.000Z',
         format: 'relative',
         formatStyle: 'narrow',
-        expected: 'in 1 min.',
+        expected: 'in 1m',
       },
       {
         datetime: '2022-10-24T14:47:30.000Z',
@@ -1168,7 +1378,7 @@ suite('relative-time', function () {
         datetime: '2022-11-13T15:46:00.000Z',
         format: 'relative',
         formatStyle: 'narrow',
-        expected: 'in 3 wk.',
+        expected: 'in 3w',
       },
       {
         datetime: '2022-11-13T15:46:00.000Z',
@@ -1350,6 +1560,12 @@ suite('relative-time', function () {
         datetime: '2024-10-24T14:46:00.000Z',
         format: 'duration',
         expected: '2 years, 11 days',
+      },
+      {
+        datetime: '2024-10-24T14:46:00.000Z',
+        format: 'duration',
+        precision: 'year',
+        expected: '2 years',
       },
       {
         datetime: '2024-10-24T14:46:00.000Z',
@@ -1545,7 +1761,7 @@ suite('relative-time', function () {
         datetime: '2022-10-24T14:44:30.000Z',
         format: 'relative',
         formatStyle: 'narrow',
-        expected: '1 min. ago',
+        expected: '1m ago',
       },
       {
         datetime: '2022-10-24T14:44:30.000Z',
@@ -1618,7 +1834,7 @@ suite('relative-time', function () {
         datetime: '2022-10-04T14:46:00.000Z',
         format: 'relative',
         formatStyle: 'narrow',
-        expected: '3 wk. ago',
+        expected: '3w ago',
       },
       {
         datetime: '2022-10-04T14:46:00.000Z',
@@ -1932,6 +2148,320 @@ suite('relative-time', function () {
     }
   })
 
+  suite('experimental: [data-prefers-absolute-time]', async () => {
+    teardown(() => {
+      document.documentElement.removeAttribute('data-prefers-absolute-time')
+      document.body.removeAttribute('data-prefers-absolute-time')
+    })
+    test('formats with absolute time when data-prefers-absolute-time="true"', async () => {
+      document.documentElement.setAttribute('data-prefers-absolute-time', 'true')
+      const el = document.createElement('relative-time')
+      el.setAttribute('datetime', '2022-01-01T12:00:00.000Z')
+      await Promise.resolve()
+
+      assert.match(el.shadowRoot.textContent, /[A-Z][a-z]{2} \d{1,2}, \d{4}, \d{1,2}:\d{2} (AM|PM)/)
+    })
+
+    test('does not format with absolute time when format is elapsed or duration', async () => {
+      document.documentElement.setAttribute('data-prefers-absolute-time', 'true')
+      const el = document.createElement('relative-time')
+      el.setAttribute('datetime', '2022-01-01T12:00:00.000Z')
+      el.setAttribute('format', 'elapsed')
+      await Promise.resolve()
+
+      assert.notMatch(el.shadowRoot.textContent, /[A-Z][a-z]{2} \d{1,2}, \d{4}, \d{1,2}:\d{2} (AM|PM)/)
+    })
+
+    test('does not format with absolute time when data-prefers-absolute-time="false"', async () => {
+      document.documentElement.setAttribute('data-prefers-absolute-time', 'false')
+      const el = document.createElement('relative-time')
+      el.setAttribute('datetime', new Date(Date.now() - 3 * 60 * 60 * 24 * 1000).toISOString())
+      await Promise.resolve()
+
+      assert.equal(el.shadowRoot.textContent, '3 days ago')
+    })
+
+    test('does not format with absolute time when data-prefers-absolute-time attribute is not set', async () => {
+      const el = document.createElement('relative-time')
+      el.setAttribute('datetime', new Date(Date.now() - 3 * 60 * 60 * 24 * 1000).toISOString())
+      await Promise.resolve()
+
+      assert.equal(el.shadowRoot.textContent, '3 days ago')
+    })
+
+    test('supports data-prefers-absolute-time="true" on body element too', async () => {
+      document.body.setAttribute('data-prefers-absolute-time', 'true')
+      const el = document.createElement('relative-time')
+      el.setAttribute('datetime', '2022-01-01T12:00:00.000Z')
+      await Promise.resolve()
+
+      assert.match(el.shadowRoot.textContent, /[A-Z][a-z]{2} \d{1,2}, \d{4}, \d{1,2}:\d{2} (AM|PM)/)
+    })
+
+    test('formats today dates with "Today" text', async () => {
+      freezeTime(new Date('2023-01-15T17:00:00.000Z'))
+
+      document.documentElement.setAttribute('data-prefers-absolute-time', 'true')
+      const el = document.createElement('relative-time')
+      el.setAttribute('lang', 'en-US')
+      el.setAttribute('time-zone', 'America/New_York')
+
+      el.setAttribute('datetime', '2023-01-15T17:00:00.000Z')
+      await Promise.resolve()
+
+      assert.equal(el.shadowRoot.textContent, 'Today 12:00 PM EST')
+    })
+
+    test('formats current year dates without year', async () => {
+      freezeTime(new Date('2023-06-15T12:00:00.000Z'))
+
+      document.documentElement.setAttribute('data-prefers-absolute-time', 'true')
+      const el = document.createElement('relative-time')
+      el.setAttribute('lang', 'en-US')
+      el.setAttribute('time-zone', 'America/New_York')
+      el.setAttribute('datetime', '2023-03-10T18:00:00.000Z')
+      await Promise.resolve()
+
+      assert.equal(el.shadowRoot.textContent, 'Mar 10, 1:00 PM EST')
+    })
+
+    test('formats different year dates as full date', async () => {
+      freezeTime(new Date('2023-06-15T12:00:00.000Z'))
+
+      document.documentElement.setAttribute('data-prefers-absolute-time', 'true')
+      const el = document.createElement('relative-time')
+      el.setAttribute('lang', 'en-US')
+      el.setAttribute('time-zone', 'America/New_York')
+      el.setAttribute('datetime', '2022-03-10T18:00:00.000Z')
+      await Promise.resolve()
+
+      assert.equal(el.shadowRoot.textContent, 'Mar 10, 2022, 1:00 PM EST')
+    })
+
+    test('respects locale formatting', async () => {
+      freezeTime(new Date('2023-01-15T17:00:00.000Z'))
+
+      document.documentElement.setAttribute('data-prefers-absolute-time', 'true')
+      const el = document.createElement('relative-time')
+      el.setAttribute('lang', 'es-ES')
+      el.setAttribute('time-zone', 'Europe/Madrid')
+      el.setAttribute('hour-cycle', 'h23')
+
+      el.setAttribute('datetime', '2023-01-15T17:00:00.000Z')
+      await Promise.resolve()
+
+      // Spanish formatting - "hoy" = "today", 24-hour format
+      assert.equal(el.shadowRoot.textContent, 'Hoy 18:00 CET')
+    })
+
+    test('uses element time-zone attribute', async () => {
+      freezeTime(new Date('2023-01-15T17:00:00.000Z'))
+
+      document.documentElement.setAttribute('data-prefers-absolute-time', 'true')
+      const el = document.createElement('relative-time')
+      el.setAttribute('lang', 'en-US')
+      el.setAttribute('time-zone', 'Europe/Paris')
+      el.setAttribute('datetime', '2023-01-15T17:00:00.000Z')
+      await Promise.resolve()
+
+      assert.equal(el.shadowRoot.textContent, 'Today 6:00 PM GMT+1')
+    })
+
+    suite('format exclusions', function () {
+      test('does not activate for format="duration"', async () => {
+        freezeTime(new Date('2023-01-15T17:00:00.000Z'))
+        document.documentElement.setAttribute('data-prefers-absolute-time', 'true')
+
+        const el = document.createElement('relative-time')
+        el.setAttribute('lang', 'en-US')
+        el.setAttribute('datetime', '2023-01-15T16:00:00.000Z')
+        el.setAttribute('format', 'duration')
+        await Promise.resolve()
+
+        assert.equal(el.shadowRoot.textContent, '1 hour')
+      })
+
+      test('does not activate for format="elapsed"', async () => {
+        freezeTime(new Date('2023-01-15T17:00:00.000Z'))
+        document.documentElement.setAttribute('data-prefers-absolute-time', 'true')
+
+        const el = document.createElement('relative-time')
+        el.setAttribute('lang', 'en-US')
+        el.setAttribute('datetime', '2023-01-15T16:00:00.000Z')
+        el.setAttribute('format', 'elapsed')
+        await Promise.resolve()
+
+        assert.equal(el.shadowRoot.textContent, '1h')
+      })
+
+      test('activates for format="micro"', async () => {
+        freezeTime(new Date('2023-01-15T17:00:00.000Z'))
+        document.documentElement.setAttribute('data-prefers-absolute-time', 'true')
+
+        const el = document.createElement('relative-time')
+        el.setAttribute('lang', 'en-US')
+        el.setAttribute('time-zone', 'GMT')
+        el.setAttribute('datetime', '2023-01-15T16:00:00.000Z')
+        el.setAttribute('format', 'micro')
+        await Promise.resolve()
+
+        assert.equal(el.shadowRoot.textContent, 'Today 4:00 PM UTC')
+      })
+
+      test('does not observe old format="micro" absolute-time preference output', async () => {
+        freezeTime(new Date('2023-01-15T17:00:00.000Z'))
+        document.documentElement.setAttribute('data-prefers-absolute-time', 'true')
+        const originalSetTimeout = window.setTimeout
+        const delays = []
+        globalThis.setTimeout = window.setTimeout = function (_, ms) {
+          delays.push(ms)
+          return 1
+        }
+        try {
+          const el = document.createElement('relative-time')
+          el.setAttribute('lang', 'en-US')
+          el.setAttribute('time-zone', 'GMT')
+          el.setAttribute('datetime', '2022-01-15T17:00:00.000Z')
+          el.setAttribute('format', 'micro')
+          await Promise.resolve()
+
+          assert.equal(el.shadowRoot.textContent, 'Jan 15, 2022, 5:00 PM UTC')
+          assert.empty(delays)
+          el.disconnectedCallback()
+        } finally {
+          globalThis.setTimeout = window.setTimeout = originalSetTimeout
+        }
+      })
+
+      test('format="micro" absolute-time preference output does not include tense phrasing', async () => {
+        freezeTime(new Date('2023-01-15T17:00:00.000Z'))
+        document.documentElement.setAttribute('data-prefers-absolute-time', 'true')
+
+        const el = document.createElement('relative-time')
+        el.setAttribute('lang', 'en-US')
+        el.setAttribute('time-zone', 'GMT')
+        el.setAttribute('datetime', '2023-01-15T16:00:00.000Z')
+        el.setAttribute('format', 'micro')
+        el.setAttribute('tense', 'past')
+        await Promise.resolve()
+
+        assert.equal(el.shadowRoot.textContent, 'Today 4:00 PM UTC')
+      })
+
+      test('activates for format="relative" (default)', async () => {
+        freezeTime(new Date('2023-01-15T17:00:00.000Z'))
+        document.documentElement.setAttribute('data-prefers-absolute-time', 'true')
+
+        const el = document.createElement('relative-time')
+        el.setAttribute('lang', 'en-US')
+        el.setAttribute('time-zone', 'GMT')
+        el.setAttribute('datetime', '2023-01-15T17:00:00.000Z')
+        el.setAttribute('format', 'relative')
+        await Promise.resolve()
+
+        assert.equal(el.shadowRoot.textContent, 'Today 5:00 PM UTC')
+      })
+
+      test('activates for format="auto"', async () => {
+        freezeTime(new Date('2023-01-15T17:00:00.000Z'))
+        document.documentElement.setAttribute('data-prefers-absolute-time', 'true')
+
+        const el = document.createElement('relative-time')
+        el.setAttribute('lang', 'en-US')
+        el.setAttribute('time-zone', 'UTC')
+        el.setAttribute('datetime', '2023-01-15T17:00:00.000Z')
+        el.setAttribute('format', 'auto')
+        await Promise.resolve()
+
+        assert.equal(el.shadowRoot.textContent, 'Today 5:00 PM UTC')
+      })
+
+      test('activates for format="datetime" if current day', async () => {
+        freezeTime(new Date('2023-01-15T17:00:00.000Z'))
+        document.documentElement.setAttribute('data-prefers-absolute-time', 'true')
+
+        const el = document.createElement('relative-time')
+        el.setAttribute('lang', 'en-US')
+        el.setAttribute('time-zone', 'America/New_York')
+        el.setAttribute('datetime', '2023-01-15T17:00:00.000Z')
+        el.setAttribute('format', 'datetime')
+        await Promise.resolve()
+
+        assert.equal(el.shadowRoot.textContent, 'Today 12:00 PM EST')
+      })
+
+      test('activates for format="datetime" if current year but not today', async () => {
+        freezeTime(new Date('2023-06-15T17:00:00.000Z'))
+        document.documentElement.setAttribute('data-prefers-absolute-time', 'true')
+
+        const el = document.createElement('relative-time')
+        el.setAttribute('lang', 'en-US')
+        el.setAttribute('time-zone', 'America/New_York')
+        el.setAttribute('datetime', '2023-03-10T18:00:00.000Z') // 18:00 UTC = 1:00 PM EST
+        el.setAttribute('format', 'datetime')
+        await Promise.resolve()
+
+        assert.equal(el.shadowRoot.textContent, 'Mar 10, 1:00 PM EST')
+      })
+    })
+  })
+
+  suite('[aria-hidden]', async () => {
+    test('[aria-hidden="true"] applies to shadow root', async () => {
+      const now = new Date().toISOString()
+      const time = document.createElement('relative-time')
+      time.setAttribute('datetime', now)
+      time.setAttribute('aria-hidden', 'true')
+      await Promise.resolve()
+
+      const span = time.shadowRoot.querySelector('span')
+      assert.equal(span.getAttribute('aria-hidden'), 'true')
+    })
+
+    test('[aria-hidden="false"] applies to shadow root', async () => {
+      const now = new Date().toISOString()
+      const time = document.createElement('relative-time')
+      time.setAttribute('datetime', now)
+      time.setAttribute('aria-hidden', 'false')
+      await Promise.resolve()
+
+      assert.isNull(time.shadowRoot.querySelector('[aria-hidden]'), 'Expected no aria-hidden to be present')
+    })
+
+    test('no aria-hidden applies to shadow root', async () => {
+      const now = new Date().toISOString()
+      const time = document.createElement('relative-time')
+      time.setAttribute('datetime', now)
+      await Promise.resolve()
+
+      assert.isNull(time.shadowRoot.querySelector('[aria-hidden]'), 'Expected no aria-hidden to be present')
+    })
+  })
+
+  suite('[part]', () => {
+    test('shadow root span has part="root"', async () => {
+      const now = new Date().toISOString()
+      const time = document.createElement('relative-time')
+      time.setAttribute('datetime', now)
+      await Promise.resolve()
+
+      const span = time.shadowRoot.querySelector('span')
+      assert.equal(span.getAttribute('part'), 'root')
+    })
+
+    test('shadow root span has part="root" alongside aria-hidden="true"', async () => {
+      const now = new Date().toISOString()
+      const time = document.createElement('relative-time')
+      time.setAttribute('datetime', now)
+      time.setAttribute('aria-hidden', 'true')
+      await Promise.resolve()
+
+      const span = time.shadowRoot.querySelector('span')
+      assert.equal(span.getAttribute('part'), 'root')
+      assert.equal(span.getAttribute('aria-hidden'), 'true')
+    })
+  })
+
   suite('legacy formats', function () {
     const referenceDate = '2022-10-24T14:46:00.000Z'
     const tests = new Set([
@@ -1940,13 +2470,13 @@ suite('relative-time', function () {
         datetime: '2022-10-24T14:46:00.000z',
         tense: 'future',
         format: 'micro',
-        expected: '1m',
+        expected: 'in 1m',
       },
       {
         datetime: '2022-10-24T14:46:00.000z',
         tense: 'past',
         format: 'micro',
-        expected: '1m',
+        expected: '1m ago',
       },
       {
         datetime: '2022-10-24T14:46:00.000z',
@@ -1966,19 +2496,19 @@ suite('relative-time', function () {
         datetime: '2022-09-24T14:46:00.000Z',
         tense: 'future',
         format: 'micro',
-        expected: '1m',
+        expected: 'in 1mo',
       },
       {
         datetime: '2022-10-23T14:46:00.000Z',
         tense: 'future',
         format: 'micro',
-        expected: '1m',
+        expected: 'in 1m',
       },
       {
         datetime: '2022-10-24T13:46:00.000Z',
         tense: 'future',
         format: 'micro',
-        expected: '1m',
+        expected: 'in 1m',
       },
 
       // Dates in the future
@@ -1986,61 +2516,61 @@ suite('relative-time', function () {
         datetime: '2022-10-24T15:46:00.000Z',
         tense: 'future',
         format: 'micro',
-        expected: '1h',
+        expected: 'in 1h',
       },
       {
         datetime: '2022-10-24T16:00:00.000Z',
         tense: 'future',
         format: 'micro',
-        expected: '1h',
+        expected: 'in 1h',
       },
       {
         datetime: '2022-10-24T16:15:00.000Z',
         tense: 'future',
         format: 'micro',
-        expected: '1h',
+        expected: 'in 1h',
       },
       {
         datetime: '2022-10-24T16:31:00.000Z',
         tense: 'future',
         format: 'micro',
-        expected: '1h',
+        expected: 'in 1h',
       },
       {
         datetime: '2022-10-30T14:46:00.000Z',
         tense: 'future',
         format: 'micro',
-        expected: '1w',
+        expected: 'in 1w',
       },
       {
         datetime: '2022-11-24T14:46:00.000Z',
         tense: 'future',
         format: 'micro',
-        expected: '1m',
+        expected: 'in 1mo',
       },
       {
         datetime: '2023-10-23T14:46:00.000Z',
         tense: 'future',
         format: 'micro',
-        expected: '1y',
+        expected: 'in 1y',
       },
       {
         datetime: '2023-10-24T14:46:00.000Z',
         tense: 'future',
         format: 'micro',
-        expected: '1y',
+        expected: 'in 1y',
       },
       {
         datetime: '2024-03-31T14:46:00.000Z',
         tense: 'future',
         format: 'micro',
-        expected: '2y',
+        expected: 'in 2y',
       },
       {
         datetime: '2024-04-01T14:46:00.000Z',
         tense: 'future',
         format: 'micro',
-        expected: '2y',
+        expected: 'in 2y',
       },
 
       // Dates in the future
@@ -2048,19 +2578,19 @@ suite('relative-time', function () {
         datetime: '2022-11-24T14:46:00.000Z',
         tense: 'past',
         format: 'micro',
-        expected: '1m',
+        expected: '1mo ago',
       },
       {
         datetime: '2022-10-25T14:46:00.000Z',
         tense: 'past',
         format: 'micro',
-        expected: '1m',
+        expected: '1m ago',
       },
       {
         datetime: '2022-10-24T15:46:00.000Z',
         tense: 'past',
         format: 'micro',
-        expected: '1m',
+        expected: '1m ago',
       },
 
       // Dates in the past
@@ -2068,61 +2598,61 @@ suite('relative-time', function () {
         datetime: '2022-10-24T13:46:00.000Z',
         tense: 'past',
         format: 'micro',
-        expected: '1h',
+        expected: '1h ago',
       },
       {
         datetime: '2022-10-24T13:30:00.000Z',
         tense: 'past',
         format: 'micro',
-        expected: '1h',
+        expected: '1h ago',
       },
       {
         datetime: '2022-10-24T13:17:00.000Z',
         tense: 'past',
         format: 'micro',
-        expected: '1h',
+        expected: '1h ago',
       },
       {
         datetime: '2022-10-24T13:01:00.000Z',
         tense: 'past',
         format: 'micro',
-        expected: '1h',
+        expected: '1h ago',
       },
       {
         datetime: '2022-10-18T14:46:00.000Z',
         tense: 'past',
         format: 'micro',
-        expected: '1w',
+        expected: '1w ago',
       },
       {
         datetime: '2022-09-23T14:46:00.000Z',
         tense: 'past',
         format: 'micro',
-        expected: '1m',
+        expected: '1mo ago',
       },
       {
         datetime: '2021-10-25T14:46:00.000Z',
         tense: 'past',
         format: 'micro',
-        expected: '1y',
+        expected: '1y ago',
       },
       {
         datetime: '2021-10-24T14:46:00.000Z',
         tense: 'past',
         format: 'micro',
-        expected: '1y',
+        expected: '1y ago',
       },
       {
         datetime: '2021-05-18T14:46:00.000Z',
         tense: 'past',
         format: 'micro',
-        expected: '1y',
+        expected: '1y ago',
       },
       {
         datetime: '2021-05-17T14:46:00.000Z',
         tense: 'past',
         format: 'micro',
-        expected: '1y',
+        expected: '1y ago',
       },
 
       // Elapsed Times
@@ -2203,18 +2733,24 @@ suite('relative-time', function () {
       {
         datetime: '2021-10-30T14:46:00.000Z',
         format: 'elapsed',
-        expected: '11m 29d',
+        expected: '11mo 29d',
       },
       {
         datetime: '2021-10-30T14:46:00.000Z',
         format: 'elapsed',
         precision: 'month',
-        expected: '11m',
+        expected: '11mo',
       },
       {
         datetime: '2021-10-29T14:46:00.000Z',
         format: 'elapsed',
         expected: '1y',
+      },
+      {
+        datetime: '2020-10-24T14:46:00.000Z',
+        format: 'elapsed',
+        precision: 'year',
+        expected: '2y',
       },
 
       // Dates in the past
@@ -2303,28 +2839,28 @@ suite('relative-time', function () {
         lang: 'en',
         tense: 'future',
         formatStyle: 'narrow',
-        expected: 'in 1 hr.',
+        expected: 'in 1h',
       },
       {
         datetime: '2022-10-24T16:00:00.000Z',
         lang: 'en',
         tense: 'future',
         formatStyle: 'narrow',
-        expected: 'in 1 hr.',
+        expected: 'in 1h',
       },
       {
         datetime: '2022-10-24T16:15:00.000Z',
         lang: 'en',
         tense: 'future',
         formatStyle: 'narrow',
-        expected: 'in 1 hr.',
+        expected: 'in 1h',
       },
       {
         datetime: '2022-10-24T16:31:00.000Z',
         lang: 'en',
         tense: 'future',
         formatStyle: 'narrow',
-        expected: 'in 1 hr.',
+        expected: 'in 1h',
       },
       {
         datetime: '2022-10-30T14:46:00.000Z',
@@ -2359,14 +2895,14 @@ suite('relative-time', function () {
         lang: 'en',
         tense: 'future',
         formatStyle: 'narrow',
-        expected: 'in 2 yr.',
+        expected: 'in 2y',
       },
       {
         datetime: '2024-04-01T14:46:00.000Z',
         lang: 'en',
         tense: 'future',
         formatStyle: 'narrow',
-        expected: 'in 2 yr.',
+        expected: 'in 2y',
       },
 
       // Dates in the future
@@ -2455,28 +2991,28 @@ suite('relative-time', function () {
         lang: 'en',
         tense: 'past',
         formatStyle: 'narrow',
-        expected: '1 hr. ago',
+        expected: '1h ago',
       },
       {
         datetime: '2022-10-24T13:30:00.000Z',
         lang: 'en',
         tense: 'past',
         formatStyle: 'narrow',
-        expected: '1 hr. ago',
+        expected: '1h ago',
       },
       {
         datetime: '2022-10-24T13:17:00.000Z',
         lang: 'en',
         tense: 'past',
         formatStyle: 'narrow',
-        expected: '1 hr. ago',
+        expected: '1h ago',
       },
       {
         datetime: '2022-10-24T13:01:00.000Z',
         lang: 'en',
         tense: 'past',
         formatStyle: 'narrow',
-        expected: '1 hr. ago',
+        expected: '1h ago',
       },
       {
         datetime: '2022-10-18T14:46:00.000Z',
@@ -2534,14 +3070,14 @@ suite('relative-time', function () {
         datetime: '2021-12-31T12:00:00.000Z',
         tense: 'past',
         format: 'micro',
-        expected: '1d',
+        expected: '1d ago',
       },
       {
         reference: '2022-12-31T12:00:00.000Z',
         datetime: '2022-01-01T12:00:00.000Z',
         tense: 'past',
         format: 'micro',
-        expected: '1y',
+        expected: '1y ago',
       },
       {
         reference: '2022-12-31T12:00:00.000Z',
@@ -2555,14 +3091,14 @@ suite('relative-time', function () {
         datetime: '2024-03-01T12:00:00.000Z',
         tense: 'future',
         format: 'micro',
-        expected: '2y',
+        expected: 'in 2y',
       },
       {
         reference: '2021-04-24T12:00:00.000Z',
         datetime: '2023-02-01T12:00:00.000Z',
         tense: 'future',
         format: 'micro',
-        expected: '2y',
+        expected: 'in 2y',
       },
       {
         reference: '2024-01-04T12:00:00.000Z',
@@ -2610,5 +3146,192 @@ suite('relative-time', function () {
         assert.equal(time.shadowRoot.textContent, expected)
       })
     }
+  })
+
+  suite('[hourCycle]', function () {
+    test('formats with 24-hour cycle when hour-cycle is h23', async () => {
+      const el = document.createElement('relative-time')
+      el.setAttribute('datetime', '2020-01-01T15:00:00.000Z')
+      el.setAttribute('time-zone', 'UTC')
+      el.setAttribute('format', 'datetime')
+      el.setAttribute('hour', 'numeric')
+      el.setAttribute('minute', '2-digit')
+      el.setAttribute('hour-cycle', 'h23')
+      await Promise.resolve()
+      assert.notMatch(el.shadowRoot.textContent, /AM|PM/i)
+      assert.match(el.shadowRoot.textContent, /15:00/)
+    })
+
+    test('formats with 12-hour cycle when hour-cycle is h12', async () => {
+      const el = document.createElement('relative-time')
+      el.setAttribute('datetime', '2020-01-01T15:00:00.000Z')
+      el.setAttribute('time-zone', 'UTC')
+      el.setAttribute('format', 'datetime')
+      el.setAttribute('hour', 'numeric')
+      el.setAttribute('minute', '2-digit')
+      el.setAttribute('hour-cycle', 'h12')
+      await Promise.resolve()
+      assert.match(el.shadowRoot.textContent, /3:00/)
+      assert.match(el.shadowRoot.textContent, /PM/i)
+    })
+
+    test('formats with 12-hour cycle when hour-cycle is h11', async () => {
+      const el = document.createElement('relative-time')
+      el.setAttribute('datetime', '2020-01-01T15:00:00.000Z')
+      el.setAttribute('time-zone', 'UTC')
+      el.setAttribute('format', 'datetime')
+      el.setAttribute('hour', 'numeric')
+      el.setAttribute('minute', '2-digit')
+      el.setAttribute('hour-cycle', 'h11')
+      await Promise.resolve()
+      assert.match(el.shadowRoot.textContent, /3:00/)
+      assert.match(el.shadowRoot.textContent, /PM/i)
+    })
+
+    test('formats with 24-hour cycle when hour-cycle is h24', async () => {
+      const el = document.createElement('relative-time')
+      el.setAttribute('datetime', '2020-01-01T15:00:00.000Z')
+      el.setAttribute('time-zone', 'UTC')
+      el.setAttribute('format', 'datetime')
+      el.setAttribute('hour', 'numeric')
+      el.setAttribute('minute', '2-digit')
+      el.setAttribute('hour-cycle', 'h24')
+      await Promise.resolve()
+      assert.notMatch(el.shadowRoot.textContent, /AM|PM/i)
+      assert.match(el.shadowRoot.textContent, /15:00/)
+    })
+
+    test('title uses hour-cycle setting', async () => {
+      const el = document.createElement('relative-time')
+      el.setAttribute('datetime', '2020-01-01T15:00:00.000Z')
+      el.setAttribute('time-zone', 'UTC')
+      el.setAttribute('hour-cycle', 'h23')
+      await Promise.resolve()
+      assert.notMatch(el.getAttribute('title'), /AM|PM/i)
+      assert.match(el.getAttribute('title'), /15/)
+    })
+
+    test('inherits hour-cycle from ancestor', async () => {
+      const el = document.createElement('relative-time')
+      el.setAttribute('datetime', '2020-01-01T15:00:00.000Z')
+      el.setAttribute('time-zone', 'UTC')
+      el.setAttribute('format', 'datetime')
+      el.setAttribute('hour', 'numeric')
+      el.setAttribute('minute', '2-digit')
+      const div = document.createElement('div')
+      div.setAttribute('hour-cycle', 'h23')
+      div.appendChild(el)
+      document.body.appendChild(div)
+      await Promise.resolve()
+      assert.notMatch(el.shadowRoot.textContent, /AM|PM/i)
+      assert.match(el.shadowRoot.textContent, /15:00/)
+      div.remove()
+    })
+
+    test('inherits hour-cycle from documentElement', async () => {
+      const el = document.createElement('relative-time')
+      el.setAttribute('datetime', '2020-01-01T15:00:00.000Z')
+      el.setAttribute('time-zone', 'UTC')
+      el.setAttribute('format', 'datetime')
+      el.setAttribute('hour', 'numeric')
+      el.setAttribute('minute', '2-digit')
+      document.documentElement.setAttribute('hour-cycle', 'h23')
+      await Promise.resolve()
+      assert.notMatch(el.shadowRoot.textContent, /AM|PM/i)
+      assert.match(el.shadowRoot.textContent, /15:00/)
+      document.documentElement.removeAttribute('hour-cycle')
+    })
+
+    test('element attribute overrides ancestor', async () => {
+      const el = document.createElement('relative-time')
+      el.setAttribute('datetime', '2020-01-01T15:00:00.000Z')
+      el.setAttribute('time-zone', 'UTC')
+      el.setAttribute('format', 'datetime')
+      el.setAttribute('hour', 'numeric')
+      el.setAttribute('minute', '2-digit')
+      el.setAttribute('hour-cycle', 'h12')
+      const div = document.createElement('div')
+      div.setAttribute('hour-cycle', 'h23')
+      div.appendChild(el)
+      document.body.appendChild(div)
+      await Promise.resolve()
+      assert.match(el.shadowRoot.textContent, /3:00/)
+      assert.match(el.shadowRoot.textContent, /PM/i)
+      div.remove()
+    })
+
+    test('re-renders when hour-cycle attribute changes', async () => {
+      const el = document.createElement('relative-time')
+      el.setAttribute('datetime', '2020-01-01T15:00:00.000Z')
+      el.setAttribute('time-zone', 'UTC')
+      el.setAttribute('format', 'datetime')
+      el.setAttribute('hour', 'numeric')
+      el.setAttribute('minute', '2-digit')
+      el.setAttribute('hour-cycle', 'h12')
+      await Promise.resolve()
+      assert.match(el.shadowRoot.textContent, /PM/i)
+      el.setAttribute('hour-cycle', 'h23')
+      await Promise.resolve()
+      assert.notMatch(el.shadowRoot.textContent, /AM|PM/i)
+      assert.match(el.shadowRoot.textContent, /15:00/)
+    })
+  })
+
+  suite('[timeZone]', function () {
+    test('updates when the time-zone attribute is set', async () => {
+      const el = document.createElement('relative-time')
+      el.setAttribute('datetime', '2020-01-01T12:00:00.000Z')
+      el.setAttribute('time-zone', 'America/New_York')
+      el.setAttribute('format', 'datetime')
+      el.setAttribute('hour', 'numeric')
+      el.setAttribute('minute', '2-digit')
+      el.setAttribute('second', '2-digit')
+      el.setAttribute('time-zone-name', 'longGeneric')
+      await Promise.resolve()
+      assert.equal(el.shadowRoot.textContent, 'Wed, Jan 1, 2020, 7:00:00 AM Eastern Time')
+    })
+
+    test('updates when the time-zone attribute changes', async () => {
+      const el = document.createElement('relative-time')
+      el.setAttribute('datetime', '2020-01-01T12:00:00.000Z')
+      el.setAttribute('time-zone', 'America/New_York')
+      el.setAttribute('format', 'datetime')
+      el.setAttribute('hour', 'numeric')
+      el.setAttribute('minute', '2-digit')
+      el.setAttribute('second', '2-digit')
+      await Promise.resolve()
+      const initial = el.shadowRoot.textContent
+      el.setAttribute('time-zone', 'Asia/Tokyo')
+      await Promise.resolve()
+      assert.notEqual(el.shadowRoot.textContent, initial)
+      assert.equal(el.shadowRoot.textContent, 'Wed, Jan 1, 2020, 9:00:00 PM')
+    })
+
+    test('ignores empty time-zone attributes', async () => {
+      const el = document.createElement('relative-time')
+      el.setAttribute('datetime', '2020-01-01T12:00:00.000Z')
+      el.setAttribute('time-zone', '')
+      el.setAttribute('format', 'datetime')
+      el.setAttribute('hour', 'numeric')
+      el.setAttribute('minute', '2-digit')
+      el.setAttribute('second', '2-digit')
+      await Promise.resolve()
+      // Should fallback to default or system time zone
+      assert.equal(el.shadowRoot.textContent, 'Wed, Jan 1, 2020, 4:00:00 PM')
+    })
+
+    test('uses html time-zone if element time-zone is empty', async () => {
+      const time = document.createElement('relative-time')
+      time.setAttribute('datetime', '2020-01-01T12:00:00.000Z')
+      time.setAttribute('time-zone', '')
+      document.documentElement.setAttribute('time-zone', 'Asia/Tokyo')
+      time.setAttribute('format', 'datetime')
+      time.setAttribute('hour', 'numeric')
+      time.setAttribute('minute', '2-digit')
+      time.setAttribute('second', '2-digit')
+      await Promise.resolve()
+      assert.equal(time.shadowRoot.textContent, 'Wed, Jan 1, 2020, 9:00:00 PM')
+      document.documentElement.removeAttribute('time-zone')
+    })
   })
 })

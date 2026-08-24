@@ -1,5 +1,7 @@
 import {assert} from '@open-wc/testing'
 import {applyDuration, Duration, elapsedTime, getRelativeTimeUnit, roundToSingleUnit} from '../src/duration.ts'
+import type {Unit} from '../src/duration.ts'
+import type {DurationFormatOptions} from '../src/duration-format-ponyfill.ts'
 import {Temporal} from '@js-temporal/polyfill'
 
 suite('duration', function () {
@@ -81,16 +83,19 @@ suite('duration', function () {
   })
 
   suite('applyDuration', function () {
-    const referenceDate = '2022-10-21T16:48:44.104Z'
     const tests = new Set([
-      {input: 'P4Y', expected: '2026-10-21T16:48:44.104Z'},
-      {input: '-P4Y', expected: '2018-10-21T16:48:44.104Z'},
-      {input: '-P3MT5M', expected: '2022-07-21T16:43:44.104Z'},
-      {input: 'P1Y2M3DT4H5M6S', expected: '2023-12-24T20:53:50.104Z'},
-      {input: 'P5W', expected: '2022-11-25T16:48:44.104Z'},
-      {input: '-P5W', expected: '2022-09-16T16:48:44.104Z'},
+      {referenceDate: '2022-10-21T16:48:44.104Z', input: 'P5W', expected: '2022-11-25T16:48:44.104Z'},
+      {referenceDate: '2022-11-25T16:48:44.104Z', input: '-P5W', expected: '2022-10-21T16:48:44.104Z'},
+      {referenceDate: '2022-07-21T16:43:44.104Z', input: 'P3MT5M', expected: '2022-10-21T16:48:44.104Z'},
+      {referenceDate: '2022-10-21T16:48:44.104Z', input: '-P3MT5M', expected: '2022-07-21T16:43:44.104Z'},
+      {referenceDate: '2022-10-21T16:48:44.104Z', input: 'P4Y', expected: '2026-10-21T16:48:44.104Z'},
+      {referenceDate: '2026-10-21T16:48:44.104Z', input: '-P4Y', expected: '2022-10-21T16:48:44.104Z'},
+      {referenceDate: '2022-10-21T16:48:44.104Z', input: 'P1Y2M3DT4H5M6S', expected: '2023-12-24T20:53:50.104Z'},
+      {referenceDate: '2023-12-24T20:53:50.104Z', input: '-P1Y2M3DT4H5M6S', expected: '2022-10-21T16:48:44.104Z'},
+      {referenceDate: '2023-08-15T00:00:00.000Z', input: 'P1Y3M25D', expected: '2024-12-10T00:00:00.000Z'},
+      {referenceDate: '2024-12-10T00:00:00.000Z', input: '-P1Y3M25D', expected: '2023-08-15T00:00:00.000Z'},
     ])
-    for (const {input, expected} of tests) {
+    for (const {referenceDate, input, expected} of tests) {
       test(`${referenceDate} -> ${input} -> ${expected}`, () => {
         assert.equal(applyDuration(new Date(referenceDate), Duration.from(input))?.toISOString(), expected)
       })
@@ -219,6 +224,24 @@ suite('duration', function () {
         now: '2023-03-23T12:03:00.000Z',
         input: '2023-03-21T16:03:00.000Z',
         expected: '-P1DT20H',
+      },
+      {
+        now: '2022-10-24T14:46:00.000Z',
+        input: '2024-10-24T14:46:00.000Z',
+        precision: 'year',
+        expected: 'P2Y',
+      },
+      {
+        now: '2022-10-24T14:46:00.000Z',
+        input: '2020-10-24T14:46:00.000Z',
+        precision: 'year',
+        expected: '-P2Y',
+      },
+      {
+        now: '2022-10-24T14:46:00.000Z',
+        input: '2024-10-24T14:46:00.000Z',
+        precision: 'unknown' as Unit,
+        expected: 'PT0S',
       },
     ])
     for (const {input, now, precision = 'millisecond', expected} of elapsed) {
@@ -497,5 +520,27 @@ suite('duration', function () {
         )
       })
     }
+  })
+
+  suite('toLocaleString', () => {
+    test('keys cached formatters by recognized options, ignoring caller-defined toJSON', () => {
+      const duration = Duration.from('PT8S')
+      // A caller-supplied `toJSON` must not influence the cache key; otherwise a
+      // `long` formatter could be cached under the key used for `short` options.
+      const long = duration.toLocaleString('en', {
+        style: 'long',
+        toJSON: () => ({style: 'short'}),
+      } as unknown as DurationFormatOptions)
+      const short = duration.toLocaleString('en', {style: 'short'})
+      assert.equal(long, '8 seconds')
+      assert.equal(short, '8 sec')
+    })
+
+    test('does not throw on circular option structures', () => {
+      const duration = Duration.from('PT8S')
+      const opts: Record<string, unknown> = {style: 'long'}
+      opts.self = opts
+      assert.doesNotThrow(() => duration.toLocaleString('en', opts as unknown as DurationFormatOptions))
+    })
   })
 })
