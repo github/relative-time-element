@@ -145,6 +145,35 @@ export function applyDuration(date: Date | number, duration: Duration): Date {
   return r
 }
 
+function hasSameTimeAtPrecision(date: Date, reference: Date, precisionIndex: number): boolean {
+  if (precisionIndex <= unitNames.indexOf('day')) return true
+  if (date.getUTCHours() !== reference.getUTCHours()) return false
+  if (precisionIndex === unitNames.indexOf('hour')) return true
+  if (date.getUTCMinutes() !== reference.getUTCMinutes()) return false
+  if (precisionIndex === unitNames.indexOf('minute')) return true
+  if (date.getUTCSeconds() !== reference.getUTCSeconds()) return false
+  if (precisionIndex === unitNames.indexOf('second')) return true
+  return date.getUTCMilliseconds() === reference.getUTCMilliseconds()
+}
+
+function calendarElapsedTime(date: Date, reference: Date, precisionIndex: number): Duration | undefined {
+  const calendarMonths =
+    (date.getUTCFullYear() - reference.getUTCFullYear()) * 12 + date.getUTCMonth() - reference.getUTCMonth()
+  if (!calendarMonths || date.getUTCDate() !== reference.getUTCDate()) return
+
+  // Treat matching calendar days at least a year apart as anniversaries even
+  // when their times differ, rather than leaking fixed-month remainder days.
+  const isAnniversary = Math.abs(calendarMonths) >= 12
+  if (!isAnniversary && !hasSameTimeAtPrecision(date, reference, precisionIndex)) return
+
+  const calendarYears = Math.trunc(calendarMonths / 12)
+  let years = 0
+  let months = 0
+  if (precisionIndex >= unitNames.indexOf('year')) years = calendarYears
+  if (precisionIndex >= unitNames.indexOf('month')) months = calendarMonths - calendarYears * 12
+  return new Duration(years, months)
+}
+
 export function elapsedTime(date: Date, precision: Unit = 'second', now = Date.now()): Duration {
   const delta = date.getTime() - now
   if (delta === 0) return new Duration()
@@ -159,20 +188,8 @@ export function elapsedTime(date: Date, precision: Unit = 'second', now = Date.n
   const i = unitNames.indexOf(precision)
 
   const nowDate = new Date(now)
-  const calendarMonths =
-    (date.getUTCFullYear() - nowDate.getUTCFullYear()) * 12 + date.getUTCMonth() - nowDate.getUTCMonth()
-  const sameTime =
-    i <= 3 ||
-    (date.getUTCHours() === nowDate.getUTCHours() &&
-      (i <= 4 ||
-        (date.getUTCMinutes() === nowDate.getUTCMinutes() &&
-          (i <= 5 ||
-            (date.getUTCSeconds() === nowDate.getUTCSeconds() &&
-              (i <= 6 || date.getUTCMilliseconds() === nowDate.getUTCMilliseconds()))))))
-  if (calendarMonths && date.getUTCDate() === nowDate.getUTCDate() && (sameTime || Math.abs(calendarMonths) >= 12)) {
-    const calendarYears = Math.trunc(calendarMonths / 12)
-    return new Duration(i >= 0 ? calendarYears : 0, i >= 1 ? calendarMonths - calendarYears * 12 : 0)
-  }
+  const calendarDuration = calendarElapsedTime(date, nowDate, i)
+  if (calendarDuration) return calendarDuration
 
   return new Duration(
     i >= 0 ? year * sign : 0,
