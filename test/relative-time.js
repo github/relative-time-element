@@ -2744,7 +2744,7 @@ suite('relative-time', function () {
       {
         datetime: '2021-10-29T14:46:00.000Z',
         format: 'elapsed',
-        expected: '1y',
+        expected: '11mo 26d',
       },
       {
         datetime: '2020-10-24T14:46:00.000Z',
@@ -3077,7 +3077,7 @@ suite('relative-time', function () {
         datetime: '2022-01-01T12:00:00.000Z',
         tense: 'past',
         format: 'micro',
-        expected: '1y ago',
+        expected: '11mo ago',
       },
       {
         reference: '2022-12-31T12:00:00.000Z',

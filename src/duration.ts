@@ -145,6 +145,12 @@ export function applyDuration(date: Date | number, duration: Duration): Date {
   return r
 }
 
+function applyCalendarMonths(reference: Date, months: number): Date {
+  const result = new Date(reference)
+  result.setUTCMonth(result.getUTCMonth() + months)
+  return result
+}
+
 function hasSameTimeAtPrecision(date: Date, reference: Date, precisionIndex: number): boolean {
   if (precisionIndex <= unitNames.indexOf('day')) return true
   if (date.getUTCHours() !== reference.getUTCHours()) return false
@@ -156,22 +162,58 @@ function hasSameTimeAtPrecision(date: Date, reference: Date, precisionIndex: num
   return date.getUTCMilliseconds() === reference.getUTCMilliseconds()
 }
 
-function calendarElapsedTime(date: Date, reference: Date, precisionIndex: number): Duration | undefined {
+function calendarElapsedTime(
+  date: Date,
+  reference: Date,
+  precisionIndex: number,
+  estimatedYears: number,
+): Duration | undefined {
   const calendarMonths =
     (date.getUTCFullYear() - reference.getUTCFullYear()) * 12 + date.getUTCMonth() - reference.getUTCMonth()
-  if (!calendarMonths || date.getUTCDate() !== reference.getUTCDate()) return
 
-  // Treat matching calendar days at least a year apart as anniversaries even
-  // when their times differ, rather than leaking fixed-month remainder days.
-  const isAnniversary = Math.abs(calendarMonths) >= 12
-  if (!isAnniversary && !hasSameTimeAtPrecision(date, reference, precisionIndex)) return
+  // Anchor the candidate month count to the reference, then back it off if it
+  // crossed the target. This prevents 30-day estimates from inventing a year.
+  let wholeMonths = calendarMonths
+  let anchor = applyCalendarMonths(reference, calendarMonths)
+  const candidateOvershot = calendarMonths > 0 ? anchor > date : anchor < date
+  if (candidateOvershot) {
+    wholeMonths += calendarMonths > 0 ? -1 : 1
+    anchor = applyCalendarMonths(reference, wholeMonths)
+  }
 
-  const calendarYears = Math.trunc(calendarMonths / 12)
+  const calendarYears = Math.trunc(wholeMonths / 12)
+  const estimatedFalseYear = calendarYears !== estimatedYears
+  const sameCalendarDay = date.getUTCDate() === reference.getUTCDate()
+  const isAnniversary = Math.abs(calendarMonths) >= 12 && sameCalendarDay
+  const isCalendarAligned =
+    sameCalendarDay && (isAnniversary || hasSameTimeAtPrecision(date, reference, precisionIndex))
+  if (!estimatedFalseYear && !isCalendarAligned) return
+
+  // Exact anniversaries intentionally ignore a sub-day difference. Other
+  // corrected durations retain the remainder after the calendar-month anchor.
+  const sign = Math.sign(date.getTime() - reference.getTime())
+  const remainder = isCalendarAligned ? 0 : Math.abs(date.getTime() - anchor.getTime())
+  const seconds = Math.floor(remainder / 1000)
+  const minutes = Math.floor(seconds / 60)
+  const hours = Math.floor(minutes / 60)
+  const days = Math.floor(hours / 24)
+
   let years = 0
   let months = 0
-  if (precisionIndex >= unitNames.indexOf('year')) years = calendarYears
-  if (precisionIndex >= unitNames.indexOf('month')) months = calendarMonths - calendarYears * 12
-  return new Duration(years, months)
+  const durationMonths = isCalendarAligned ? calendarMonths : wholeMonths
+  const durationYears = Math.trunc(durationMonths / 12)
+  if (precisionIndex >= unitNames.indexOf('year')) years = durationYears
+  if (precisionIndex >= unitNames.indexOf('month')) months = durationMonths - durationYears * 12
+  return new Duration(
+    years,
+    months,
+    0,
+    precisionIndex >= unitNames.indexOf('day') ? days * sign : 0,
+    precisionIndex >= unitNames.indexOf('hour') ? (hours - days * 24) * sign : 0,
+    precisionIndex >= unitNames.indexOf('minute') ? (minutes - hours * 60) * sign : 0,
+    precisionIndex >= unitNames.indexOf('second') ? (seconds - minutes * 60) * sign : 0,
+    precisionIndex >= unitNames.indexOf('millisecond') ? (remainder - seconds * 1000) * sign : 0,
+  )
 }
 
 export function elapsedTime(date: Date, precision: Unit = 'second', now = Date.now()): Duration {
@@ -188,7 +230,7 @@ export function elapsedTime(date: Date, precision: Unit = 'second', now = Date.n
   const i = unitNames.indexOf(precision)
 
   const nowDate = new Date(now)
-  const calendarDuration = calendarElapsedTime(date, nowDate, i)
+  const calendarDuration = calendarElapsedTime(date, nowDate, i, year * sign)
   if (calendarDuration) return calendarDuration
 
   return new Duration(

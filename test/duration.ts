@@ -218,7 +218,7 @@ suite('duration', function () {
       {
         now: '2022-10-24T14:46:00.000Z',
         input: '2021-10-29T14:46:00.000Z',
-        expected: '-P1Y',
+        expected: '-P11M26D',
       },
       {
         now: '2023-03-23T12:03:00.000Z',
@@ -236,6 +236,12 @@ suite('duration', function () {
         input: '2020-10-24T14:46:00.000Z',
         precision: 'year',
         expected: '-P2Y',
+      },
+      {
+        now: '2023-01-01T00:00:00.000Z',
+        input: '2023-12-31T00:00:00.000Z',
+        precision: 'year',
+        expected: 'PT0S',
       },
       {
         now: '2022-10-24T14:46:00.000Z',
