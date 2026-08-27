@@ -183,8 +183,9 @@ function hasSameTimeAtPrecision(date: Date, reference: Date, precisionIndex: num
 }
 
 /**
- * Returns a calendar-based correction when fixed 30-day months produce an
- * incorrect year or when the dates align on a month or year boundary.
+ * Returns a calendar-based duration for completed calendar-month spans or
+ * endpoints aligned at the requested precision, leaving shorter intervals on
+ * the fixed-duration path.
  *
  * @param date - Target date.
  * @param reference - Date from which elapsed time is measured.
