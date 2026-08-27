@@ -2055,6 +2055,14 @@ suite('relative-time', function () {
         datetime: '2022-01-01T10:00:00.000Z',
         format: 'duration',
         tense: 'past',
+        expected: '11 months, 30 days, 23 hours',
+      },
+      {
+        reference: '2023-01-01T09:00:00.000Z',
+        datetime: '2022-01-01T10:00:00.000Z',
+        format: 'duration',
+        precision: 'day',
+        tense: 'past',
         expected: '1 year',
       },
       {

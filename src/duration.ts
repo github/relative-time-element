@@ -208,13 +208,11 @@ function calendarElapsedTime(
   const calendarYears = Math.trunc(wholeMonths / 12)
   const estimatedFalseYear = calendarYears !== estimatedYears
   const sameCalendarDay = date.getUTCDate() === reference.getUTCDate()
-  const isAnniversary = Math.abs(calendarMonths) >= 12 && sameCalendarDay
-  const isCalendarAligned =
-    sameCalendarDay && (isAnniversary || hasSameTimeAtPrecision(date, reference, precisionIndex))
+  const isCalendarAligned = sameCalendarDay && hasSameTimeAtPrecision(date, reference, precisionIndex)
   if (!estimatedFalseYear && !isCalendarAligned) return
 
-  // Exact anniversaries intentionally ignore a sub-day difference. Other
-  // corrected durations retain the remainder after the calendar-month anchor.
+  // Calendar-aligned durations omit only units below the requested precision.
+  // Other corrected durations retain the remainder after the month anchor.
   const sign = Math.sign(date.getTime() - reference.getTime())
   const remainder = isCalendarAligned ? 0 : Math.abs(date.getTime() - anchor.getTime())
   const seconds = Math.floor(remainder / 1000)
