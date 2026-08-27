@@ -697,7 +697,7 @@ suite('relative-time', function () {
       time.setAttribute('tense', 'past')
       time.setAttribute('datetime', '2023-06-01T00:00:00Z')
       await Promise.resolve()
-      assert.equal(time.shadowRoot.textContent, '4 months ago')
+      assert.equal(time.shadowRoot.textContent, '3 months ago')
     })
 
     test('rewrites from last few days of month to smaller last month', async () => {
@@ -1486,25 +1486,25 @@ suite('relative-time', function () {
       {
         datetime: '2022-12-03T15:46:00.000Z',
         format: 'duration',
-        expected: '1 month, 10 days, 1 hour',
+        expected: '1 month, 9 days, 1 hour',
       },
       {
         datetime: '2022-12-03T15:46:00.000Z',
         format: 'duration',
         precision: 'minute',
-        expected: '1 month, 10 days, 1 hour',
+        expected: '1 month, 9 days, 1 hour',
       },
       {
         datetime: '2022-12-03T15:46:00.000Z',
         format: 'duration',
         precision: 'day',
-        expected: '1 month, 10 days',
+        expected: '1 month, 9 days',
       },
       {
         datetime: '2022-12-03T15:46:00.000Z',
         format: 'duration',
         tense: 'future',
-        expected: '1 month, 10 days, 1 hour',
+        expected: '1 month, 9 days, 1 hour',
       },
       {
         datetime: '2022-12-03T15:46:00.000Z',
@@ -2755,7 +2755,7 @@ suite('relative-time', function () {
       {
         datetime: '2021-10-30T14:46:00.000Z',
         format: 'elapsed',
-        expected: '11mo 29d',
+        expected: '11mo 25d',
       },
       {
         datetime: '2021-10-30T14:46:00.000Z',

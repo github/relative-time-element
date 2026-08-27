@@ -94,6 +94,8 @@ suite('duration', function () {
       {referenceDate: '2023-12-24T20:53:50.104Z', input: '-P1Y2M3DT4H5M6S', expected: '2022-10-21T16:48:44.104Z'},
       {referenceDate: '2023-08-15T00:00:00.000Z', input: 'P1Y3M25D', expected: '2024-12-10T00:00:00.000Z'},
       {referenceDate: '2024-12-10T00:00:00.000Z', input: '-P1Y3M25D', expected: '2023-08-15T00:00:00.000Z'},
+      {referenceDate: '2023-01-31T00:00:00.000Z', input: 'P1M', expected: '2023-02-28T00:00:00.000Z'},
+      {referenceDate: '2020-02-29T00:00:00.000Z', input: 'P1Y', expected: '2021-02-28T00:00:00.000Z'},
     ])
     for (const {referenceDate, input, expected} of tests) {
       test(`${referenceDate} -> ${input} -> ${expected}`, () => {
@@ -112,7 +114,7 @@ suite('duration', function () {
       {
         now: '2022-01-21T16:48:44.104Z',
         input: '2022-10-21T16:48:45.104Z',
-        expected: 'P9M3DT1S',
+        expected: 'P9MT1S',
       },
       {
         now: '2022-01-21T16:48:44.104Z',
@@ -207,7 +209,7 @@ suite('duration', function () {
       {
         now: '2022-10-24T14:46:00.000Z',
         input: '2021-10-30T14:46:00.000Z',
-        expected: '-P11M29D',
+        expected: '-P11M25D',
       },
       {
         now: '2022-10-24T14:46:00.000Z',

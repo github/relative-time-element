@@ -126,17 +126,16 @@ export class Duration {
 }
 
 export function applyDuration(date: Date | number, duration: Duration): Date {
-  const r = new Date(date)
+  let r = new Date(date)
+  const calendarMonths = duration.years * 12 + duration.months
   if (duration.sign < 0) {
     r.setUTCSeconds(r.getUTCSeconds() + duration.seconds)
     r.setUTCMinutes(r.getUTCMinutes() + duration.minutes)
     r.setUTCHours(r.getUTCHours() + duration.hours)
     r.setUTCDate(r.getUTCDate() + duration.weeks * 7 + duration.days)
-    r.setUTCMonth(r.getUTCMonth() + duration.months)
-    r.setUTCFullYear(r.getUTCFullYear() + duration.years)
+    r = applyCalendarMonths(r, calendarMonths)
   } else {
-    r.setUTCFullYear(r.getUTCFullYear() + duration.years)
-    r.setUTCMonth(r.getUTCMonth() + duration.months)
+    r = applyCalendarMonths(r, calendarMonths)
     r.setUTCDate(r.getUTCDate() + duration.weeks * 7 + duration.days)
     r.setUTCHours(r.getUTCHours() + duration.hours)
     r.setUTCMinutes(r.getUTCMinutes() + duration.minutes)
@@ -190,15 +189,9 @@ function hasSameTimeAtPrecision(date: Date, reference: Date, precisionIndex: num
  * @param date - Target date.
  * @param reference - Date from which elapsed time is measured.
  * @param precisionIndex - Index of the requested unit in {@link unitNames}.
- * @param estimatedYears - Year count produced by the fixed-duration estimate.
  * @returns The corrected duration, or `undefined` when no correction is needed.
  */
-function calendarElapsedTime(
-  date: Date,
-  reference: Date,
-  precisionIndex: number,
-  estimatedYears: number,
-): Duration | undefined {
+function calendarElapsedTime(date: Date, reference: Date, precisionIndex: number): Duration | undefined {
   const calendarMonths =
     (date.getUTCFullYear() - reference.getUTCFullYear()) * 12 + date.getUTCMonth() - reference.getUTCMonth()
 
@@ -211,20 +204,19 @@ function calendarElapsedTime(
     anchor.getUTCMonth() === date.getUTCMonth() &&
     anchor.getUTCDate() === date.getUTCDate() &&
     hasSameTimeAtPrecision(date, anchor, precisionIndex)
-  const candidateOvershot = !candidateAligned && (calendarMonths > 0 ? anchor > date : anchor < date)
+  const candidateOvershot =
+    calendarMonths !== 0 && !candidateAligned && (calendarMonths > 0 ? anchor > date : anchor < date)
   if (candidateOvershot) {
     wholeMonths += calendarMonths > 0 ? -1 : 1
     anchor = applyCalendarMonths(reference, wholeMonths)
   }
 
-  const calendarYears = Math.trunc(wholeMonths / 12)
-  const hasYearScaleDuration = estimatedYears !== 0 || calendarYears !== 0
   const isCalendarAligned =
     anchor.getUTCFullYear() === date.getUTCFullYear() &&
     anchor.getUTCMonth() === date.getUTCMonth() &&
     anchor.getUTCDate() === date.getUTCDate() &&
     hasSameTimeAtPrecision(date, anchor, precisionIndex)
-  if (!hasYearScaleDuration && !isCalendarAligned) return
+  if (!wholeMonths && !isCalendarAligned) return
 
   // Calendar-aligned durations omit only units below the requested precision.
   // Other corrected durations retain the remainder after the month anchor.
@@ -267,7 +259,7 @@ export function elapsedTime(date: Date, precision: Unit = 'second', now = Date.n
   const i = unitNames.indexOf(precision)
 
   const nowDate = new Date(now)
-  const calendarDuration = calendarElapsedTime(date, nowDate, i, year * sign)
+  const calendarDuration = calendarElapsedTime(date, nowDate, i)
   if (calendarDuration) return calendarDuration
 
   return new Duration(
