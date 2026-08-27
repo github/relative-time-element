@@ -145,12 +145,26 @@ export function applyDuration(date: Date | number, duration: Duration): Date {
   return r
 }
 
+/**
+ * Applies a number of calendar months to a copy of the reference date.
+ *
+ * @param reference - Date from which to count.
+ * @param months - Signed number of months to apply.
+ * @returns The resulting date without modifying the reference.
+ */
 function applyCalendarMonths(reference: Date, months: number): Date {
   const result = new Date(reference)
   result.setUTCMonth(result.getUTCMonth() + months)
   return result
 }
 
+/**
+ * Checks whether two UTC times match through the requested precision.
+ *
+ * @param date - Date being compared.
+ * @param reference - Reference date for the comparison.
+ * @param precisionIndex - Index of the requested unit in {@link unitNames}.
+ */
 function hasSameTimeAtPrecision(date: Date, reference: Date, precisionIndex: number): boolean {
   if (precisionIndex <= unitNames.indexOf('day')) return true
   if (date.getUTCHours() !== reference.getUTCHours()) return false
@@ -162,6 +176,16 @@ function hasSameTimeAtPrecision(date: Date, reference: Date, precisionIndex: num
   return date.getUTCMilliseconds() === reference.getUTCMilliseconds()
 }
 
+/**
+ * Returns a calendar-based correction when fixed 30-day months produce an
+ * incorrect year or when the dates align on a month or year boundary.
+ *
+ * @param date - Target date.
+ * @param reference - Date from which elapsed time is measured.
+ * @param precisionIndex - Index of the requested unit in {@link unitNames}.
+ * @param estimatedYears - Year count produced by the fixed-duration estimate.
+ * @returns The corrected duration, or `undefined` when no correction is needed.
+ */
 function calendarElapsedTime(
   date: Date,
   reference: Date,
