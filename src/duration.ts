@@ -154,7 +154,14 @@ export function applyDuration(date: Date | number, duration: Duration): Date {
  */
 function applyCalendarMonths(reference: Date, months: number): Date {
   const result = new Date(reference)
+  const referenceDay = result.getUTCDate()
+
+  // Move from the first to avoid rolling an invalid date into the next month.
+  result.setUTCDate(1)
   result.setUTCMonth(result.getUTCMonth() + months)
+  const targetMonth = result.getUTCMonth()
+  result.setUTCMonth(targetMonth + 1, 0)
+  result.setUTCDate(Math.min(referenceDay, result.getUTCDate()))
   return result
 }
 
@@ -199,7 +206,12 @@ function calendarElapsedTime(
   // crossed the target. This prevents 30-day estimates from inventing a year.
   let wholeMonths = calendarMonths
   let anchor = applyCalendarMonths(reference, calendarMonths)
-  const candidateOvershot = calendarMonths > 0 ? anchor > date : anchor < date
+  const candidateAligned =
+    anchor.getUTCFullYear() === date.getUTCFullYear() &&
+    anchor.getUTCMonth() === date.getUTCMonth() &&
+    anchor.getUTCDate() === date.getUTCDate() &&
+    hasSameTimeAtPrecision(date, anchor, precisionIndex)
+  const candidateOvershot = !candidateAligned && (calendarMonths > 0 ? anchor > date : anchor < date)
   if (candidateOvershot) {
     wholeMonths += calendarMonths > 0 ? -1 : 1
     anchor = applyCalendarMonths(reference, wholeMonths)
@@ -207,8 +219,11 @@ function calendarElapsedTime(
 
   const calendarYears = Math.trunc(wholeMonths / 12)
   const hasYearScaleDuration = estimatedYears !== 0 || calendarYears !== 0
-  const sameCalendarDay = date.getUTCDate() === reference.getUTCDate()
-  const isCalendarAligned = sameCalendarDay && hasSameTimeAtPrecision(date, reference, precisionIndex)
+  const isCalendarAligned =
+    anchor.getUTCFullYear() === date.getUTCFullYear() &&
+    anchor.getUTCMonth() === date.getUTCMonth() &&
+    anchor.getUTCDate() === date.getUTCDate() &&
+    hasSameTimeAtPrecision(date, anchor, precisionIndex)
   if (!hasYearScaleDuration && !isCalendarAligned) return
 
   // Calendar-aligned durations omit only units below the requested precision.

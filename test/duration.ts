@@ -244,6 +244,16 @@ suite('duration', function () {
         expected: 'PT0S',
       },
       {
+        now: '2020-02-29T00:00:00.000Z',
+        input: '2021-02-28T00:00:00.000Z',
+        expected: 'P1Y',
+      },
+      {
+        now: '2023-01-31T00:00:00.000Z',
+        input: '2023-02-28T00:00:00.000Z',
+        expected: 'P1M',
+      },
+      {
         now: '2022-10-24T14:46:00.000Z',
         input: '2024-10-24T14:46:00.000Z',
         precision: 'unknown' as Unit,
