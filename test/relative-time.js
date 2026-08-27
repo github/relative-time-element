@@ -650,7 +650,7 @@ suite('relative-time', function () {
       time.setAttribute('tense', 'past')
       time.setAttribute('datetime', '2023-01-01T00:00:00Z')
       await Promise.resolve()
-      assert.equal(time.shadowRoot.textContent, '11 years ago')
+      assert.equal(time.shadowRoot.textContent, '10 years ago')
     })
 
     test('rewrites from now past datetime to minutes ago', async () => {
@@ -2064,6 +2064,20 @@ suite('relative-time', function () {
         precision: 'day',
         tense: 'past',
         expected: '1 year',
+      },
+      {
+        reference: '2023-01-01T09:00:00.000Z',
+        datetime: '2022-01-02T10:00:00.000Z',
+        format: 'duration',
+        tense: 'past',
+        expected: '11 months, 29 days, 23 hours',
+      },
+      {
+        reference: '2023-01-02T09:00:00.000Z',
+        datetime: '2022-01-01T10:00:00.000Z',
+        format: 'duration',
+        tense: 'past',
+        expected: '1 year, 23 hours',
       },
       {
         reference: '2023-01-01T00:00:00.000Z',

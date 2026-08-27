@@ -206,10 +206,10 @@ function calendarElapsedTime(
   }
 
   const calendarYears = Math.trunc(wholeMonths / 12)
-  const estimatedFalseYear = calendarYears !== estimatedYears
+  const hasYearScaleDuration = estimatedYears !== 0 || calendarYears !== 0
   const sameCalendarDay = date.getUTCDate() === reference.getUTCDate()
   const isCalendarAligned = sameCalendarDay && hasSameTimeAtPrecision(date, reference, precisionIndex)
-  if (!estimatedFalseYear && !isCalendarAligned) return
+  if (!hasYearScaleDuration && !isCalendarAligned) return
 
   // Calendar-aligned durations omit only units below the requested precision.
   // Other corrected durations retain the remainder after the month anchor.
