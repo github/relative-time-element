@@ -761,6 +761,7 @@ suite('relative-time', function () {
     })
 
     test('micro formats months', async () => {
+      freezeTime(new Date(2024, 0, 15))
       const datetime = new Date()
       datetime.setMonth(datetime.getMonth() - 2)
       const time = document.createElement('relative-time')
