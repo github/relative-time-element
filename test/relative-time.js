@@ -541,12 +541,65 @@ suite('relative-time', function () {
     })
   })
 
-  test('ignores malformed dates', async () => {
+  test('warns for and ignores malformed dates', async () => {
+    const originalWarn = globalThis.console.warn
+    let warning
+    globalThis.console.warn = message => {
+      warning = message
+    }
     const time = document.createElement('relative-time')
-    time.shadowRoot.textContent = 'Jun 30'
-    time.setAttribute('datetime', 'bogus')
-    await Promise.resolve()
-    assert.equal(time.shadowRoot.textContent, 'Jun 30')
+    try {
+      time.shadowRoot.textContent = 'Jun 30'
+      time.setAttribute('datetime', 'bogus')
+      await Promise.resolve()
+      assert.equal(time.shadowRoot.textContent, 'Jun 30')
+      assert.equal(warning, 'The datetime attribute must use the ECMAScript date-time string format: bogus')
+    } finally {
+      globalThis.console.warn = originalWarn
+    }
+  })
+
+  test('warns for implementation-dependent date strings without changing parsing', () => {
+    const originalWarn = globalThis.console.warn
+    let warning
+    globalThis.console.warn = message => {
+      warning = message
+    }
+    const time = document.createElement('relative-time')
+    const datetime = '2009-11-10 23:00:00+00:00 UTC'
+    try {
+      time.setAttribute('datetime', datetime)
+      assert.instanceOf(time.date, Date)
+      assert.equal(warning, `The datetime attribute must use the ECMAScript date-time string format: ${datetime}`)
+    } finally {
+      globalThis.console.warn = originalWarn
+    }
+  })
+
+  test('does not warn for ECMAScript date-time strings', () => {
+    const originalWarn = globalThis.console.warn
+    let warned = false
+    globalThis.console.warn = () => {
+      warned = true
+    }
+    const time = document.createElement('relative-time')
+    try {
+      for (const datetime of [
+        '2024',
+        '2024-01',
+        '2024-01-02',
+        '2024-01-02T03:04',
+        '2024-01-02T03:04:05.006Z',
+        '2024-01-02T03:04:05+02:30',
+        '+001970-01-01T00:00:00Z',
+        '1995-02-04T24:00',
+      ]) {
+        time.setAttribute('datetime', datetime)
+      }
+      assert.isFalse(warned)
+    } finally {
+      globalThis.console.warn = originalWarn
+    }
   })
 
   test('ignores blank dates', async () => {
