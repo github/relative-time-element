@@ -569,7 +569,8 @@ suite('relative-time', function () {
     const datetime = '2009-11-10 23:00:00+00:00 UTC'
     try {
       time.setAttribute('datetime', datetime)
-      assert.instanceOf(time.date, Date)
+      const parsed = Date.parse(datetime)
+      assert.equal(time.date?.getTime() ?? null, Number.isNaN(parsed) ? null : parsed)
       assert.equal(warning, `The datetime attribute must use the ECMAScript date-time string format: ${datetime}`)
     } finally {
       globalThis.console.warn = originalWarn
