@@ -3274,5 +3274,15 @@ suite('relative-time', function () {
       assert.equal(time.shadowRoot.textContent, 'Wed, Jan 1, 2020, 9:00:00 PM')
       document.documentElement.removeAttribute('time-zone')
     })
+
+    test('shows the year when the date is in a past year in the time-zone', async () => {
+      freezeTime(new Date('2023-06-15T12:00:00.000Z'))
+      const el = document.createElement('relative-time')
+      el.setAttribute('datetime', '2023-01-01T02:00:00.000Z')
+      el.setAttribute('time-zone', 'America/New_York')
+      el.setAttribute('format', 'datetime')
+      await Promise.resolve()
+      assert.equal(el.shadowRoot.textContent, 'Sat, Dec 31, 2022')
+    })
   })
 })
