@@ -19,6 +19,12 @@ export type Tense = 'auto' | 'past' | 'future'
 
 const emptyDuration = new Duration()
 const microEmptyDuration = new Duration(0, 0, 0, 0, 0, 1)
+const dateTimeFormatPattern =
+  /^(?:\d{4}|(?!-000000)[+-]\d{6})(?:-(?:0[1-9]|1[0-2])(?:-(?:0[1-9]|[12]\d|3[01])(?:T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d{3})?)?|24:00(?::00(?:\.000)?)?)(?:Z|[+-](?:[01]\d|2[0-3]):[0-5]\d)?)?)?)?$/
+
+function isValidDateTimeFormat(value: string): boolean {
+  return dateTimeFormatPattern.test(value) && !Number.isNaN(Date.parse(value))
+}
 
 export class RelativeTimeUpdatedEvent extends Event {
   constructor(public oldText: string, public newText: string, public oldTitle: string, public newTitle: string) {
@@ -651,6 +657,10 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
   // Internal: Refresh the time element's formatted date when an attribute changes.
   attributeChangedCallback(attrName: string, oldValue: unknown, newValue: unknown): void {
     if (oldValue === newValue) return
+    if (attrName === 'datetime' && typeof newValue === 'string' && newValue && !isValidDateTimeFormat(newValue)) {
+      // eslint-disable-next-line i18n-text/no-en
+      globalThis.console.warn(`The datetime attribute must use the ECMAScript date-time string format: ${newValue}`)
+    }
     if (attrName === 'title') {
       this.#customTitle =
         newValue !== null &&
