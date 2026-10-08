@@ -554,6 +554,11 @@ suite('relative-time', function () {
       await Promise.resolve()
       assert.equal(time.shadowRoot.textContent, 'Jun 30')
       assert.equal(warning, 'The datetime attribute must use the ECMAScript date-time string format: bogus')
+
+      for (const datetime of ['2024T03:04', '2024-01T03:04']) {
+        time.setAttribute('datetime', datetime)
+        assert.equal(warning, `The datetime attribute must use the ECMAScript date-time string format: ${datetime}`)
+      }
     } finally {
       globalThis.console.warn = originalWarn
     }

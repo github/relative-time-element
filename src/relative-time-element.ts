@@ -20,7 +20,7 @@ export type Tense = 'auto' | 'past' | 'future'
 const emptyDuration = new Duration()
 const microEmptyDuration = new Duration(0, 0, 0, 0, 0, 1)
 const dateTimeFormatPattern =
-  /^(?:\d{4}|(?!-000000)[+-]\d{6})(?:-(?:0[1-9]|1[0-2])(?:-(?:0[1-9]|[12]\d|3[01]))?)?(?:T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d{3})?)?|24:00(?::00(?:\.000)?)?)(?:Z|[+-](?:[01]\d|2[0-3]):[0-5]\d)?)?$/
+  /^(?:\d{4}|(?!-000000)[+-]\d{6})(?:-(?:0[1-9]|1[0-2])(?:-(?:0[1-9]|[12]\d|3[01])(?:T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d{3})?)?|24:00(?::00(?:\.000)?)?)(?:Z|[+-](?:[01]\d|2[0-3]):[0-5]\d)?)?)?)?$/
 
 function isValidDateTimeFormat(value: string): boolean {
   return dateTimeFormatPattern.test(value) && !Number.isNaN(Date.parse(value))
