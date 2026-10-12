@@ -516,7 +516,8 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     const year = this.getAttribute('year')
     if (year === 'numeric' || year === '2-digit') return year
 
-    if (!this.hasAttribute('year') && new Date().getUTCFullYear() !== this.date?.getUTCFullYear()) {
+    const date = this.date
+    if (!this.hasAttribute('year') && !(date && this.#isCurrentYear(date, this.#lang, this.timeZone))) {
       return 'numeric'
     }
   }
