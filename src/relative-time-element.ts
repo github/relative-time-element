@@ -107,7 +107,7 @@ const dateObserver = new (class {
     this.elements.add(element)
     if (this.updating) return
     const date = element.date
-    if (date && date.getTime()) {
+    if (date) {
       const ms = getUnitFactor(element)
       const time = Date.now() + ms
       if (time < this.time || this.time <= Date.now()) {

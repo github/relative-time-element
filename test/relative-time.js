@@ -40,6 +40,30 @@ suite('relative-time', function () {
     }
   })
 
+  test('keeps duration updates scheduled for the Unix epoch', async () => {
+    freezeTime(new Date(5000))
+    const originalSetTimeout = window.setTimeout
+    const time = document.createElement('relative-time')
+    let tick
+    globalThis.setTimeout = window.setTimeout = function (callback) {
+      tick = callback
+      return 0
+    }
+    try {
+      time.setAttribute('format', 'duration')
+      time.setAttribute('datetime', '1970-01-01T00:00:00.000Z')
+      await Promise.resolve()
+      assert.equal(time.shadowRoot.textContent, '5 seconds')
+      assert.isFunction(tick)
+      Date.now = () => 6000
+      tick()
+      assert.equal(time.shadowRoot.textContent, '6 seconds')
+    } finally {
+      globalThis.setTimeout = window.setTimeout = originalSetTimeout
+      time.disconnectedCallback()
+    }
+  })
+
   test('reschedules future micro datetime updates at the explicit threshold boundary', async () => {
     const originalSetTimeout = window.setTimeout
     const delays = []
