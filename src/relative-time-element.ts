@@ -310,7 +310,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     if (tense === 'future' && duration.sign !== 1) duration = emptyDuration
     if (tense === 'past' && duration.sign !== -1) duration = emptyDuration
     const [int, unit] = getRelativeTimeUnit(duration)
-    if (unit === 'second' && int < 10) {
+    if (unit === 'second' && Math.abs(int) < 10) {
       return relativeFormat.format(0, this.precision === 'millisecond' ? 'second' : this.precision)
     }
     return relativeFormat.format(int, unit)
