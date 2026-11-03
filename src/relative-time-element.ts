@@ -5,6 +5,7 @@ import {
   getRelativeTimeUnit,
   isDuration,
   roundToSingleUnit,
+  RoundingOpts,
   Unit,
   unitNames,
 } from './duration.js'
@@ -267,8 +268,8 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     return 'datetime'
   }
 
-  #getMicroDuration(duration: Duration, now: number): Duration {
-    duration = roundToSingleUnit(duration, {relativeTo: now})
+  #getMicroDuration(duration: Duration, rounding: RoundingOpts): Duration {
+    duration = roundToSingleUnit(duration, rounding)
     // Allow month-level durations to pass through even with mismatched tense
     if (
       duration.months === 0 &&
@@ -279,23 +280,23 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     return duration
   }
 
-  #getMicroRelativeFormat(duration: Duration, locale: string, now: number): string {
+  #getMicroRelativeFormat(duration: Duration, locale: string, rounding: RoundingOpts): string {
     const relativeFormat = relativeTimeFormat(locale, {
       numeric: 'always',
       style: 'narrow',
     })
-    duration = this.#getMicroDuration(duration, now)
-    const [int, unit] = getRelativeTimeUnit(duration.blank ? microEmptyDuration : duration, {relativeTo: now})
+    duration = this.#getMicroDuration(duration, rounding)
+    const [int, unit] = getRelativeTimeUnit(duration.blank ? microEmptyDuration : duration, rounding)
     return relativeFormat.format(Math.abs(int) * (this.tense === 'past' ? -1 : 1), unit)
   }
 
-  #getDurationFormat(duration: Duration, locale: string, now: number): string {
+  #getDurationFormat(duration: Duration, locale: string, rounding: RoundingOpts): string {
     const format = this.format
     const style = this.formatStyle
     const tense = this.tense
     let empty = emptyDuration
     if (format === 'micro') {
-      duration = this.#getMicroDuration(duration, now)
+      duration = this.#getMicroDuration(duration, rounding)
       empty = microEmptyDuration
     } else if ((tense === 'past' && duration.sign !== -1) || (tense === 'future' && duration.sign !== 1)) {
       duration = empty
@@ -307,7 +308,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     return duration.abs().toLocaleString(locale, {style})
   }
 
-  #getRelativeFormat(duration: Duration, locale: string, now: number): string {
+  #getRelativeFormat(duration: Duration, locale: string, rounding: RoundingOpts): string {
     const relativeFormat = relativeTimeFormat(locale, {
       numeric: 'auto',
       style: this.formatStyle,
@@ -315,7 +316,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     const tense = this.tense
     if (tense === 'future' && duration.sign !== 1) duration = emptyDuration
     if (tense === 'past' && duration.sign !== -1) duration = emptyDuration
-    const [int, unit] = getRelativeTimeUnit(duration, {relativeTo: now})
+    const [int, unit] = getRelativeTimeUnit(duration, rounding)
     if (unit === 'second' && int < 10) {
       return relativeFormat.format(0, this.precision === 'millisecond' ? 'second' : this.precision)
     }
@@ -698,6 +699,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     }
 
     const duration = elapsedTime(date, this.precision, now)
+    const rounding = {relativeTo: now, date}
     const format = this.#resolveFormat(duration, elapsedTime(date, 'millisecond', now))
     let newText = oldText
 
@@ -708,12 +710,12 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     } else {
       if (format === 'duration') {
         if (this.format === 'micro' && this.tense !== 'auto' && Intl.RelativeTimeFormat) {
-          newText = this.#getMicroRelativeFormat(duration, locale, now)
+          newText = this.#getMicroRelativeFormat(duration, locale, rounding)
         } else {
-          newText = this.#getDurationFormat(duration, locale, now)
+          newText = this.#getDurationFormat(duration, locale, rounding)
         }
       } else if (format === 'relative') {
-        newText = this.#getRelativeFormat(duration, locale, now)
+        newText = this.#getRelativeFormat(duration, locale, rounding)
       } else {
         newText = this.#getDateTimeFormat(date, locale, timeZone, hourCycle)
       }

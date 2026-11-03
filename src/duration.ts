@@ -175,11 +175,17 @@ function calendarDaysBetween(a: Date, b: Date): number {
   return Math.abs(Math.round((Number(startB) - Number(startA)) / 86400000))
 }
 
-interface RoundingOpts {
+export interface RoundingOpts {
   relativeTo: Date | number
+  // The exact date the duration was measured to. Durations from `elapsedTime` are truncated to their precision, so
+  // rebuilding the date from them can land on the wrong side of midnight.
+  date: Date | number
 }
 
-export function roundToSingleUnit(duration: Duration, {relativeTo = Date.now()}: Partial<RoundingOpts> = {}): Duration {
+export function roundToSingleUnit(
+  duration: Duration,
+  {relativeTo = Date.now(), date}: Partial<RoundingOpts> = {},
+): Duration {
   relativeTo = new Date(relativeTo)
   if (duration.blank) return duration
   const sign = duration.sign
@@ -205,11 +211,19 @@ export function roundToSingleUnit(duration: Duration, {relativeTo = Date.now()}:
 
   if (days && !weeks && !months && !years) {
     // Count calendar days so "yesterday"/"tomorrow" match the date, not a 24h rounding
-    days = calendarDaysBetween(relativeTo, applyDuration(relativeTo, duration))
+    const calendarDays = calendarDaysBetween(relativeTo, date ? new Date(date) : applyDuration(relativeTo, duration))
+    if (calendarDays) {
+      days = calendarDays
+    } else {
+      // Still the same calendar day (a 25 hour DST day), so keep it in hours
+      hours += days * 24
+      days = 0
+    }
   } else if (days && hours >= 12) {
     days += Math.round(hours / 24)
+  } else if (!days && hours >= 21) {
+    days += Math.round(hours / 24)
   }
-  if (!days && hours >= 21) days += Math.round(hours / 24)
   if (days || weeks || months || years) hours = 0
 
   // Resolve calendar dates
