@@ -169,6 +169,12 @@ export function elapsedTime(date: Date, precision: Unit = 'second', now = Date.n
   )
 }
 
+function calendarDaysBetween(a: Date, b: Date): number {
+  const startA = new Date(a.getFullYear(), a.getMonth(), a.getDate())
+  const startB = new Date(b.getFullYear(), b.getMonth(), b.getDate())
+  return Math.abs(Math.round((Number(startB) - Number(startA)) / 86400000))
+}
+
 interface RoundingOpts {
   relativeTo: Date | number
 }
@@ -197,7 +203,12 @@ export function roundToSingleUnit(duration: Duration, {relativeTo = Date.now()}:
   if (minutes >= 55) hours += Math.round(minutes / 60)
   if (hours || days || weeks || months || years) minutes = 0
 
-  if (days && hours >= 12) days += Math.round(hours / 24)
+  if (days && !weeks && !months && !years) {
+    // Count calendar days so "yesterday"/"tomorrow" match the date, not a 24h rounding
+    days = calendarDaysBetween(relativeTo, applyDuration(relativeTo, duration))
+  } else if (days && hours >= 12) {
+    days += Math.round(hours / 24)
+  }
   if (!days && hours >= 21) days += Math.round(hours / 24)
   if (days || weeks || months || years) hours = 0
 
