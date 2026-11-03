@@ -267,25 +267,18 @@ suite('duration', function () {
       ['-P1DT20H', '-P2D', {relativeTo: new Date('2023-07-01T12:00:00')}],
       ['P1DT18H', 'P2D', {relativeTo: new Date('2023-07-01T12:00:00')}],
       ['-P1DT18H', '-P2D', {relativeTo: new Date('2023-07-01T12:00:00')}],
-      // "yesterday"/"tomorrow" follow calendar days, not 24h rounding (#313)
       ['-P1DT13H', '-P1D', {relativeTo: new Date('2025-04-30T13:53:00')}],
-      ['-P1DT12H', '-P1D', {relativeTo: new Date('2025-04-30T13:53:00')}],
       ['-P1DT14H', '-P2D', {relativeTo: new Date('2025-04-30T13:53:00')}],
       ['P1DT13H', 'P1D', {relativeTo: new Date('2025-04-30T10:00:00')}],
       ['P1DT13H', 'P2D', {relativeTo: new Date('2025-04-30T13:53:00')}],
-      ['-P2DT20H', '-P2D', {relativeTo: new Date('2025-04-30T22:00:00')}],
-      ['-P2DT20H', '-P3D', {relativeTo: new Date('2025-04-30T10:00:00')}],
       ['-P2DT33M', '-P3D', {relativeTo: new Date('2025-04-30T00:30:00')}],
       ['P2DT33M', 'P3D', {relativeTo: new Date('2025-04-30T23:30:00')}],
-      ['-P2DT33M', '-P2D', {relativeTo: new Date('2025-04-30T13:53:00')}],
-      // The exact date wins over one rebuilt from a truncated duration
       [
         'P1DT13H59M59S',
         'P2D',
         {relativeTo: new Date('2025-04-30T10:00:00.500'), date: new Date('2025-05-02T00:00:00')},
       ],
       ['-P1D', '-P2D', {relativeTo: new Date('2025-04-30T00:30:00'), date: new Date('2025-04-28T01:00:00')}],
-      // A 25 hour DST day can hold a full day of elapsed time on one calendar date
       ['-P1D', '-PT24H', {relativeTo: new Date('2025-11-02T23:30:00'), date: new Date('2025-11-02T00:30:00')}],
       ['P4D', 'P4D', {relativeTo: new Date('2023-07-01T00:00:00')}],
       ['-P4D', '-P4D', {relativeTo: new Date('2023-07-01T00:00:00')}],

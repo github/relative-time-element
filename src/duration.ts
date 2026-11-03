@@ -177,8 +177,7 @@ function calendarDaysBetween(a: Date, b: Date): number {
 
 export interface RoundingOpts {
   relativeTo: Date | number
-  // The exact date the duration was measured to. Durations from `elapsedTime` are truncated to their precision, so
-  // rebuilding the date from them can land on the wrong side of midnight.
+  // Exact date, as durations from elapsedTime are truncated to their precision
   date: Date | number
 }
 
@@ -210,12 +209,12 @@ export function roundToSingleUnit(
   if (hours || days || weeks || months || years) minutes = 0
 
   if (days && !weeks && !months && !years) {
-    // Count calendar days so "yesterday"/"tomorrow" match the date, not a 24h rounding
+    // "yesterday" is a calendar day, not 24 hours
     const calendarDays = calendarDaysBetween(relativeTo, date ? new Date(date) : applyDuration(relativeTo, duration))
     if (calendarDays) {
       days = calendarDays
     } else {
-      // Still the same calendar day (a 25 hour DST day), so keep it in hours
+      // Same calendar day, possible on a 25 hour DST day
       hours += days * 24
       days = 0
     }
