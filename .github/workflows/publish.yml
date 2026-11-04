@@ -7,7 +7,8 @@ on:
 jobs:
   publish-npm:
     name: Publish to npm
-    runs-on: ubuntu-latest
+    # Playwright's browser dependencies do not yet support Ubuntu 26.04.
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       id-token: write
@@ -28,7 +29,8 @@ jobs:
       - run: npm --ignore-scripts publish --provenance --access public
   publish-github:
     name: Publish to GitHub Packages
-    runs-on: ubuntu-latest
+    # Playwright's browser dependencies do not yet support Ubuntu 26.04.
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       packages: write
