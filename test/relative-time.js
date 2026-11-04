@@ -88,6 +88,23 @@ suite('relative-time', function () {
     time.disconnectedCallback()
   })
 
+  test('clears tabular numerals when the format changes away from duration', async () => {
+    freezeTime(new Date(5000))
+    const time = document.createElement('relative-time')
+    time.setAttribute('format', 'duration')
+    time.setAttribute('datetime', '1970-01-01T00:00:00.000Z')
+    await Promise.resolve()
+    assert.equal(time.shadowRoot.firstElementChild.style.fontVariantNumeric, 'tabular-nums')
+    time.setAttribute('format', 'auto')
+    await Promise.resolve()
+    assert.equal(
+      time.shadowRoot.firstElementChild.style.fontVariantNumeric,
+      '',
+      'the reused span does not keep tabular-nums after the format change',
+    )
+    time.disconnectedCallback()
+  })
+
   test('reschedules future micro datetime updates at the explicit threshold boundary', async () => {
     const originalSetTimeout = window.setTimeout
     const delays = []
