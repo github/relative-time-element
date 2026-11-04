@@ -1,6 +1,6 @@
 import DurationFormat from './duration-format-ponyfill.js'
 import type {DurationFormatOptions} from './duration-format-ponyfill.js'
-import {createCache} from './intl-cache.js'
+import {createCache, dateTimeFormat} from './intl-cache.js'
 const durationRe = /^[-+]?P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)W)?(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?$/
 
 // `DurationFormat` normalizes its options on construction, so reuse one instance
@@ -169,21 +169,51 @@ export function elapsedTime(date: Date, precision: Unit = 'second', now = Date.n
   )
 }
 
-function calendarDaysBetween(a: Date, b: Date): number {
-  const startA = new Date(a.getFullYear(), a.getMonth(), a.getDate())
-  const startB = new Date(b.getFullYear(), b.getMonth(), b.getDate())
-  return Math.abs(Math.round((Number(startB) - Number(startA)) / 86400000))
+const msPerDay = 24 * 60 * 60 * 1000
+
+// Wall-clock time of `date` in `timeZone` (or the local zone), read as if it were UTC
+function wallClockTime(date: Date, timeZone?: string): number {
+  if (!timeZone) return Number(date) - date.getTimezoneOffset() * 60 * 1000
+  const parts = dateTimeFormat('en-US', {
+    timeZone,
+    hourCycle: 'h23',
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
+  }).formatToParts(date)
+  const get = (type: Intl.DateTimeFormatPartTypes) => Number(parts.find(part => part.type === type)?.value)
+  return Date.UTC(
+    get('year'),
+    get('month') - 1,
+    get('day'),
+    get('hour'),
+    get('minute'),
+    get('second'),
+    date.getMilliseconds(),
+  )
+}
+
+function calendarDaysBetween(a: Date, b: Date, timeZone?: string): number {
+  return Math.abs(Math.floor(wallClockTime(b, timeZone) / msPerDay) - Math.floor(wallClockTime(a, timeZone) / msPerDay))
+}
+
+export function msUntilNextDay(now: Date | number, timeZone?: string): number {
+  return msPerDay - (wallClockTime(new Date(now), timeZone) % msPerDay)
 }
 
 export interface RoundingOpts {
   relativeTo: Date | number
   // Exact date, as durations from elapsedTime are truncated to their precision
   date: Date | number
+  timeZone?: string
 }
 
 export function roundToSingleUnit(
   duration: Duration,
-  {relativeTo = Date.now(), date}: Partial<RoundingOpts> = {},
+  {relativeTo = Date.now(), date, timeZone}: Partial<RoundingOpts> = {},
 ): Duration {
   relativeTo = new Date(relativeTo)
   if (duration.blank) return duration
@@ -210,7 +240,11 @@ export function roundToSingleUnit(
 
   if (days && !weeks && !months && !years) {
     // "yesterday" is a calendar day, not 24 hours
-    const calendarDays = calendarDaysBetween(relativeTo, date ? new Date(date) : applyDuration(relativeTo, duration))
+    const calendarDays = calendarDaysBetween(
+      relativeTo,
+      date ? new Date(date) : applyDuration(relativeTo, duration),
+      timeZone,
+    )
     if (calendarDays) {
       days = calendarDays
     } else {
@@ -287,7 +321,11 @@ export function getRelativeTimeUnit(
   duration: Duration,
   opts?: Partial<RoundingOpts>,
 ): [number, Intl.RelativeTimeFormatUnit] {
-  const rounded = roundToSingleUnit(duration, opts)
+  return getSingleUnit(roundToSingleUnit(duration, opts))
+}
+
+// Unit of a duration already rounded by roundToSingleUnit, which is not idempotent
+export function getSingleUnit(rounded: Duration): [number, Intl.RelativeTimeFormatUnit] {
   if (rounded.blank) return [0, 'second']
   for (const unit of unitNames) {
     if (unit === 'millisecond') continue

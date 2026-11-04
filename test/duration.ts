@@ -1,5 +1,12 @@
 import {assert} from '@open-wc/testing'
-import {applyDuration, Duration, elapsedTime, getRelativeTimeUnit, roundToSingleUnit} from '../src/duration.ts'
+import {
+  applyDuration,
+  Duration,
+  elapsedTime,
+  getRelativeTimeUnit,
+  msUntilNextDay,
+  roundToSingleUnit,
+} from '../src/duration.ts'
 import type {Unit} from '../src/duration.ts'
 import type {DurationFormatOptions} from '../src/duration-format-ponyfill.ts'
 import {Temporal} from '@js-temporal/polyfill'
@@ -280,6 +287,16 @@ suite('duration', function () {
       ],
       ['-P1D', '-P2D', {relativeTo: new Date('2025-04-30T00:30:00'), date: new Date('2025-04-28T01:00:00')}],
       ['-P1D', '-PT24H', {relativeTo: new Date('2025-11-02T23:30:00'), date: new Date('2025-11-02T00:30:00')}],
+      ['-P1DT2H', '-P2D', {relativeTo: new Date('2025-04-30T21:30:00Z'), date: new Date('2025-04-29T19:30:00Z')}],
+      [
+        '-P1DT2H',
+        '-P1D',
+        {
+          relativeTo: new Date('2025-04-30T21:30:00Z'),
+          date: new Date('2025-04-29T19:30:00Z'),
+          timeZone: 'America/New_York',
+        },
+      ],
       ['P4D', 'P4D', {relativeTo: new Date('2023-07-01T00:00:00')}],
       ['-P4D', '-P4D', {relativeTo: new Date('2023-07-01T00:00:00')}],
       ['P6D', 'P1W', {relativeTo: new Date('2023-07-01T00:00:00')}],
@@ -369,6 +386,16 @@ suite('duration', function () {
         )
       })
     }
+  })
+
+  suite('msUntilNextDay', function () {
+    test('counts to local midnight', () => {
+      assert.equal(msUntilNextDay(new Date('2025-04-30T23:30:00')), 30 * 60 * 1000)
+    })
+
+    test('counts to midnight in the given time zone', () => {
+      assert.equal(msUntilNextDay(new Date('2025-05-01T03:30:00Z'), 'America/New_York'), 30 * 60 * 1000)
+    })
   })
 
   suite('getRelativeTimeUnit', function () {

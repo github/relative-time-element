@@ -834,6 +834,7 @@ suite('relative-time', function () {
     })
 
     test('micro formats days', async () => {
+      freezeTime(new Date(2024, 0, 15, 12))
       const now = new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString()
       const time = document.createElement('relative-time')
       time.setAttribute('tense', 'past')
@@ -936,7 +937,18 @@ suite('relative-time', function () {
       assert.equal(time.shadowRoot.textContent, 'in 1h')
     })
 
+    test('micro formats same-day hours rounded to a day', async () => {
+      freezeTime(new Date(2024, 0, 15, 0, 30))
+      const time = document.createElement('relative-time')
+      time.setAttribute('tense', 'future')
+      time.setAttribute('datetime', new Date(2024, 0, 15, 22, 30).toISOString())
+      time.setAttribute('format', 'micro')
+      await Promise.resolve()
+      assert.equal(time.shadowRoot.textContent, 'in 1d')
+    })
+
     test('micro formats days', async () => {
+      freezeTime(new Date(2024, 0, 15, 12))
       const now = new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString()
       const time = document.createElement('relative-time')
       time.setAttribute('tense', 'future')

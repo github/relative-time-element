@@ -3,7 +3,9 @@ import {
   applyDuration,
   elapsedTime,
   getRelativeTimeUnit,
+  getSingleUnit,
   isDuration,
+  msUntilNextDay,
   roundToSingleUnit,
   RoundingOpts,
   Unit,
@@ -51,6 +53,9 @@ function getUnitFactor(el: RelativeTimeElement): number {
     factor = 1000
   } else if (ms < 60 * 60 * 1000) {
     factor = 60 * 1000
+  } else {
+    // Day rounding follows the calendar, so labels like "yesterday" change at midnight
+    factor = Math.min(factor, msUntilNextDay(now, el.timeZone))
   }
   const threshold = getExplicitThreshold(el)
   if (el.format === 'micro' && threshold) {
@@ -286,7 +291,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       style: 'narrow',
     })
     duration = this.#getMicroDuration(duration, rounding)
-    const [int, unit] = getRelativeTimeUnit(duration.blank ? microEmptyDuration : duration, rounding)
+    const [int, unit] = getSingleUnit(duration.blank ? microEmptyDuration : duration)
     return relativeFormat.format(Math.abs(int) * (this.tense === 'past' ? -1 : 1), unit)
   }
 
@@ -699,7 +704,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     }
 
     const duration = elapsedTime(date, this.precision, now)
-    const rounding = {relativeTo: now, date}
+    const rounding = {relativeTo: now, date, timeZone}
     const format = this.#resolveFormat(duration, elapsedTime(date, 'millisecond', now))
     let newText = oldText
 
