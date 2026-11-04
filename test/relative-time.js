@@ -1760,13 +1760,13 @@ suite('relative-time', function () {
         datetime: '2022-10-24T14:45:10.000Z',
         tense: 'past',
         format: 'relative',
-        expected: 'now',
+        expected: '50 seconds ago',
       },
       {
         datetime: '2022-10-24T14:45:10.000Z',
         format: 'relative',
         formatStyle: 'narrow',
-        expected: 'now',
+        expected: '50s ago',
       },
       {
         datetime: '2022-10-24T14:45:10.000Z',
