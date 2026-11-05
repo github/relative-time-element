@@ -200,8 +200,17 @@ function calendarDaysBetween(a: Date, b: Date, timeZone?: string): number {
   return Math.abs(Math.floor(wallClockTime(b, timeZone) / msPerDay) - Math.floor(wallClockTime(a, timeZone) / msPerDay))
 }
 
+// Real time until the calendar date changes, which differs from wall-clock time when the offset changes first
 export function msUntilNextDay(now: Date | number, timeZone?: string): number {
-  return msPerDay - (wallClockTime(new Date(now), timeZone) % msPerDay)
+  const start = Number(now)
+  const nextDay = (Math.floor(wallClockTime(new Date(start), timeZone) / msPerDay) + 1) * msPerDay
+  let time = start
+  let next = Infinity
+  for (let i = 0; i < 3; i++) {
+    time += nextDay - wallClockTime(new Date(time), timeZone)
+    if (wallClockTime(new Date(time), timeZone) >= nextDay) next = Math.min(next, time)
+  }
+  return (next === Infinity ? time : next) - start
 }
 
 export interface RoundingOpts {
@@ -242,7 +251,7 @@ export function roundToSingleUnit(
     // "yesterday" is a calendar day, not 24 hours
     const calendarDays = calendarDaysBetween(
       relativeTo,
-      date ? new Date(date) : applyDuration(relativeTo, duration),
+      date === undefined ? applyDuration(relativeTo, duration) : new Date(date),
       timeZone,
     )
     if (calendarDays) {

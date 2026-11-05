@@ -297,6 +297,7 @@ suite('duration', function () {
           timeZone: 'America/New_York',
         },
       ],
+      ['-P1D', '-P2D', {relativeTo: new Date('1970-01-02T21:00:00Z'), date: 0}],
       ['P4D', 'P4D', {relativeTo: new Date('2023-07-01T00:00:00')}],
       ['-P4D', '-P4D', {relativeTo: new Date('2023-07-01T00:00:00')}],
       ['P6D', 'P1W', {relativeTo: new Date('2023-07-01T00:00:00')}],
@@ -395,6 +396,10 @@ suite('duration', function () {
 
     test('counts to midnight in the given time zone', () => {
       assert.equal(msUntilNextDay(new Date('2025-05-01T03:30:00Z'), 'America/New_York'), 30 * 60 * 1000)
+    })
+
+    test('follows a DST jump before midnight', () => {
+      assert.equal(msUntilNextDay(new Date('2025-03-30T00:30:00Z'), 'America/Nuuk'), 30 * 60 * 1000)
     })
   })
 
