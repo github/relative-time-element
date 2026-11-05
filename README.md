@@ -136,6 +136,14 @@ The `duration` format will display the time remaining (or elapsed time) from the
 - `4 hours`
 - `8 days, 30 minutes, 1 second`
 
+The `duration` and `elapsed` formats render with `font-variant-numeric: tabular-nums`, keeping every digit the same width so a ticking timer doesn't visibly jump around as it counts. To opt out, override the `root` part:
+
+```css
+relative-time::part(root) {
+  font-variant-numeric: normal !important;
+}
+```
+
 ##### time-zone (`string`)
 
 The`time-zone` attribute allows you to specify the IANA time zone name (e.g., `America/New_York`, `Europe/London`) used for formatting the date and time.
