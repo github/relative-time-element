@@ -423,6 +423,16 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     } else if (span.hasAttribute('aria-hidden')) {
       span.removeAttribute('aria-hidden')
     }
+    // Tabular numerals keep every digit the same width, so a ticking
+    // duration/elapsed timer doesn't visibly jump around as it counts (#383).
+    // Other formats get no inline style; `font-variant-numeric: normal !important`
+    // on `::part(root)` still overrides this for opt-out.
+    const tabular = this.format === 'duration' || this.format === 'elapsed'
+    const fontVariantNumeric = tabular ? 'tabular-nums' : ''
+    const spanStyle = (span as HTMLElement).style
+    if (spanStyle.fontVariantNumeric !== fontVariantNumeric) {
+      spanStyle.fontVariantNumeric = fontVariantNumeric
+    }
     if (span.textContent !== content) {
       span.textContent = content
     }

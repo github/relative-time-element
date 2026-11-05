@@ -64,6 +64,47 @@ suite('relative-time', function () {
     }
   })
 
+  test('renders duration and elapsed formats with tabular numerals', async () => {
+    freezeTime(new Date(5000))
+    for (const format of ['duration', 'elapsed']) {
+      const time = document.createElement('relative-time')
+      time.setAttribute('format', format)
+      time.setAttribute('datetime', '1970-01-01T00:00:00.000Z')
+      await Promise.resolve()
+      assert.equal(
+        time.shadowRoot.firstElementChild.style.fontVariantNumeric,
+        'tabular-nums',
+        `${format} keeps each tick's digits the same width`,
+      )
+      time.disconnectedCallback()
+    }
+  })
+
+  test('renders other formats without inline numeric styling', async () => {
+    const time = document.createElement('relative-time')
+    time.setAttribute('datetime', '2026-10-30T00:00:00.000Z')
+    await Promise.resolve()
+    assert.equal(time.shadowRoot.firstElementChild.style.fontVariantNumeric, '')
+    time.disconnectedCallback()
+  })
+
+  test('clears tabular numerals when the format changes away from duration', async () => {
+    freezeTime(new Date(5000))
+    const time = document.createElement('relative-time')
+    time.setAttribute('format', 'duration')
+    time.setAttribute('datetime', '1970-01-01T00:00:00.000Z')
+    await Promise.resolve()
+    assert.equal(time.shadowRoot.firstElementChild.style.fontVariantNumeric, 'tabular-nums')
+    time.setAttribute('format', 'auto')
+    await Promise.resolve()
+    assert.equal(
+      time.shadowRoot.firstElementChild.style.fontVariantNumeric,
+      '',
+      'the reused span does not keep tabular-nums after the format change',
+    )
+    time.disconnectedCallback()
+  })
+
   test('reschedules future micro datetime updates at the explicit threshold boundary', async () => {
     const originalSetTimeout = window.setTimeout
     const delays = []
