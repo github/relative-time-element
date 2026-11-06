@@ -177,6 +177,7 @@ function wallClockTime(date: Date, timeZone?: string): number {
   const parts = dateTimeFormat('en-US', {
     timeZone,
     hourCycle: 'h23',
+    era: 'short',
     year: 'numeric',
     month: 'numeric',
     day: 'numeric',
@@ -185,9 +186,11 @@ function wallClockTime(date: Date, timeZone?: string): number {
     second: 'numeric',
   }).formatToParts(date)
   const get = (type: Intl.DateTimeFormatPartTypes) => Number(parts.find(part => part.type === type)?.value)
+  // Era years count 1 BC, 2 BC, ... back from 1 AD, without a year zero
+  const year = parts.find(part => part.type === 'era')?.value === 'BC' ? 1 - get('year') : get('year')
   // Not Date.UTC, which reads years 0-99 as 1900-1999
   const wallClock = new Date(0)
-  wallClock.setUTCFullYear(get('year'), get('month') - 1, get('day'))
+  wallClock.setUTCFullYear(year, get('month') - 1, get('day'))
   wallClock.setUTCHours(get('hour'), get('minute'), get('second'), date.getMilliseconds())
   return Number(wallClock)
 }

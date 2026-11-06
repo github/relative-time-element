@@ -304,6 +304,11 @@ suite('duration', function () {
         {relativeTo: new Date('0100-01-01T12:00:00Z'), date: new Date('0099-12-31T12:00:00Z'), timeZone: 'UTC'},
       ],
       [
+        '-P1D',
+        '-P1D',
+        {relativeTo: new Date('0001-01-01T12:00:00Z'), date: new Date('0000-12-31T12:00:00Z'), timeZone: 'UTC'},
+      ],
+      [
         '-PT23H',
         '-P2D',
         {
