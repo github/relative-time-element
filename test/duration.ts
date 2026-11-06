@@ -299,6 +299,11 @@ suite('duration', function () {
       ],
       ['-P1D', '-P2D', {relativeTo: new Date('1970-01-02T21:00:00Z'), date: 0}],
       [
+        '-P1D',
+        '-P1D',
+        {relativeTo: new Date('0100-01-01T12:00:00Z'), date: new Date('0099-12-31T12:00:00Z'), timeZone: 'UTC'},
+      ],
+      [
         '-PT23H',
         '-P2D',
         {

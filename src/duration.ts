@@ -185,15 +185,11 @@ function wallClockTime(date: Date, timeZone?: string): number {
     second: 'numeric',
   }).formatToParts(date)
   const get = (type: Intl.DateTimeFormatPartTypes) => Number(parts.find(part => part.type === type)?.value)
-  return Date.UTC(
-    get('year'),
-    get('month') - 1,
-    get('day'),
-    get('hour'),
-    get('minute'),
-    get('second'),
-    date.getMilliseconds(),
-  )
+  // Not Date.UTC, which reads years 0-99 as 1900-1999
+  const wallClock = new Date(0)
+  wallClock.setUTCFullYear(get('year'), get('month') - 1, get('day'))
+  wallClock.setUTCHours(get('hour'), get('minute'), get('second'), date.getMilliseconds())
+  return Number(wallClock)
 }
 
 function calendarDaysBetween(a: Date, b: Date, timeZone?: string): number {
