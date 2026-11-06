@@ -200,17 +200,32 @@ function calendarDaysBetween(a: Date, b: Date, timeZone?: string): number {
   return Math.abs(Math.floor(wallClockTime(b, timeZone) / msPerDay) - Math.floor(wallClockTime(a, timeZone) / msPerDay))
 }
 
-// Real time until the calendar date changes, which differs from wall-clock time when the offset changes first
+function utcOffset(time: number, timeZone?: string): number {
+  return wallClockTime(new Date(time), timeZone) - time
+}
+
+// Real time until the calendar date changes in either direction, following offset changes such as DST
 export function msUntilNextDay(now: Date | number, timeZone?: string): number {
   const start = Number(now)
-  const nextDay = (Math.floor(wallClockTime(new Date(start), timeZone) / msPerDay) + 1) * msPerDay
+  let offset = utcOffset(start, timeZone)
+  const today = Math.floor((start + offset) / msPerDay)
+  const nextDay = (today + 1) * msPerDay
   let time = start
-  let next = Infinity
   for (let i = 0; i < 3; i++) {
-    time += nextDay - wallClockTime(new Date(time), timeZone)
-    if (wallClockTime(new Date(time), timeZone) >= nextDay) next = Math.min(next, time)
+    const midnight = nextDay - offset
+    if (utcOffset(midnight, timeZone) === offset) return midnight - start
+    // The offset changes before midnight: find when, as the jump itself may change the date
+    let changed = midnight
+    while (changed - time > 1) {
+      const mid = Math.floor((time + changed) / 2)
+      if (utcOffset(mid, timeZone) === offset) time = mid
+      else changed = mid
+    }
+    time = changed
+    offset = utcOffset(time, timeZone)
+    if (Math.floor((time + offset) / msPerDay) !== today) return time - start
   }
-  return (next === Infinity ? time : next) - start
+  return time - start
 }
 
 export interface RoundingOpts {

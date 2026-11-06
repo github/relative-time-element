@@ -401,6 +401,14 @@ suite('duration', function () {
     test('follows a DST jump before midnight', () => {
       assert.equal(msUntilNextDay(new Date('2025-03-30T00:30:00Z'), 'America/Nuuk'), 30 * 60 * 1000)
     })
+
+    test('follows a clock rollback to the previous date', () => {
+      assert.equal(msUntilNextDay(new Date('2010-03-04T14:30:00Z'), 'Antarctica/Casey'), 30 * 60 * 1000)
+    })
+
+    test('follows a fall back within the same date', () => {
+      assert.equal(msUntilNextDay(new Date('2025-11-02T05:30:00Z'), 'America/New_York'), 23.5 * 60 * 60 * 1000)
+    })
   })
 
   suite('getRelativeTimeUnit', function () {
