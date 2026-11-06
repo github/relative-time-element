@@ -149,17 +149,27 @@ export function elapsedTime(date: Date, precision: Unit = 'second', now = Date.n
   const delta = date.getTime() - now
   if (delta === 0) return new Duration()
   const sign = Math.sign(delta)
-  const ms = Math.abs(delta)
+  // Months below are approximated as 30 days, so a year is 360 days long. Over many years that drift adds up to
+  // whole extra years, so count the whole calendar years first and only approximate what is left over.
+  const earlier = new Date(sign < 0 ? date : now)
+  const later = new Date(sign < 0 ? now : date)
+  let calendarYears = later.getUTCFullYear() - earlier.getUTCFullYear()
+  while (calendarYears > 0 && applyDuration(earlier, new Duration(calendarYears)) > later) calendarYears -= 1
+  const ms =
+    calendarYears > 0
+      ? later.getTime() - applyDuration(earlier, new Duration(calendarYears)).getTime()
+      : Math.abs(delta)
   const sec = Math.floor(ms / 1000)
   const min = Math.floor(sec / 60)
   const hr = Math.floor(min / 60)
   const day = Math.floor(hr / 24)
   const month = Math.floor(day / 30)
-  const year = Math.floor(month / 12)
+  const extraYears = Math.floor(month / 12)
+  const year = Math.max(calendarYears, 0) + extraYears
   const i = unitNames.indexOf(precision)
   return new Duration(
     i >= 0 ? year * sign : 0,
-    i >= 1 ? (month - year * 12) * sign : 0,
+    i >= 1 ? (month - extraYears * 12) * sign : 0,
     0,
     i >= 3 ? (day - month * 30) * sign : 0,
     i >= 4 ? (hr - day * 24) * sign : 0,

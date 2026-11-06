@@ -226,6 +226,21 @@ suite('duration', function () {
         expected: '-P1DT20H',
       },
       {
+        now: '2025-02-06T12:00:00.000Z',
+        input: '2015-02-14T05:13:48.000Z',
+        expected: '-P9Y11M28DT6H46M12S',
+      },
+      {
+        now: '2025-01-01T00:00:00.000Z',
+        input: '2020-01-01T00:00:00.000Z',
+        expected: '-P5Y',
+      },
+      {
+        now: '2025-02-06T00:00:00.000Z',
+        input: '2035-02-14T00:00:00.000Z',
+        expected: 'P10Y8D',
+      },
+      {
         now: '2022-10-24T14:46:00.000Z',
         input: '2024-10-24T14:46:00.000Z',
         precision: 'year',
