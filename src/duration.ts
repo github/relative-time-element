@@ -262,8 +262,8 @@ export function roundToSingleUnit(
   if (minutes >= 55) hours += Math.round(minutes / 60)
   if (hours || days || weeks || months || years) minutes = 0
 
-  if (days && !weeks && !months && !years) {
-    // "yesterday" is a calendar day, not 24 hours
+  if ((days || hours >= 21) && !weeks && !months && !years) {
+    // "yesterday" is a calendar day, not 24 hours, and a 23 hour DST day can span two dates
     const calendarDays = calendarDaysBetween(
       relativeTo,
       date === undefined ? applyDuration(relativeTo, duration) : new Date(date),
@@ -271,14 +271,14 @@ export function roundToSingleUnit(
     )
     if (calendarDays) {
       days = calendarDays
-    } else {
+    } else if (days) {
       // Same calendar day, possible on a 25 hour DST day
       hours += days * 24
       days = 0
+    } else {
+      days += Math.round(hours / 24)
     }
   } else if (days && hours >= 12) {
-    days += Math.round(hours / 24)
-  } else if (!days && hours >= 21) {
     days += Math.round(hours / 24)
   }
   if (days || weeks || months || years) hours = 0

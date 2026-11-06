@@ -298,6 +298,15 @@ suite('duration', function () {
         },
       ],
       ['-P1D', '-P2D', {relativeTo: new Date('1970-01-02T21:00:00Z'), date: 0}],
+      [
+        '-PT23H',
+        '-P2D',
+        {
+          relativeTo: new Date('2025-03-10T04:00:00Z'),
+          date: new Date('2025-03-09T04:59:00Z'),
+          timeZone: 'America/New_York',
+        },
+      ],
       ['P4D', 'P4D', {relativeTo: new Date('2023-07-01T00:00:00')}],
       ['-P4D', '-P4D', {relativeTo: new Date('2023-07-01T00:00:00')}],
       ['P6D', 'P1W', {relativeTo: new Date('2023-07-01T00:00:00')}],
