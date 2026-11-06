@@ -280,6 +280,8 @@ export function roundToSingleUnit(
     }
   } else if (days && hours >= 12) {
     days += Math.round(hours / 24)
+  } else if (!days && hours >= 21) {
+    days += Math.round(hours / 24)
   }
   if (days || weeks || months || years) hours = 0
 

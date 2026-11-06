@@ -325,6 +325,8 @@ suite('duration', function () {
       ['-P24DT25H', '-P1M', {relativeTo: new Date('2023-07-01T00:00:00')}],
       ['P25D', 'P1M', {relativeTo: new Date('2023-07-01T00:00:00')}],
       ['-P25D', '-P1M', {relativeTo: new Date('2023-07-01T00:00:00')}],
+      ['P11MT23H', 'P1Y', {relativeTo: new Date('2023-12-31T12:00:00')}],
+      ['-P11MT23H', '-P1Y', {relativeTo: new Date('2023-01-01T12:00:00')}],
       ['P1M1D', 'P1M', {relativeTo: new Date('2023-07-02T00:00:00')}],
       ['-P1M1D', '-P1M', {relativeTo: new Date('2023-07-02T00:00:00')}],
       ['P1M1D', 'P2M', {relativeTo: new Date('2023-07-31T00:00:00')}],
