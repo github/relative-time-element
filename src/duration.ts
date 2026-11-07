@@ -1,6 +1,6 @@
 import DurationFormat from './duration-format-ponyfill.js'
 import type {DurationFormatOptions} from './duration-format-ponyfill.js'
-import {createCache} from './intl-cache.js'
+import {createCache, dateTimeFormat} from './intl-cache.js'
 const durationRe = /^[-+]?P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)W)?(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?$/
 
 // `DurationFormat` normalizes its options on construction, so reuse one instance
@@ -169,11 +169,75 @@ export function elapsedTime(date: Date, precision: Unit = 'second', now = Date.n
   )
 }
 
-interface RoundingOpts {
-  relativeTo: Date | number
+const msPerDay = 24 * 60 * 60 * 1000
+
+// Wall-clock time of `date` in `timeZone` (or the local zone), read as if it were UTC
+function wallClockTime(date: Date, timeZone?: string): number {
+  if (!timeZone) return Number(date) - date.getTimezoneOffset() * 60 * 1000
+  const parts = dateTimeFormat('en-US', {
+    timeZone,
+    hourCycle: 'h23',
+    era: 'short',
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
+  }).formatToParts(date)
+  const get = (type: Intl.DateTimeFormatPartTypes) => Number(parts.find(part => part.type === type)?.value)
+  // Era years count 1 BC, 2 BC, ... back from 1 AD, without a year zero
+  const year = parts.find(part => part.type === 'era')?.value === 'BC' ? 1 - get('year') : get('year')
+  // Not Date.UTC, which reads years 0-99 as 1900-1999
+  const wallClock = new Date(0)
+  wallClock.setUTCFullYear(year, get('month') - 1, get('day'))
+  wallClock.setUTCHours(get('hour'), get('minute'), get('second'), date.getMilliseconds())
+  return Number(wallClock)
 }
 
-export function roundToSingleUnit(duration: Duration, {relativeTo = Date.now()}: Partial<RoundingOpts> = {}): Duration {
+function calendarDaysBetween(a: Date, b: Date, timeZone?: string): number {
+  return Math.abs(Math.floor(wallClockTime(b, timeZone) / msPerDay) - Math.floor(wallClockTime(a, timeZone) / msPerDay))
+}
+
+function utcOffset(time: number, timeZone?: string): number {
+  return wallClockTime(new Date(time), timeZone) - time
+}
+
+// Real time until the calendar date changes in either direction, following offset changes such as DST
+export function msUntilNextDay(now: Date | number, timeZone?: string): number {
+  const start = Number(now)
+  let offset = utcOffset(start, timeZone)
+  const today = Math.floor((start + offset) / msPerDay)
+  const nextDay = (today + 1) * msPerDay
+  let time = start
+  for (let i = 0; i < 3; i++) {
+    const midnight = nextDay - offset
+    if (utcOffset(midnight, timeZone) === offset) return midnight - start
+    // The offset changes before midnight: find when, as the jump itself may change the date
+    let changed = midnight
+    while (changed - time > 1) {
+      const mid = Math.floor((time + changed) / 2)
+      if (utcOffset(mid, timeZone) === offset) time = mid
+      else changed = mid
+    }
+    time = changed
+    offset = utcOffset(time, timeZone)
+    if (Math.floor((time + offset) / msPerDay) !== today) return time - start
+  }
+  return time - start
+}
+
+export interface RoundingOpts {
+  relativeTo: Date | number
+  // Exact date, as durations from elapsedTime are truncated to their precision
+  date: Date | number
+  timeZone?: string
+}
+
+export function roundToSingleUnit(
+  duration: Duration,
+  {relativeTo = Date.now(), date, timeZone}: Partial<RoundingOpts> = {},
+): Duration {
   relativeTo = new Date(relativeTo)
   if (duration.blank) return duration
   const sign = duration.sign
@@ -197,8 +261,27 @@ export function roundToSingleUnit(duration: Duration, {relativeTo = Date.now()}:
   if (minutes >= 55) hours += Math.round(minutes / 60)
   if (hours || days || weeks || months || years) minutes = 0
 
-  if (days && hours >= 12) days += Math.round(hours / 24)
-  if (!days && hours >= 21) days += Math.round(hours / 24)
+  if ((days || hours >= 21) && !weeks && !months && !years) {
+    // "yesterday" is a calendar day, not 24 hours, and a 23 hour DST day can span two dates
+    const calendarDays = calendarDaysBetween(
+      relativeTo,
+      date === undefined ? applyDuration(relativeTo, duration) : new Date(date),
+      timeZone,
+    )
+    if (calendarDays) {
+      days = calendarDays
+    } else if (days) {
+      // Same calendar day, possible on a 25 hour DST day
+      hours += days * 24
+      days = 0
+    } else {
+      days += Math.round(hours / 24)
+    }
+  } else if (days && hours >= 12) {
+    days += Math.round(hours / 24)
+  } else if (!days && hours >= 21) {
+    days += Math.round(hours / 24)
+  }
   if (days || weeks || months || years) hours = 0
 
   // Resolve calendar dates
@@ -263,7 +346,11 @@ export function getRelativeTimeUnit(
   duration: Duration,
   opts?: Partial<RoundingOpts>,
 ): [number, Intl.RelativeTimeFormatUnit] {
-  const rounded = roundToSingleUnit(duration, opts)
+  return getSingleUnit(roundToSingleUnit(duration, opts))
+}
+
+// Unit of a duration already rounded by roundToSingleUnit, which is not idempotent
+export function getSingleUnit(rounded: Duration): [number, Intl.RelativeTimeFormatUnit] {
   if (rounded.blank) return [0, 'second']
   for (const unit of unitNames) {
     if (unit === 'millisecond') continue

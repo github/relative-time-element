@@ -1,5 +1,12 @@
 import {assert} from '@open-wc/testing'
-import {applyDuration, Duration, elapsedTime, getRelativeTimeUnit, roundToSingleUnit} from '../src/duration.ts'
+import {
+  applyDuration,
+  Duration,
+  elapsedTime,
+  getRelativeTimeUnit,
+  msUntilNextDay,
+  roundToSingleUnit,
+} from '../src/duration.ts'
 import type {Unit} from '../src/duration.ts'
 import type {DurationFormatOptions} from '../src/duration-format-ponyfill.ts'
 import {Temporal} from '@js-temporal/polyfill'
@@ -263,8 +270,53 @@ suite('duration', function () {
       ['PT1H55M', 'PT2H'],
       ['PT20H', 'PT20H'],
       ['PT21H', 'P1D'],
-      ['P1DT20H', 'P2D'],
-      ['P1DT18H', 'P2D'],
+      ['P1DT20H', 'P2D', {relativeTo: new Date('2023-07-01T12:00:00')}],
+      ['-P1DT20H', '-P2D', {relativeTo: new Date('2023-07-01T12:00:00')}],
+      ['P1DT18H', 'P2D', {relativeTo: new Date('2023-07-01T12:00:00')}],
+      ['-P1DT18H', '-P2D', {relativeTo: new Date('2023-07-01T12:00:00')}],
+      ['-P1DT13H', '-P1D', {relativeTo: new Date('2025-04-30T13:53:00')}],
+      ['-P1DT14H', '-P2D', {relativeTo: new Date('2025-04-30T13:53:00')}],
+      ['P1DT13H', 'P1D', {relativeTo: new Date('2025-04-30T10:00:00')}],
+      ['P1DT13H', 'P2D', {relativeTo: new Date('2025-04-30T13:53:00')}],
+      ['-P2DT33M', '-P3D', {relativeTo: new Date('2025-04-30T00:30:00')}],
+      ['P2DT33M', 'P3D', {relativeTo: new Date('2025-04-30T23:30:00')}],
+      [
+        'P1DT13H59M59S',
+        'P2D',
+        {relativeTo: new Date('2025-04-30T10:00:00.500'), date: new Date('2025-05-02T00:00:00')},
+      ],
+      ['-P1D', '-P2D', {relativeTo: new Date('2025-04-30T00:30:00'), date: new Date('2025-04-28T01:00:00')}],
+      ['-P1D', '-PT24H', {relativeTo: new Date('2025-11-02T23:30:00'), date: new Date('2025-11-02T00:30:00')}],
+      ['-P1DT2H', '-P2D', {relativeTo: new Date('2025-04-30T21:30:00Z'), date: new Date('2025-04-29T19:30:00Z')}],
+      [
+        '-P1DT2H',
+        '-P1D',
+        {
+          relativeTo: new Date('2025-04-30T21:30:00Z'),
+          date: new Date('2025-04-29T19:30:00Z'),
+          timeZone: 'America/New_York',
+        },
+      ],
+      ['-P1D', '-P2D', {relativeTo: new Date('1970-01-02T21:00:00Z'), date: 0}],
+      [
+        '-P1D',
+        '-P1D',
+        {relativeTo: new Date('0100-01-01T12:00:00Z'), date: new Date('0099-12-31T12:00:00Z'), timeZone: 'UTC'},
+      ],
+      [
+        '-P1D',
+        '-P1D',
+        {relativeTo: new Date('0001-01-01T12:00:00Z'), date: new Date('0000-12-31T12:00:00Z'), timeZone: 'UTC'},
+      ],
+      [
+        '-PT23H',
+        '-P2D',
+        {
+          relativeTo: new Date('2025-03-10T04:00:00Z'),
+          date: new Date('2025-03-09T04:59:00Z'),
+          timeZone: 'America/New_York',
+        },
+      ],
       ['P4D', 'P4D', {relativeTo: new Date('2023-07-01T00:00:00')}],
       ['-P4D', '-P4D', {relativeTo: new Date('2023-07-01T00:00:00')}],
       ['P6D', 'P1W', {relativeTo: new Date('2023-07-01T00:00:00')}],
@@ -283,6 +335,8 @@ suite('duration', function () {
       ['-P24DT25H', '-P1M', {relativeTo: new Date('2023-07-01T00:00:00')}],
       ['P25D', 'P1M', {relativeTo: new Date('2023-07-01T00:00:00')}],
       ['-P25D', '-P1M', {relativeTo: new Date('2023-07-01T00:00:00')}],
+      ['P11MT23H', 'P1Y', {relativeTo: new Date('2023-12-31T12:00:00')}],
+      ['-P11MT23H', '-P1Y', {relativeTo: new Date('2023-01-01T12:00:00')}],
       ['P1M1D', 'P1M', {relativeTo: new Date('2023-07-02T00:00:00')}],
       ['-P1M1D', '-P1M', {relativeTo: new Date('2023-07-02T00:00:00')}],
       ['P1M1D', 'P2M', {relativeTo: new Date('2023-07-31T00:00:00')}],
@@ -354,6 +408,28 @@ suite('duration', function () {
         )
       })
     }
+  })
+
+  suite('msUntilNextDay', function () {
+    test('counts to local midnight', () => {
+      assert.equal(msUntilNextDay(new Date('2025-04-30T23:30:00')), 30 * 60 * 1000)
+    })
+
+    test('counts to midnight in the given time zone', () => {
+      assert.equal(msUntilNextDay(new Date('2025-05-01T03:30:00Z'), 'America/New_York'), 30 * 60 * 1000)
+    })
+
+    test('follows a DST jump before midnight', () => {
+      assert.equal(msUntilNextDay(new Date('2025-03-30T00:30:00Z'), 'America/Nuuk'), 30 * 60 * 1000)
+    })
+
+    test('follows a clock rollback to the previous date', () => {
+      assert.equal(msUntilNextDay(new Date('2010-03-04T14:30:00Z'), 'Antarctica/Casey'), 30 * 60 * 1000)
+    })
+
+    test('follows a fall back within the same date', () => {
+      assert.equal(msUntilNextDay(new Date('2025-11-02T05:30:00Z'), 'America/New_York'), 23.5 * 60 * 60 * 1000)
+    })
   })
 
   suite('getRelativeTimeUnit', function () {
