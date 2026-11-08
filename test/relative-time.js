@@ -3658,22 +3658,25 @@ suite('relative-time', function () {
       await settled()
       // An invalid zone on an ancestor makes the next render throw after it has started
       zone.setAttribute('time-zone', 'Not/AZone')
-      const update = RelativeTimeElement.prototype.update
+      // Count renders without changing the element's class, which would turn skipping off: a render
+      // without a custom title reads `no-title` exactly once
+      const hasAttribute = Element.prototype.hasAttribute
       const updates = new Map()
-      RelativeTimeElement.prototype.update = function () {
-        updates.set(this, (updates.get(this) || 0) + 1)
-        return update.call(this)
+      Element.prototype.hasAttribute = function (name) {
+        if (name === 'no-title' && this instanceof RelativeTimeElement) updates.set(this, (updates.get(this) || 0) + 1)
+        return hasAttribute.call(this, name)
       }
       try {
         advance(1000)
         assert.isNull(thrown(tick))
       } finally {
-        RelativeTimeElement.prototype.update = update
+        Element.prototype.hasAttribute = hasAttribute
       }
 
-      assert.equal(updates.get(bad), 1)
+      // The failing render throws while formatting its title, before it reads `no-title`
       assert.equal(rethrows.length, 1)
       assert.instanceOf(thrown(rethrows[0]), RangeError)
+      assert.equal(bad.shadowRoot.textContent, '3 minutes ago')
       assert.isUndefined(updates.get(old))
       assert.equal(old.shadowRoot.textContent, '3 hours ago')
       assert.equal(updates.get(fresh), 1)
