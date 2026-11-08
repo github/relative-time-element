@@ -3536,4 +3536,276 @@ suite('relative-time', function () {
       }
     })
   })
+
+  suite('errors thrown during a tick', () => {
+    const originalSetTimeout = window.setTimeout
+    const originalOnError = window.onerror
+    const minute = 60 * 1000
+    // Later tests start a day after the last one so that each schedules a timer of its own
+    let clockStart = Date.parse('2100-06-01T00:00:00.000Z')
+    let clock
+    let timers
+    let rethrows
+    let reportRethrowsToWindow
+
+    function relativeTime(attributes, parent = fixture) {
+      const el = document.createElement('relative-time')
+      for (const [name, value] of Object.entries(attributes)) el.setAttribute(name, value)
+      parent.append(el)
+      return el
+    }
+
+    function ago(ms) {
+      return new dateNow(clock - ms).toISOString()
+    }
+
+    function tick() {
+      timers.at(-1).callback()
+    }
+
+    function thrown(callback) {
+      try {
+        callback()
+      } catch (error) {
+        return error
+      }
+      return null
+    }
+
+    setup(() => {
+      clockStart += 24 * 60 * minute
+      clock = clockStart
+      freezeTime(new Date(clock))
+      timers = []
+      rethrows = []
+      reportRethrowsToWindow = false
+      // The observer's timer has a delay; a rethrown error has none
+      globalThis.setTimeout = window.setTimeout = function (callback, delay) {
+        if (delay !== undefined) {
+          timers.push({callback, delay})
+        } else if (reportRethrowsToWindow) {
+          return originalSetTimeout(callback)
+        } else {
+          rethrows.push(callback)
+        }
+        return 0
+      }
+    })
+
+    teardown(() => {
+      globalThis.setTimeout = window.setTimeout = originalSetTimeout
+      window.onerror = originalOnError
+    })
+
+    async function settled() {
+      await Promise.resolve()
+      assert.isAbove(timers.length, 0)
+    }
+
+    function advance(ms) {
+      clock += ms
+      Date.now = () => clock
+    }
+
+    test('an element whose update throws does not stop the others or the timer', async () => {
+      const failure = new Error('update failed')
+      const bad = relativeTime({datetime: ago(2000)})
+      const good = relativeTime({datetime: ago(55 * 1000)})
+      await settled()
+      bad.update = () => {
+        throw failure
+      }
+      const scheduled = timers.length
+
+      advance(10 * 1000)
+      tick()
+
+      assert.equal(good.shadowRoot.textContent, '1 minute ago')
+      assert.isAbove(timers.length, scheduled)
+      // The failing element still sets the next tick, so it is retried when its own text would change
+      assert.equal(timers.at(-1).delay, 1000)
+      assert.equal(rethrows.length, 1)
+      assert.strictEqual(thrown(rethrows[0]), failure)
+    })
+
+    test('an element that moves itself and throws is handled once per tick', async () => {
+      const failure = new Error('moved and failed')
+      const host = document.createElement('div')
+      fixture.append(host)
+      const bad = relativeTime({datetime: ago(3 * minute)}, host)
+      const good = relativeTime({datetime: ago(3 * minute)})
+      await settled()
+      const update = RelativeTimeElement.prototype.update
+      let calls = 0
+      let moving = false
+      bad.update = function () {
+        // Moving it renders it from connectedCallback, which adds it back to the end of the Set
+        if (moving) return update.call(this)
+        calls++
+        if (calls < 50) {
+          moving = true
+          try {
+            fixture.append(bad)
+          } finally {
+            moving = false
+          }
+        }
+        throw failure
+      }
+      const scheduled = timers.length
+
+      advance(minute)
+      tick()
+
+      assert.equal(calls, 1)
+      assert.equal(good.shadowRoot.textContent, '4 minutes ago')
+      assert.isAbove(timers.length, scheduled)
+      assert.equal(rethrows.length, 1)
+      assert.strictEqual(thrown(rethrows[0]), failure)
+    })
+
+    test('an element whose isConnected getter throws does not stop the others or the timer', async () => {
+      const failure = new Error('isConnected failed')
+      const bad = relativeTime({datetime: ago(3 * minute)})
+      const good = relativeTime({datetime: ago(3 * minute)})
+      await settled()
+      Object.defineProperty(bad, 'isConnected', {
+        get() {
+          throw failure
+        },
+      })
+      const scheduled = timers.length
+
+      advance(minute)
+      assert.isNull(thrown(tick))
+
+      assert.equal(good.shadowRoot.textContent, '4 minutes ago')
+      assert.isAbove(timers.length, scheduled)
+      assert.equal(timers.at(-1).delay, minute)
+      assert.equal(rethrows.length, 1)
+      assert.strictEqual(thrown(rethrows[0]), failure)
+    })
+
+    test('an element whose date getter throws does not stop the others or the timer', async () => {
+      const failure = new Error('date failed')
+      const bad = relativeTime({datetime: ago(3 * minute)})
+      const good = relativeTime({datetime: ago(3 * minute)})
+      await settled()
+      Object.defineProperty(bad, 'date', {
+        get() {
+          throw failure
+        },
+      })
+      const scheduled = timers.length
+
+      advance(minute)
+      tick()
+
+      assert.equal(good.shadowRoot.textContent, '4 minutes ago')
+      assert.isAbove(timers.length, scheduled)
+      assert.equal(timers.at(-1).delay, minute)
+      assert.equal(rethrows.length, 1)
+      assert.strictEqual(thrown(rethrows[0]), failure)
+    })
+
+    test('an old element with an invalid time zone does not stop the others or the timer', async () => {
+      const zoned = document.createElement('div')
+      zoned.setAttribute('time-zone', 'UTC')
+      fixture.append(zoned)
+      relativeTime({datetime: ago(3 * 60 * minute)}, zoned)
+      const good = relativeTime({datetime: ago(3 * minute)})
+      await settled()
+      zoned.setAttribute('time-zone', 'Not/AZone')
+      const scheduled = timers.length
+
+      advance(minute)
+      tick()
+
+      assert.equal(good.shadowRoot.textContent, '4 minutes ago')
+      assert.isAbove(timers.length, scheduled)
+      assert.equal(timers.at(-1).delay, minute)
+      assert.equal(rethrows.length, 1)
+      assert.instanceOf(thrown(rethrows[0]), RangeError)
+    })
+
+    test('a failing element is reported once per tick and retried on the next', async () => {
+      const failures = []
+      const bad = relativeTime({datetime: ago(3 * minute)})
+      const good = relativeTime({datetime: ago(3 * minute)})
+      await settled()
+      bad.update = () => {
+        const failure = new Error(`failure ${failures.length}`)
+        failures.push(failure)
+        throw failure
+      }
+
+      advance(minute)
+      tick()
+      assert.equal(rethrows.length, 1)
+      advance(minute)
+      tick()
+
+      assert.equal(failures.length, 2)
+      assert.equal(rethrows.length, 2)
+      assert.deepEqual(rethrows.map(thrown), failures)
+      assert.equal(good.shadowRoot.textContent, '5 minutes ago')
+    })
+
+    test('every failing element is reported', async () => {
+      const first = new Error('first')
+      const second = new Error('second')
+      const a = relativeTime({datetime: ago(3 * minute)})
+      const b = relativeTime({datetime: ago(3 * minute)})
+      const good = relativeTime({datetime: ago(3 * minute)})
+      await settled()
+      a.update = () => {
+        throw first
+      }
+      Object.defineProperty(b, 'date', {
+        get() {
+          throw second
+        },
+      })
+
+      advance(minute)
+      tick()
+
+      assert.deepEqual(rethrows.map(thrown), [first, second])
+      assert.equal(good.shadowRoot.textContent, '4 minutes ago')
+    })
+
+    test('the error reaches the page as an uncaught error', async () => {
+      const failure = new Error('uncaught')
+      const bad = relativeTime({datetime: ago(3 * minute)})
+      await settled()
+      bad.update = () => {
+        throw failure
+      }
+      const reported = []
+      const listener = event => {
+        event.preventDefault()
+        reported.push(event.error)
+      }
+      window.onerror = null
+      window.addEventListener('error', listener)
+      reportRethrowsToWindow = true
+      try {
+        advance(minute)
+        tick()
+        await new Promise(resolve => originalSetTimeout(resolve, 10))
+      } finally {
+        window.removeEventListener('error', listener)
+      }
+      assert.deepEqual(reported, [failure])
+    })
+
+    test('elements that do not throw are not reported', async () => {
+      const good = relativeTime({datetime: ago(3 * minute)})
+      await settled()
+      advance(minute)
+      tick()
+      assert.equal(good.shadowRoot.textContent, '4 minutes ago')
+      assert.equal(rethrows.length, 0)
+    })
+  })
 })
