@@ -4492,6 +4492,43 @@ suite('relative-time', function () {
       assert.equal(rendered(el), freshRender(el))
     })
 
+    test('a member added to the prototype that shadows a built-in always re-renders', async () => {
+      const start = Date.parse('2026-03-15T12:00:00.000Z')
+      const setClock = useClock(start)
+      const el = relativeTime({datetime: '2026-03-15T09:00:00.000Z'})
+      relativeTime({datetime: new realDate(start - 2 * second).toISOString()})
+      await Promise.resolve()
+      RelativeTimeElement.prototype.getAttribute = function (name) {
+        return name === 'format-style' ? 'narrow' : Element.prototype.getAttribute.call(this, name)
+      }
+      try {
+        setClock(start + second)
+        tick()
+        assert.equal(el.shadowRoot.textContent, '3h ago')
+      } finally {
+        delete RelativeTimeElement.prototype.getAttribute
+      }
+    })
+
+    test('an instance override that removes itself when the timer reads it is still rendered', async () => {
+      const start = Date.parse('2026-03-16T12:00:00.000Z')
+      const setClock = useClock(start)
+      const el = relativeTime({datetime: '2026-03-16T09:00:00.000Z'})
+      relativeTime({datetime: new realDate(start - 2 * second).toISOString()})
+      await Promise.resolve()
+      Object.defineProperty(el, 'date', {
+        configurable: true,
+        get() {
+          delete el.date
+          return new realDate('2026-03-16T09:00:00.000Z')
+        },
+      })
+      const before = updates.get(el)
+      setClock(start + second)
+      tick()
+      assert.equal(updates.get(el), before + 1)
+    })
+
     test('an attribute change re-renders', async () => {
       useClock(Date.parse('2026-03-07T12:00:00.000Z'))
       const el = relativeTime({datetime: '2026-03-07T09:00:00.000Z'})

@@ -203,11 +203,31 @@ const renderedMembers = [
   'prefix',
 ] as const
 
-// Whether those members are still the ones `RelativeTimeElement` was defined with. Checked on every
-// call, because page code can replace one at any time, including from an update listener.
+// Whether the prototype still has exactly the members it was defined with, and the members a render
+// reads are unchanged. An added member, such as `getAttribute`, would shadow a built-in a render
+// calls. Page code can change the prototype whenever it runs, so the answer is only reused until
+// `pageCodeMayHaveRun()`: within a tick, between elements that neither render nor run overrides.
+let pageCodeRuns = 0
+let classCheckedAfter = -1
+let classUnchanged = false
+function pageCodeMayHaveRun(): void {
+  pageCodeRuns++
+}
 function isClassUnchanged(): boolean {
+  if (classCheckedAfter !== pageCodeRuns) {
+    classCheckedAfter = pageCodeRuns
+    classUnchanged = classMatchesDefinition()
+  }
+  return classUnchanged
+}
+function classMatchesDefinition(): boolean {
   const proto = RelativeTimeElement.prototype
   if (Object.getPrototypeOf(proto) !== definedMembers.parent) return false
+  const keys = Reflect.ownKeys(proto)
+  if (keys.length !== definedMembers.keys.size) return false
+  for (const key of keys) {
+    if (!definedMembers.keys.has(key)) return false
+  }
   for (const [name, defined] of definedMembers.descriptors) {
     const current = Object.getOwnPropertyDescriptor(proto, name)
     if (!current || defined.get !== current.get || defined.set !== current.set || defined.value !== current.value) {
@@ -219,6 +239,7 @@ function isClassUnchanged(): boolean {
 
 interface DefinedMembers {
   parent: object | null
+  keys: Set<PropertyKey>
   descriptors: Map<string, PropertyDescriptor>
 }
 
@@ -262,20 +283,26 @@ const dateObserver = new (class {
       // Discard lookups left recording by a render that threw
       stopLookups()
       forgetHostSettings()
+      pageCodeMayHaveRun()
       for (const timeEl of this.elements) {
         // One element failing must not stop the others updating or the timer rescheduling. The error
         // is rethrown from a task of its own so it is still reported, uncaught, exactly once.
         // (`setTimeout` rather than `reportError`, which older browsers and non-browser hosts lack.)
         try {
+          // Before anything reads the element, as an override can run page code or remove itself
+          const plain = isPlainElement(timeEl)
           if (!timeEl.isConnected) {
             this.elements.delete(timeEl)
+            if (!plain) pageCodeMayHaveRun()
             continue
           }
           const factor = getUnitFactor(timeEl)
           nearestDistance = Math.min(nearestDistance, factor)
-          timeEl[refresh]()
+          if (!plain) pageCodeMayHaveRun()
+          timeEl[refresh](plain)
         } catch (error) {
-          // Discard lookups left recording by a render that threw
+          // Page code may have run before the throw, and a render may have left lookups recording
+          pageCodeMayHaveRun()
           stopLookups()
           setTimeout(() => {
             throw error
@@ -851,6 +878,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
   }
 
   update() {
+    pageCodeMayHaveRun()
     // Before reading any input, in case an override removes itself while being read
     const plainAtStart = isPlainElement(this)
     const oldText: string = this.#renderRoot.textContent || this.textContent || ''
@@ -921,6 +949,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
 
     if (newText !== oldText || newTitle !== oldTitle) {
       this.dispatchEvent(new RelativeTimeUpdatedEvent(oldText, newText, oldTitle, newTitle))
+      pageCodeMayHaveRun()
     }
 
     const shouldObserve =
@@ -970,9 +999,11 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     this.#renderedFontVariantNumeric = span?.style.fontVariantNumeric ?? ''
   }
 
-  [refresh](): void {
+  // `plain` is passed when the shared timer checked the element before reading it
+  [refresh](plain?: boolean): void {
+    if (!dateObserver.updating) pageCodeMayHaveRun()
     if (
-      !isPlainElement(this) ||
+      !(plain ?? isPlainElement(this)) ||
       typeof Intl === 'undefined' ||
       !Intl.DateTimeFormat ||
       !Intl.RelativeTimeFormat ||
@@ -1063,6 +1094,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
 
 const definedMembers: DefinedMembers = {
   parent: Object.getPrototypeOf(RelativeTimeElement.prototype),
+  keys: new Set(Reflect.ownKeys(RelativeTimeElement.prototype)),
   descriptors: new Map(
     renderedMembers.map(name => [name, Object.getOwnPropertyDescriptor(RelativeTimeElement.prototype, name)!]),
   ),
