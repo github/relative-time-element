@@ -3627,6 +3627,42 @@ suite('relative-time', function () {
       assert.strictEqual(thrown(rethrows[0]), failure)
     })
 
+    test('an element that moves itself and throws is handled once per tick', async () => {
+      const failure = new Error('moved and failed')
+      const host = document.createElement('div')
+      fixture.append(host)
+      const bad = relativeTime({datetime: ago(3 * minute)}, host)
+      const good = relativeTime({datetime: ago(3 * minute)})
+      await settled()
+      const update = RelativeTimeElement.prototype.update
+      let calls = 0
+      let moving = false
+      bad.update = function () {
+        // Moving it renders it from connectedCallback, which adds it back to the end of the Set
+        if (moving) return update.call(this)
+        calls++
+        if (calls < 50) {
+          moving = true
+          try {
+            fixture.append(bad)
+          } finally {
+            moving = false
+          }
+        }
+        throw failure
+      }
+      const scheduled = timers.length
+
+      advance(minute)
+      tick()
+
+      assert.equal(calls, 1)
+      assert.equal(good.shadowRoot.textContent, '4 minutes ago')
+      assert.isAbove(timers.length, scheduled)
+      assert.equal(rethrows.length, 1)
+      assert.strictEqual(thrown(rethrows[0]), failure)
+    })
+
     test('an element whose isConnected getter throws does not stop the others or the timer', async () => {
       const failure = new Error('isConnected failed')
       const bad = relativeTime({datetime: ago(3 * minute)})

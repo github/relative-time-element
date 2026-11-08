@@ -284,7 +284,11 @@ const dateObserver = new (class {
       stopLookups()
       forgetHostSettings()
       pageCodeMayHaveRun()
+      // An element that fails is not visited again this tick, even if it rejoined the Set by moving
+      // itself, so it can't keep the tick from finishing
+      let failed: Set<RelativeTimeElement> | undefined
       for (const timeEl of this.elements) {
+        if (failed?.has(timeEl)) continue
         // One element failing must not stop the others updating or the timer rescheduling. The error
         // is rethrown from a task of its own so it is still reported, uncaught, exactly once.
         // (`setTimeout` rather than `reportError`, which older browsers and non-browser hosts lack.)
@@ -301,6 +305,7 @@ const dateObserver = new (class {
           if (!plain) pageCodeMayHaveRun()
           timeEl[refresh](plain)
         } catch (error) {
+          ;(failed ??= new Set()).add(timeEl)
           // Page code may have run before the throw, and a render may have left lookups recording
           pageCodeMayHaveRun()
           stopLookups()
