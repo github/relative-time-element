@@ -50,6 +50,7 @@ suite('relative-time', function () {
       return 0
     }
     try {
+      fixture.append(time)
       time.setAttribute('format', 'duration')
       time.setAttribute('datetime', '1970-01-01T00:00:00.000Z')
       await Promise.resolve()
@@ -114,6 +115,7 @@ suite('relative-time', function () {
       return 1
     }
     try {
+      fixture.append(time)
       time.setAttribute('format', 'micro')
       time.setAttribute('datetime', new Date(Date.now() + 65 * 1000).toISOString())
       await Promise.resolve()
@@ -129,6 +131,7 @@ suite('relative-time', function () {
 
       delays.length = 0
       const pastTime = document.createElement('relative-time')
+      fixture.append(pastTime)
       pastTime.setAttribute('format', 'micro')
       pastTime.setAttribute('threshold', 'PT1H')
       pastTime.setAttribute('datetime', new Date(Date.now() - 59 * 60 * 1000 - 58 * 1000).toISOString())
@@ -308,6 +311,7 @@ suite('relative-time', function () {
     // eslint-disable-next-line @typescript-eslint/no-invalid-this
     this.timeout(3000)
     const el = document.createElement('relative-time')
+    fixture.append(el)
     el.setAttribute('datetime', new Date(Date.now() + 25000).toISOString())
     await Promise.resolve()
     const display = el.shadowRoot?.textContent || el.textContent
@@ -3419,6 +3423,117 @@ suite('relative-time', function () {
       el.setAttribute('format', 'datetime')
       await Promise.resolve()
       assert.equal(el.shadowRoot.textContent, 'Sat, Dec 31, 2022')
+    })
+  })
+
+  suite('shared update timer', () => {
+    const originalSetAdd = Set.prototype.add
+    let observedSets
+
+    setup(() => {
+      observedSets = new Set()
+      Set.prototype.add = function (value) {
+        if (value instanceof RelativeTimeElement) observedSets.add(this)
+        return originalSetAdd.call(this, value)
+      }
+    })
+
+    teardown(() => {
+      Set.prototype.add = originalSetAdd
+    })
+
+    // The observer's Set is module-private, so detect membership by recording every Set that a
+    // RelativeTimeElement is added to and checking it afterwards.
+    function isObserved(el) {
+      return [...observedSets].some(set => set.has(el))
+    }
+
+    const recent = () => new Date(Date.now() - 3 * 60 * 1000).toISOString()
+
+    test('observes connected elements', async () => {
+      const el = document.createElement('relative-time')
+      fixture.append(el)
+      el.setAttribute('datetime', recent())
+      await Promise.resolve()
+      assert.isTrue(isObserved(el))
+    })
+
+    test('stops observing elements when they are disconnected', async () => {
+      const el = document.createElement('relative-time')
+      fixture.append(el)
+      el.setAttribute('datetime', recent())
+      await Promise.resolve()
+      el.remove()
+      assert.isFalse(isObserved(el))
+    })
+
+    test('does not observe elements that were never connected', async () => {
+      const el = document.createElement('relative-time')
+      el.setAttribute('datetime', recent())
+      await Promise.resolve()
+      assert.equal(el.shadowRoot.textContent, '3 minutes ago')
+      assert.isFalse(isObserved(el))
+    })
+
+    test('does not observe clones of connected elements', async () => {
+      const el = document.createElement('relative-time')
+      fixture.append(el)
+      el.setAttribute('datetime', recent())
+      await Promise.resolve()
+      const clone = el.cloneNode(true)
+      await Promise.resolve()
+      assert.equal(clone.shadowRoot.textContent, '3 minutes ago')
+      assert.isFalse(isObserved(clone))
+    })
+
+    test('does not observe elements removed in the same task as an attribute change', async () => {
+      const el = document.createElement('relative-time')
+      fixture.append(el)
+      el.setAttribute('datetime', recent())
+      await Promise.resolve()
+      el.setAttribute('datetime', new Date(Date.now() - 5 * 60 * 1000).toISOString())
+      el.remove()
+      await Promise.resolve()
+      assert.equal(el.shadowRoot.textContent, '5 minutes ago')
+      assert.isFalse(isObserved(el))
+    })
+
+    test('timer ticks update connected elements and drop disconnected ones', async () => {
+      const originalSetTimeout = window.setTimeout
+      const connected = document.createElement('relative-time')
+      const detached = document.createElement('relative-time')
+      let tick
+      // Far-future "now" so the observer always schedules a fresh timer instead of reusing a pending one.
+      freezeTime(new Date('2100-01-01T00:00:00.000Z'))
+      globalThis.setTimeout = window.setTimeout = function (callback) {
+        tick = callback
+        return 0
+      }
+      try {
+        fixture.append(connected)
+        connected.setAttribute('datetime', '2099-12-31T23:57:00.000Z')
+        await Promise.resolve()
+        assert.isFunction(tick)
+
+        // Force a detached element into the Set as if it had been retained before removal.
+        const set = [...observedSets].find(candidate => candidate.has(connected))
+        originalSetAdd.call(set, detached)
+        detached.setAttribute('datetime', '2099-12-31T23:57:00.000Z')
+        let detachedUpdates = 0
+        const update = detached.update
+        detached.update = function () {
+          detachedUpdates += 1
+          return update.call(this)
+        }
+
+        Date.now = () => new dateNow('2100-01-01T00:01:00.000Z').getTime()
+        tick()
+        assert.equal(connected.shadowRoot.textContent, '4 minutes ago')
+        assert.equal(detachedUpdates, 0)
+        assert.isFalse(set.has(detached))
+      } finally {
+        globalThis.setTimeout = window.setTimeout = originalSetTimeout
+      }
     })
   })
 })

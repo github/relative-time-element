@@ -144,6 +144,10 @@ const dateObserver = new (class {
     this.updating = true
     try {
       for (const timeEl of this.elements) {
+        if (!timeEl.isConnected) {
+          this.elements.delete(timeEl)
+          continue
+        }
         nearestDistance = Math.min(nearestDistance, getUnitFactor(timeEl))
         timeEl.update()
       }
@@ -752,7 +756,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       (this.format === 'micro' && Boolean(this.#getExplicitThreshold()) && date.getTime() > now) ||
       (displayUserPreferredAbsoluteTime &&
         (this.#isToday(date, locale, timeZone) || this.#isCurrentYear(date, locale, timeZone)))
-    if (shouldObserve) {
+    if (shouldObserve && this.isConnected) {
       dateObserver.observe(this)
     } else {
       dateObserver.unobserve(this)
