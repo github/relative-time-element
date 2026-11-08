@@ -3539,9 +3539,11 @@ suite('relative-time', function () {
 
   suite('skipping re-renders that cannot change output', () => {
     const originalSetTimeout = window.setTimeout
-    const originalUpdate = RelativeTimeElement.prototype.update
+    const hasAttribute = Element.prototype.hasAttribute
     let realDate
     let tick
+    // Renders per element, counted without changing the element's class, which would turn skipping
+    // off. A render without a custom title reads `no-title` exactly once.
     let updates
 
     // A clock that `Date.now()` and `new Date()` both follow, unlike `freezeTime`.
@@ -3569,15 +3571,15 @@ suite('relative-time', function () {
         tick = callback
         return 0
       }
-      RelativeTimeElement.prototype.update = function () {
-        updates.set(this, (updates.get(this) || 0) + 1)
-        return originalUpdate.call(this)
+      Element.prototype.hasAttribute = function (name) {
+        if (name === 'no-title' && this instanceof RelativeTimeElement) updates.set(this, (updates.get(this) || 0) + 1)
+        return hasAttribute.call(this, name)
       }
     })
 
     teardown(() => {
       globalThis.setTimeout = window.setTimeout = originalSetTimeout
-      RelativeTimeElement.prototype.update = originalUpdate
+      Element.prototype.hasAttribute = hasAttribute
       if (realDate) {
         // eslint-disable-next-line no-global-assign
         Date = realDate
@@ -4085,6 +4087,46 @@ suite('relative-time', function () {
         globalThis.queueMicrotask = original
       }
       assert.equal(el.shadowRoot.textContent, '3 hours ago')
+    })
+
+    test('a prototype member replaced before the first render always re-renders', async () => {
+      const start = Date.parse('2026-03-09T12:00:00.000Z')
+      const setClock = useClock(start)
+      const original = Object.getOwnPropertyDescriptor(RelativeTimeElement.prototype, 'date')
+      let date = new realDate('2026-03-09T09:00:00.000Z')
+      Object.defineProperty(RelativeTimeElement.prototype, 'date', {
+        configurable: true,
+        get() {
+          return new realDate(date)
+        },
+      })
+      try {
+        const el = relativeTime({datetime: '2026-03-09T09:00:00.000Z'})
+        relativeTime({datetime: new realDate(start - 2 * second).toISOString()})
+        await Promise.resolve()
+        assert.equal(el.shadowRoot.textContent, '3 hours ago')
+        date = new realDate('2026-01-01T09:00:00.000Z')
+        setClock(start + second)
+        tick()
+        assert.equal(el.shadowRoot.textContent, 'on Jan 1')
+      } finally {
+        Object.defineProperty(RelativeTimeElement.prototype, 'date', original)
+      }
+    })
+
+    test('an invalid lang still renders once and skips unchanged ticks', async () => {
+      const start = Date.parse('2026-03-10T12:00:00.000Z')
+      const setClock = useClock(start)
+      const el = relativeTime({lang: 'en_US', datetime: '2026-03-10T09:00:00.000Z'})
+      relativeTime({datetime: new realDate(start - 2 * second).toISOString()})
+      await Promise.resolve()
+      assert.equal(updates.get(el), 1)
+      for (let i = 1; i <= 5; i++) {
+        setClock(start + i * second)
+        tick()
+      }
+      assert.equal(updates.get(el), 1)
+      assert.equal(rendered(el), freshRender(el))
     })
 
     test('an attribute change re-renders', async () => {
