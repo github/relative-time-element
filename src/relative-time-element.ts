@@ -221,8 +221,20 @@ const dateObserver = new (class {
           this.elements.delete(timeEl)
           continue
         }
-        nearestDistance = Math.min(nearestDistance, getUnitFactor(timeEl))
-        timeEl[refresh]()
+        // One element failing must not stop the others updating or the timer rescheduling. The error
+        // is rethrown from a task of its own so it is still reported, uncaught, exactly once.
+        // (`setTimeout` rather than `reportError`, which older browsers and non-browser hosts lack.)
+        try {
+          const factor = getUnitFactor(timeEl)
+          nearestDistance = Math.min(nearestDistance, factor)
+          timeEl[refresh]()
+        } catch (error) {
+          // Discard lookups left recording by a render that threw
+          stopLookups()
+          setTimeout(() => {
+            throw error
+          })
+        }
       }
     } finally {
       this.updating = false
