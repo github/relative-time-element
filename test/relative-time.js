@@ -3609,20 +3609,21 @@ suite('relative-time', function () {
 
     test('an element whose update throws does not stop the others or the timer', async () => {
       const failure = new Error('update failed')
-      const bad = relativeTime({datetime: ago(3 * minute)})
-      const good = relativeTime({datetime: ago(3 * minute)})
+      const bad = relativeTime({datetime: ago(2000)})
+      const good = relativeTime({datetime: ago(55 * 1000)})
       await settled()
       bad.update = () => {
         throw failure
       }
       const scheduled = timers.length
 
-      advance(minute)
+      advance(10 * 1000)
       tick()
 
-      assert.equal(good.shadowRoot.textContent, '4 minutes ago')
+      assert.equal(good.shadowRoot.textContent, '1 minute ago')
       assert.isAbove(timers.length, scheduled)
-      assert.equal(timers.at(-1).delay, minute)
+      // The failing element still sets the next tick, so it is retried when its own text would change
+      assert.equal(timers.at(-1).delay, 1000)
       assert.equal(rethrows.length, 1)
       assert.strictEqual(thrown(rethrows[0]), failure)
     })
