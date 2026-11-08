@@ -4398,6 +4398,100 @@ suite('relative-time', function () {
       assert.equal(rendered(el), freshRender(el))
     })
 
+    // Replaces the prototype's `date` getter until the returned function is called
+    function replaceDateGetter(get) {
+      const original = Object.getOwnPropertyDescriptor(RelativeTimeElement.prototype, 'date')
+      Object.defineProperty(RelativeTimeElement.prototype, 'date', {configurable: true, get})
+      return () => Object.defineProperty(RelativeTimeElement.prototype, 'date', original)
+    }
+
+    test('a prototype change made by an update listener during a tick re-renders later elements', async () => {
+      const start = Date.parse('2026-03-11T12:00:00.000Z')
+      const setClock = useClock(start)
+      const fresh = relativeTime({datetime: new realDate(start - 2 * second).toISOString()})
+      const old = relativeTime({datetime: '2026-03-11T09:00:00.000Z'})
+      await Promise.resolve()
+      let restore = null
+      fresh.addEventListener(
+        'relative-time-updated',
+        () => {
+          restore = replaceDateGetter(() => new realDate('2020-01-01T09:00:00.000Z'))
+        },
+        {once: true},
+      )
+      try {
+        setClock(start + 10 * second)
+        tick()
+        assert.equal(rendered(old), freshRender(old))
+        assert.equal(old.shadowRoot.textContent, 'on Jan 1, 2020')
+      } finally {
+        if (restore) restore()
+      }
+    })
+
+    test('a prototype change made right after inserting is seen by the queued attribute update', async () => {
+      const start = Date.parse('2026-03-12T12:00:00.000Z')
+      useClock(start)
+      const el = relativeTime({datetime: '2026-03-12T09:00:00.000Z'})
+      const restore = replaceDateGetter(() => new realDate('2026-03-12T07:00:00.000Z'))
+      try {
+        await Promise.resolve()
+        await Promise.resolve()
+        assert.equal(el.shadowRoot.textContent, '5 hours ago')
+      } finally {
+        restore()
+      }
+      const update = RelativeTimeElement.prototype.update
+      let wrapped = 0
+      const other = relativeTime({datetime: '2026-03-12T09:00:00.000Z'})
+      RelativeTimeElement.prototype.update = function () {
+        wrapped++
+        return update.call(this)
+      }
+      try {
+        await Promise.resolve()
+        await Promise.resolve()
+      } finally {
+        RelativeTimeElement.prototype.update = update
+      }
+      assert.equal(wrapped, 1)
+      assert.equal(other.shadowRoot.textContent, '3 hours ago')
+    })
+
+    test('an instance override that removes itself during a render is not skipped next time', async () => {
+      const start = Date.parse('2026-03-13T12:00:00.000Z')
+      const setClock = useClock(start)
+      const el = relativeTime({datetime: '2026-03-13T09:00:00.000Z'})
+      relativeTime({datetime: new realDate(start - 2 * second).toISOString()})
+      await Promise.resolve()
+      Object.defineProperty(el, 'date', {
+        configurable: true,
+        get() {
+          delete el.date
+          return new realDate('2026-03-13T07:00:00.000Z')
+        },
+      })
+      el.update()
+      assert.equal(el.shadowRoot.textContent, '5 hours ago')
+      setClock(start + second)
+      tick()
+      assert.equal(el.shadowRoot.textContent, '3 hours ago')
+    })
+
+    test('a clock moving back after a render that cannot be skipped re-renders', async () => {
+      const start = Date.parse('2026-03-14T12:00:00.000Z')
+      const setClock = useClock(start)
+      const el = relativeTime({datetime: new realDate(start - 27 * day - 23 * hour).toISOString()})
+      relativeTime({datetime: new realDate(start - 2 * second).toISOString()})
+      await Promise.resolve()
+      // Past 28 days the text is never skipped
+      setClock(start + 2 * hour)
+      tick()
+      setClock(start + 30 * minute)
+      tick()
+      assert.equal(rendered(el), freshRender(el))
+    })
+
     test('an attribute change re-renders', async () => {
       useClock(Date.parse('2026-03-07T12:00:00.000Z'))
       const el = relativeTime({datetime: '2026-03-07T09:00:00.000Z'})

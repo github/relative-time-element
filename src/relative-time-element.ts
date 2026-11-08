@@ -128,29 +128,21 @@ const msPerHour = 60 * msPerMinute
 const msPerDay = 24 * msPerHour
 
 // Host settings that change formatting without a `languagechange` event. The host reports
-// changes between tasks, so they are read once per tick and once per microtask checkpoint, as is
-// whether the class has been changed. Null settings mean they cannot be read, which never matches.
+// changes between tasks, so they are read once per tick and once per microtask checkpoint.
+// Null when they cannot be read, which never matches.
 let hostSettingsRead = false
 let hostSettings: string | null = null
-let classChecked = false
-let classUnchanged = false
-function forgetTaskReads(): void {
+function forgetHostSettings(): void {
   hostSettingsRead = false
-  classChecked = false
-}
-// Whether the reads can be kept until the microtask checkpoint; if not, they are read every time
-function keepUntilCheckpoint(): boolean {
-  if (hostSettingsRead || classChecked) return true
-  try {
-    queueMicrotask(forgetTaskReads)
-    return true
-  } catch {
-    return false
-  }
 }
 function getHostSettings(): string | null {
   if (!hostSettingsRead) {
-    hostSettingsRead = keepUntilCheckpoint()
+    try {
+      queueMicrotask(forgetHostSettings)
+      hostSettingsRead = true
+    } catch {
+      // Without a way to forget them, read them on every call
+    }
     try {
       hostSettings = `${new Date().getTimezoneOffset()} ${new Intl.DateTimeFormat().resolvedOptions().timeZone}`
     } catch {
@@ -186,30 +178,39 @@ function isPlainElement(el: RelativeTimeElement): boolean {
   )
 }
 
-// Whether `RelativeTimeElement.prototype` still has the members it was defined with. A page that
-// replaces one, such as the `date` getter, can change what `update()` reads at any time.
-function isClassUnchanged(): boolean {
-  if (!classChecked) {
-    classChecked = keepUntilCheckpoint()
-    classUnchanged = membersMatch(RelativeTimeElement.prototype, definedMembers)
-  }
-  return classUnchanged
-}
+// The prototype members a render reads, through `this` or the shared timer. Replacing any of them,
+// such as the `date` getter or `update()` itself, can change what a render produces.
+const renderedMembers = [
+  'update',
+  'date',
+  'datetime',
+  'format',
+  'formatStyle',
+  'precision',
+  'tense',
+  'threshold',
+  'noTitle',
+  'timeZone',
+  'hourCycle',
+  'second',
+  'minute',
+  'hour',
+  'weekday',
+  'day',
+  'month',
+  'year',
+  'timeZoneName',
+  'prefix',
+] as const
 
-function membersMatch(proto: object, members: DefinedMembers): boolean {
-  if (Object.getPrototypeOf(proto) !== members.parent) return false
-  const keys = Reflect.ownKeys(proto)
-  if (keys.length !== members.descriptors.size) return false
-  for (const key of keys) {
-    const defined = members.descriptors.get(key)
-    const current = Object.getOwnPropertyDescriptor(proto, key)
-    if (
-      !defined ||
-      !current ||
-      defined.get !== current.get ||
-      defined.set !== current.set ||
-      defined.value !== current.value
-    ) {
+// Whether those members are still the ones `RelativeTimeElement` was defined with. Checked on every
+// call, because page code can replace one at any time, including from an update listener.
+function isClassUnchanged(): boolean {
+  const proto = RelativeTimeElement.prototype
+  if (Object.getPrototypeOf(proto) !== definedMembers.parent) return false
+  for (const [name, defined] of definedMembers.descriptors) {
+    const current = Object.getOwnPropertyDescriptor(proto, name)
+    if (!current || defined.get !== current.get || defined.set !== current.set || defined.value !== current.value) {
       return false
     }
   }
@@ -218,7 +219,7 @@ function membersMatch(proto: object, members: DefinedMembers): boolean {
 
 interface DefinedMembers {
   parent: object | null
-  descriptors: Map<PropertyKey, PropertyDescriptor>
+  descriptors: Map<string, PropertyDescriptor>
 }
 
 // Re-renders an element unless its output is known to be unchanged. Module-private so the
@@ -260,7 +261,7 @@ const dateObserver = new (class {
     try {
       // Discard lookups left recording by a render that threw
       stopLookups()
-      forgetTaskReads()
+      forgetHostSettings()
       for (const timeEl of this.elements) {
         // One element failing must not stop the others updating or the timer rescheduling. The error
         // is rethrown from a task of its own so it is still reported, uncaught, exactly once.
@@ -850,6 +851,8 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
   }
 
   update() {
+    // Before reading any input, in case an override removes itself while being read
+    const plainAtStart = isPlainElement(this)
     const oldText: string = this.#renderRoot.textContent || this.textContent || ''
     const oldTitle: string = this.getAttribute('title') || ''
     let newTitle: string = oldTitle
@@ -904,7 +907,17 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
 
     // Record the inputs this render used before event listeners can change any of them
     const lookups = stopLookups()
-    this.#recordRender(date, now, format, displayUserPreferredAbsoluteTime, timeZone, hourCycle, newTitle, lookups)
+    this.#recordRender(
+      date,
+      now,
+      format,
+      displayUserPreferredAbsoluteTime,
+      timeZone,
+      hourCycle,
+      newTitle,
+      lookups,
+      plainAtStart,
+    )
 
     if (newText !== oldText || newTitle !== oldTitle) {
       this.dispatchEvent(new RelativeTimeUpdatedEvent(oldText, newText, oldTitle, newTitle))
@@ -931,17 +944,16 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     hourCycle: Intl.DateTimeFormatOptions['hourCycle'],
     newTitle: string,
     lookups: Lookups | null,
+    plainAtStart: boolean,
   ): void {
-    if (!isPlainElement(this)) {
-      this.#stableUntil = -Infinity
-      return
-    }
+    this.#stableUntil = -Infinity
+    if (!plainAtStart || !isPlainElement(this)) return
     // A title that is computed but not written (`no-title`) fires an event on every render
     const titleSettled = newTitle === (this.getAttribute('title') || '')
     const stableFor =
       titleSettled && lookups ? this.#stableFor(date, now, format, displayUserPreferredAbsoluteTime, timeZone) : 0
-    this.#stableUntil = now + stableFor
     if (stableFor <= 0) return
+    this.#stableUntil = now + stableFor
     this.#renderedLookups = lookups!
     this.#renderedAt = now
     this.#renderedAttributeVersion = this.#attributeVersion
@@ -1052,10 +1064,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
 const definedMembers: DefinedMembers = {
   parent: Object.getPrototypeOf(RelativeTimeElement.prototype),
   descriptors: new Map(
-    Reflect.ownKeys(RelativeTimeElement.prototype).map(key => [
-      key,
-      Object.getOwnPropertyDescriptor(RelativeTimeElement.prototype, key)!,
-    ]),
+    renderedMembers.map(name => [name, Object.getOwnPropertyDescriptor(RelativeTimeElement.prototype, name)!]),
   ),
 }
 
