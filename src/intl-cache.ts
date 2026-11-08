@@ -24,7 +24,7 @@ class LRUCache<V> {
 
   get(key: string): V | undefined {
     if (lookups) {
-      if (lookups.length < maxLookups) lookups.push([this as LRUCache<unknown>, key])
+      if (lookups.length < maxLookups) lookups.push([this as LRUCache<unknown>, key, false])
       else lookupsOverflowed = true
     }
     const value = this.#map.get(key)
@@ -33,6 +33,10 @@ class LRUCache<V> {
       this.#map.set(key, value)
     }
     return value
+  }
+
+  has(key: string): boolean {
+    return this.#map.has(key)
   }
 
   set(key: string, value: V): void {
@@ -50,7 +54,9 @@ class LRUCache<V> {
 
 const registeredCaches: Array<LRUCache<unknown>> = []
 
-export type Lookups = Array<[LRUCache<unknown>, string]>
+// Each lookup records whether the render left its entry missing, as when constructing a formatter
+// for an invalid locale throws. Looking up a missing entry changes nothing.
+export type Lookups = Array<[LRUCache<unknown>, string, boolean]>
 
 // Lookups made while rendering an element. Repeating them when the element skips a render
 // leaves every cache in the same least-recently-used order as a full render would.
@@ -68,14 +74,21 @@ export function startLookups(): void {
 export function stopLookups(): Lookups | null {
   const result = lookupsOverflowed ? null : lookups
   lookups = null
+  if (result) {
+    for (const lookup of result) lookup[2] = !lookup[0].has(lookup[1])
+  }
   return result
 }
 
-// Repeats recorded lookups in order. Returns false at the first entry no longer cached, which
-// a full render would have to recreate.
+// Repeats recorded lookups in order. Returns false at the first entry a full render would find
+// differently: no longer cached, or cached now when the render left it missing.
 export function repeatLookups(recorded: Lookups): boolean {
-  for (const [cache, key] of recorded) {
-    if (cache.get(key) === undefined) return false
+  for (const [cache, key, missing] of recorded) {
+    if (missing) {
+      if (cache.has(key)) return false
+    } else if (cache.get(key) === undefined) {
+      return false
+    }
   }
   return true
 }

@@ -128,21 +128,29 @@ const msPerHour = 60 * msPerMinute
 const msPerDay = 24 * msPerHour
 
 // Host settings that change formatting without a `languagechange` event. The host reports
-// changes between tasks, so they are read once per tick and once per microtask checkpoint.
-// Null when they cannot be read, which never matches.
+// changes between tasks, so they are read once per tick and once per microtask checkpoint, as is
+// whether the class has been changed. Null settings mean they cannot be read, which never matches.
 let hostSettingsRead = false
 let hostSettings: string | null = null
-function forgetHostSettings(): void {
+let classChecked = false
+let classUnchanged = false
+function forgetTaskReads(): void {
   hostSettingsRead = false
+  classChecked = false
+}
+// Whether the reads can be kept until the microtask checkpoint; if not, they are read every time
+function keepUntilCheckpoint(): boolean {
+  if (hostSettingsRead || classChecked) return true
+  try {
+    queueMicrotask(forgetTaskReads)
+    return true
+  } catch {
+    return false
+  }
 }
 function getHostSettings(): string | null {
   if (!hostSettingsRead) {
-    try {
-      queueMicrotask(forgetHostSettings)
-      hostSettingsRead = true
-    } catch {
-      // Without a way to forget them, read them on every call
-    }
+    hostSettingsRead = keepUntilCheckpoint()
     try {
       hostSettings = `${new Date().getTimezoneOffset()} ${new Intl.DateTimeFormat().resolvedOptions().timeZone}`
     } catch {
@@ -173,7 +181,44 @@ function shadowsInheritedMember(el: RelativeTimeElement): boolean {
 // tsc hoists private methods into the computed `[refresh]` key, which esbuild's bundle evaluates
 // before the `RelativeTimeElement` binding exists.
 function isPlainElement(el: RelativeTimeElement): boolean {
-  return Object.getPrototypeOf(el) === RelativeTimeElement.prototype && !shadowsInheritedMember(el)
+  return (
+    Object.getPrototypeOf(el) === RelativeTimeElement.prototype && isClassUnchanged() && !shadowsInheritedMember(el)
+  )
+}
+
+// Whether `RelativeTimeElement.prototype` still has the members it was defined with. A page that
+// replaces one, such as the `date` getter, can change what `update()` reads at any time.
+function isClassUnchanged(): boolean {
+  if (!classChecked) {
+    classChecked = keepUntilCheckpoint()
+    classUnchanged = membersMatch(RelativeTimeElement.prototype, definedMembers)
+  }
+  return classUnchanged
+}
+
+function membersMatch(proto: object, members: DefinedMembers): boolean {
+  if (Object.getPrototypeOf(proto) !== members.parent) return false
+  const keys = Reflect.ownKeys(proto)
+  if (keys.length !== members.descriptors.size) return false
+  for (const key of keys) {
+    const defined = members.descriptors.get(key)
+    const current = Object.getOwnPropertyDescriptor(proto, key)
+    if (
+      !defined ||
+      !current ||
+      defined.get !== current.get ||
+      defined.set !== current.set ||
+      defined.value !== current.value
+    ) {
+      return false
+    }
+  }
+  return true
+}
+
+interface DefinedMembers {
+  parent: object | null
+  descriptors: Map<PropertyKey, PropertyDescriptor>
 }
 
 // Re-renders an element unless its output is known to be unchanged. Module-private so the
@@ -215,7 +260,7 @@ const dateObserver = new (class {
     try {
       // Discard lookups left recording by a render that threw
       stopLookups()
-      forgetHostSettings()
+      forgetTaskReads()
       for (const timeEl of this.elements) {
         // One element failing must not stop the others updating or the timer rescheduling. The error
         // is rethrown from a task of its own so it is still reported, uncaught, exactly once.
@@ -1002,6 +1047,16 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     }
     return Math.max(0, stable)
   }
+}
+
+const definedMembers: DefinedMembers = {
+  parent: Object.getPrototypeOf(RelativeTimeElement.prototype),
+  descriptors: new Map(
+    Reflect.ownKeys(RelativeTimeElement.prototype).map(key => [
+      key,
+      Object.getOwnPropertyDescriptor(RelativeTimeElement.prototype, key)!,
+    ]),
+  ),
 }
 
 export default RelativeTimeElement

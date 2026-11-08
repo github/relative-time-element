@@ -91,4 +91,19 @@ suite('intl-cache', function () {
     assert.equal(lookups.length, 1)
     assert.isNull(stopLookups())
   })
+
+  test('a lookup the render left missing repeats as missing until the entry appears', () => {
+    clearIntlCache()
+    startLookups()
+    assert.throws(() => getLocale('en_US'))
+    const lookups = stopLookups()
+    assert.isTrue(repeatLookups(lookups))
+    // An entry that now exists would be found by a full render, so repeating it must fail
+    dateTimeFormat('en', {year: 'numeric'})
+    startLookups()
+    dateTimeFormat('en', {month: 'short'})
+    const present = stopLookups()
+    clearIntlCache()
+    assert.isFalse(repeatLookups(present))
+  })
 })
