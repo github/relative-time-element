@@ -3536,4 +3536,566 @@ suite('relative-time', function () {
       }
     })
   })
+
+  suite('skipping re-renders that cannot change output', () => {
+    const originalSetTimeout = window.setTimeout
+    const originalUpdate = RelativeTimeElement.prototype.update
+    let realDate
+    let tick
+    let updates
+
+    // A clock that `Date.now()` and `new Date()` both follow, unlike `freezeTime`.
+    function useClock(start) {
+      realDate = Date
+      let current = start
+      function ClockDate(...args) {
+        return args.length ? new realDate(...args) : new realDate(current)
+      }
+      ClockDate.UTC = realDate.UTC
+      ClockDate.parse = realDate.parse
+      ClockDate.now = () => current
+      ClockDate.prototype = realDate.prototype
+      // eslint-disable-next-line no-global-assign
+      Date = ClockDate
+      return ms => {
+        current = ms
+      }
+    }
+
+    setup(() => {
+      tick = null
+      updates = new Map()
+      globalThis.setTimeout = window.setTimeout = function (callback) {
+        tick = callback
+        return 0
+      }
+      RelativeTimeElement.prototype.update = function () {
+        updates.set(this, (updates.get(this) || 0) + 1)
+        return originalUpdate.call(this)
+      }
+    })
+
+    teardown(() => {
+      globalThis.setTimeout = window.setTimeout = originalSetTimeout
+      RelativeTimeElement.prototype.update = originalUpdate
+      if (realDate) {
+        // eslint-disable-next-line no-global-assign
+        Date = realDate
+        realDate = null
+      }
+    })
+
+    function relativeTime(attributes, parent = fixture) {
+      const el = document.createElement('relative-time')
+      for (const [name, value] of Object.entries(attributes)) el.setAttribute(name, value)
+      parent.append(el)
+      return el
+    }
+
+    // What a full render produces right now for an element with the same attributes and ancestors.
+    function freshRender(el) {
+      const copy = document.createElement('relative-time')
+      for (const {name, value} of el.attributes) {
+        // A rendered title is recomputed; only a title set by the page is kept
+        if (name !== 'title' || el.hasAttribute('data-custom-title')) copy.setAttribute(name, value)
+      }
+      el.after(copy)
+      const result = `${copy.shadowRoot.textContent} | ${copy.getAttribute('title')}`
+      copy.remove()
+      return result
+    }
+
+    function rendered(el) {
+      return `${el.shadowRoot.textContent} | ${el.getAttribute('title')}`
+    }
+
+    // Ticks the shared timer at every step and checks each element against a fresh render.
+    function assertMatchesFreshRenders(elements, setClock, from, to, step, onTick) {
+      const mismatches = []
+      for (let now = from; now <= to; now += step) {
+        setClock(now)
+        if (onTick) onTick(now)
+        tick()
+        for (const el of elements) {
+          const expected = freshRender(el)
+          if (rendered(el) !== expected) {
+            mismatches.push(`${new realDate(now).toISOString()} ${el.outerHTML}: "${rendered(el)}" != "${expected}"`)
+          }
+        }
+      }
+      assert.deepEqual(mismatches.slice(0, 5), [])
+    }
+
+    function seededRandom(seed) {
+      return () => {
+        seed = (seed * 1664525 + 1013904223) % 4294967296
+        return seed / 4294967296
+      }
+    }
+
+    const second = 1000
+    const minute = 60 * second
+    const hour = 60 * minute
+    const day = 24 * hour
+
+    // Ages chosen to cross every point where the text can change: :55 and :00 seconds,
+    // 54:55 and 00:00 within the hour, 21 hours, whole days, 28 days, and thresholds.
+    const ages = [
+      50 * second,
+      3 * minute + 50 * second,
+      54 * minute + 30 * second,
+      59 * minute + 50 * second,
+      2 * hour + 54 * minute + 30 * second,
+      20 * hour + 54 * minute + 30 * second,
+      23 * hour + 54 * minute + 30 * second,
+      day + 23 * hour + 55 * minute,
+      6 * day + 23 * hour + 55 * minute,
+      27 * day + 23 * hour + 55 * minute,
+      29 * day + 23 * hour + 55 * minute,
+    ]
+
+    function elementsAround(start, extraAttributes = {}) {
+      const elements = []
+      for (const age of ages) {
+        for (const [direction, tense] of [
+          [-1, 'auto'],
+          [1, 'auto'],
+          [-1, 'past'],
+          [1, 'future'],
+        ]) {
+          const datetime = new realDate(start + direction * age + 123).toISOString()
+          elements.push(relativeTime({datetime, tense, ...extraAttributes}))
+        }
+      }
+      return elements
+    }
+
+    for (const timeZone of [null, 'UTC', 'America/New_York', 'Australia/Lord_Howe', 'Pacific/Chatham']) {
+      test(`matches full renders across minutes, hours and midnights (time-zone: ${timeZone})`, async function () {
+        // eslint-disable-next-line @typescript-eslint/no-invalid-this
+        this.timeout(60000)
+        // 23:55 in the test runner's Asia/Dubai time zone, so the window crosses local midnight
+        const start = Date.parse('2026-03-07T19:55:00.000Z')
+        const setClock = useClock(start)
+        const elements = elementsAround(start, timeZone ? {'time-zone': timeZone} : {})
+        await Promise.resolve()
+        assertMatchesFreshRenders(elements, setClock, start, start + 6 * minute, second)
+      })
+    }
+
+    test('matches full renders across daylight saving and zone midnights', async function () {
+      // eslint-disable-next-line @typescript-eslint/no-invalid-this
+      this.timeout(60000)
+      const windows = [
+        ['America/New_York', '2026-03-08T04:55:00.000Z'], // midnight
+        ['America/New_York', '2026-03-08T06:55:00.000Z'], // clocks go forward
+        ['Australia/Lord_Howe', '2026-04-04T14:55:00.000Z'], // clocks go back 30 minutes
+        ['Pacific/Chatham', '2026-04-04T13:40:00.000Z'], // midnight at +13:45
+        ['UTC', '2026-03-07T23:55:00.000Z'], // UTC midnight, used by thresholds
+      ]
+      for (const [timeZone, iso] of windows) {
+        fixture.innerHTML = ''
+        const start = Date.parse(iso)
+        if (realDate) {
+          // eslint-disable-next-line no-global-assign
+          Date = realDate
+        }
+        const setClock = useClock(start)
+        const elements = elementsAround(start, {'time-zone': timeZone})
+        await Promise.resolve()
+        assertMatchesFreshRenders(elements, setClock, start, start + 6 * minute, second)
+      }
+    })
+
+    test('matches full renders across thresholds and local month ends', async function () {
+      // eslint-disable-next-line @typescript-eslint/no-invalid-this
+      this.timeout(60000)
+      const windows = [
+        // 23:55 on the last day of February in the test runner's Asia/Dubai time zone
+        ['2026-02-28T19:55:00.000Z', null],
+        ['2026-02-28T19:55:00.000Z', 'America/New_York'],
+        ['2026-02-28T19:55:00.000Z', 'Pacific/Chatham'],
+      ]
+      const thresholds = [
+        ['PT45M', 44 * minute],
+        ['PT45M30S', 45 * minute],
+        ['PT1H30M', hour + 27 * minute],
+        ['PT2H', hour + 57 * minute],
+        ['P1D', 23 * hour + 57 * minute],
+        ['P7D', 6 * day + 23 * hour + 57 * minute],
+        ['P1M', 27 * day + 23 * hour + 57 * minute],
+      ]
+      for (const [iso, timeZone] of windows) {
+        fixture.innerHTML = ''
+        if (realDate) {
+          // eslint-disable-next-line no-global-assign
+          Date = realDate
+        }
+        const start = Date.parse(iso)
+        const setClock = useClock(start)
+        const elements = []
+        for (const [threshold, age] of thresholds) {
+          const attributes = {threshold, datetime: new realDate(start - age).toISOString()}
+          if (timeZone) attributes['time-zone'] = timeZone
+          elements.push(relativeTime(attributes))
+        }
+        // Around four weeks, rounding to weeks or months depends on the local calendar month
+        const monthEndAges = [27 * day, 27 * day + 6 * hour, 27 * day + 12 * hour, 27 * day + 18 * hour]
+        for (const age of [...ages, ...monthEndAges]) {
+          const attributes = {datetime: new realDate(start - age).toISOString()}
+          if (timeZone) attributes['time-zone'] = timeZone
+          elements.push(relativeTime(attributes))
+        }
+        await Promise.resolve()
+        assertMatchesFreshRenders(elements, setClock, start, start + 6 * minute, second)
+      }
+    })
+
+    test('matches full renders for random dates at sub-second steps', async function () {
+      // eslint-disable-next-line @typescript-eslint/no-invalid-this
+      this.timeout(60000)
+      const random = seededRandom(42)
+      const start = Date.parse('2026-06-01T11:58:00.000Z')
+      const setClock = useClock(start)
+      const thresholds = [null, 'PT2H', 'P1D', 'PT45M']
+      const elements = []
+      for (let i = 0; i < 40; i++) {
+        const age = Math.floor(random() * 30 * day)
+        const direction = random() < 0.7 ? -1 : 1
+        const attributes = {datetime: new realDate(start + direction * age).toISOString()}
+        const threshold = thresholds[i % thresholds.length]
+        if (threshold) attributes.threshold = threshold
+        if (i % 5 === 0) attributes.format = 'relative'
+        elements.push(relativeTime(attributes))
+      }
+      // Ages that sit just before change points, with a random millisecond offset
+      for (const age of ages) {
+        const datetime = new realDate(start - age - Math.floor(random() * second)).toISOString()
+        elements.push(relativeTime({datetime}))
+      }
+      await Promise.resolve()
+      assertMatchesFreshRenders(elements, setClock, start, start + 3 * minute, 250)
+    })
+
+    test('matches full renders when ancestors, preferences or the clock change', async function () {
+      // eslint-disable-next-line @typescript-eslint/no-invalid-this
+      this.timeout(60000)
+      const start = Date.parse('2026-03-07T12:00:00.000Z')
+      const setClock = useClock(start)
+      const parent = document.createElement('div')
+      fixture.append(parent)
+      const elements = ages.map(age => relativeTime({datetime: new realDate(start - age).toISOString()}, parent))
+      await Promise.resolve()
+      const changes = [
+        () => parent.setAttribute('lang', 'de'),
+        () => parent.setAttribute('time-zone', 'America/New_York'),
+        () => parent.setAttribute('hour-cycle', 'h12'),
+        () => document.body.setAttribute('data-prefers-absolute-time', 'true'),
+        () => document.body.removeAttribute('data-prefers-absolute-time'),
+        () => parent.removeAttribute('lang'),
+        () => window.dispatchEvent(new Event('languagechange')),
+        () => {
+          elements[4].shadowRoot.firstElementChild.textContent = 'tampered'
+        },
+        () => {
+          elements[5].setAttribute('data-custom-title', '')
+          elements[5].setAttribute('title', 'custom title')
+        },
+        () => setClock(Date.now() - 3 * hour),
+      ]
+      let step = 0
+      assertMatchesFreshRenders(elements, setClock, start, start + 2 * minute, second, now => {
+        if (now % (10 * second) === 0 && step < changes.length) changes[step++]()
+      })
+      assert.equal(step, changes.length)
+    })
+
+    test('ticks do not re-render elements whose text cannot change', async () => {
+      const start = Date.parse('2026-03-07T12:00:00.000Z')
+      const setClock = useClock(start)
+      const old = []
+      for (let i = 0; i < 100; i++) {
+        old.push(relativeTime({datetime: new realDate(start - 3 * hour - 10 * minute - i * second).toISOString()}))
+      }
+      const fresh = relativeTime({datetime: new realDate(start - 2 * second).toISOString()})
+      await Promise.resolve()
+      updates.clear()
+
+      // The fresh element stays under a minute old, so its text changes every second
+      for (let i = 1; i <= 50; i++) {
+        setClock(start + i * second)
+        tick()
+      }
+
+      assert.equal(updates.get(fresh), 50)
+      assert.equal(
+        old.reduce((sum, el) => sum + (updates.get(el) || 0), 0),
+        0,
+      )
+      assert.equal(old[0].shadowRoot.textContent, '3 hours ago')
+    })
+
+    test('an inserted element renders once', async () => {
+      useClock(Date.parse('2026-03-07T12:00:00.000Z'))
+      const el = relativeTime({datetime: '2026-03-07T09:00:00.000Z'})
+      await Promise.resolve()
+      await Promise.resolve()
+      assert.equal(updates.get(el), 1)
+      assert.equal(el.shadowRoot.textContent, '3 hours ago')
+    })
+
+    test('update() always re-renders', async () => {
+      useClock(Date.parse('2026-03-07T12:00:00.000Z'))
+      const el = relativeTime({datetime: '2026-03-07T09:00:00.000Z'})
+      await Promise.resolve()
+      const before = updates.get(el)
+      el.update()
+      el.update()
+      assert.equal(updates.get(el), before + 2)
+    })
+
+    test('an attribute changed by an update listener re-renders', async () => {
+      useClock(Date.parse('2026-03-07T12:00:00.000Z'))
+      const el = document.createElement('relative-time')
+      el.addEventListener('relative-time-updated', () => el.setAttribute('format', 'datetime'), {once: true})
+      el.setAttribute('datetime', '2026-03-07T09:00:00.000Z')
+      fixture.append(el)
+      await Promise.resolve()
+      await Promise.resolve()
+      assert.equal(rendered(el), freshRender(el))
+      assert.notEqual(el.shadowRoot.textContent, '3 hours ago')
+    })
+
+    test('no-title elements keep firing an event on every tick', async () => {
+      const start = Date.parse('2026-03-07T12:00:00.000Z')
+      const setClock = useClock(start)
+      const el = relativeTime({'no-title': '', datetime: '2026-03-07T09:00:00.000Z'})
+      relativeTime({datetime: new realDate(start - 2 * second).toISOString()})
+      await Promise.resolve()
+      let events = 0
+      el.addEventListener('relative-time-updated', () => events++)
+      for (let i = 1; i <= 3; i++) {
+        setClock(start + i * second)
+        tick()
+      }
+      assert.equal(events, 3)
+    })
+
+    test('a changed render root is repaired on the next tick', async () => {
+      const start = Date.parse('2026-03-07T12:00:00.000Z')
+      const setClock = useClock(start)
+      const elements = [0, 1, 2, 3].map(() => relativeTime({datetime: '2026-03-07T09:00:00.000Z'}))
+      relativeTime({datetime: new realDate(start - 2 * second).toISOString()})
+      await Promise.resolve()
+      const hidden = document.createElement('div')
+      hidden.hidden = true
+      hidden.textContent = '3 hours ago'
+      elements[0].shadowRoot.replaceChildren(hidden)
+      elements[1].shadowRoot.firstElementChild.setAttribute('aria-hidden', 'true')
+      elements[2].shadowRoot.firstElementChild.style.fontVariantNumeric = 'tabular-nums'
+      elements[3].shadowRoot.append(document.createTextNode(''))
+      setClock(start + second)
+      tick()
+      for (const el of elements) {
+        const [span, ...rest] = el.shadowRoot.childNodes
+        assert.equal(rest.length, 0)
+        assert.equal(span.getAttribute('part'), 'root')
+        assert.equal(span.textContent, '3 hours ago')
+        assert.isFalse(span.hasAttribute('aria-hidden'))
+        assert.equal(span.style.fontVariantNumeric, '')
+      }
+    })
+
+    test('a host time zone change re-renders', async () => {
+      const start = Date.parse('2026-03-07T12:00:00.000Z')
+      const setClock = useClock(start)
+      const el = relativeTime({datetime: '2026-03-07T09:00:00.000Z'})
+      relativeTime({datetime: new realDate(start - 2 * second).toISOString()})
+      await Promise.resolve()
+      setClock(start + second)
+      tick()
+      const before = updates.get(el)
+      const resolvedOptions = Intl.DateTimeFormat.prototype.resolvedOptions
+      Intl.DateTimeFormat.prototype.resolvedOptions = function () {
+        return {...resolvedOptions.call(this), timeZone: 'America/Puerto_Rico'}
+      }
+      try {
+        setClock(start + 2 * second)
+        tick()
+      } finally {
+        Intl.DateTimeFormat.prototype.resolvedOptions = resolvedOptions
+      }
+      assert.equal(updates.get(el), before + 1)
+    })
+
+    test('subclass instances always re-render', async () => {
+      const start = Date.parse('2026-03-07T12:00:00.000Z')
+      const setClock = useClock(start)
+      let date = new realDate('2026-03-07T09:00:00.000Z')
+      class DynamicTime extends RelativeTimeElement {
+        get date() {
+          return new realDate(date)
+        }
+      }
+      // eslint-disable-next-line custom-elements/extends-correct-class
+      if (!customElements.get('dynamic-time')) customElements.define('dynamic-time', DynamicTime)
+      const el = document.createElement('dynamic-time')
+      el.setAttribute('datetime', '2026-03-07T09:00:00.000Z')
+      fixture.append(el)
+      relativeTime({datetime: new realDate(start - 2 * second).toISOString()})
+      await Promise.resolve()
+      assert.equal(el.shadowRoot.textContent, '3 hours ago')
+      date = new realDate('2026-01-01T09:00:00.000Z')
+      setClock(start + second)
+      tick()
+      assert.equal(el.shadowRoot.textContent, 'on Jan 1')
+    })
+
+    test('removing Intl.RelativeTimeFormat re-renders', async () => {
+      const start = Date.parse('2026-03-07T12:00:00.000Z')
+      const setClock = useClock(start)
+      const el = relativeTime({datetime: '2026-03-07T09:00:00.000Z'})
+      relativeTime({datetime: new realDate(start - 2 * second).toISOString()})
+      await Promise.resolve()
+      const RelativeTimeFormat = Intl.RelativeTimeFormat
+      Intl.RelativeTimeFormat = undefined
+      try {
+        setClock(start + second)
+        tick()
+      } finally {
+        Intl.RelativeTimeFormat = RelativeTimeFormat
+      }
+      assert.equal(el.shadowRoot.textContent, 'on Mar 7')
+    })
+
+    test('a skipped tick keeps formatter caches in the same order as a render', async () => {
+      const start = Date.parse('2026-03-07T12:00:00.000Z')
+      const setClock = useClock(start)
+      // Empties the formatter caches
+      window.dispatchEvent(new Event('languagechange'))
+      const el = relativeTime({lang: 'en-x-lru', datetime: '2026-03-07T09:00:00.000Z'})
+      relativeTime({datetime: new realDate(start - 2 * second).toISOString()})
+      // Fill the 100-entry locale cache, leaving the element's locale least recently used
+      const datetime = '2026-03-07T09:00:00.000Z'
+      for (let i = 0; i < 99; i++) relativeTime({lang: `en-x-fill${i}`, format: 'datetime', datetime})
+      await Promise.resolve()
+
+      // Rendering on this tick looks the element's locale up again, so must skipping it
+      setClock(start + second)
+      tick()
+      relativeTime({lang: 'en-x-fill-last', format: 'datetime', datetime})
+      await Promise.resolve()
+
+      const Locale = Intl.Locale
+      let constructed = 0
+      Intl.Locale = new Proxy(Locale, {
+        construct(target, args) {
+          constructed++
+          return Reflect.construct(target, args)
+        },
+      })
+      try {
+        el.update()
+      } finally {
+        Intl.Locale = Locale
+      }
+      assert.equal(constructed, 0)
+    })
+
+    test('instances that override an inherited member always re-render', async () => {
+      const start = Date.parse('2026-03-07T12:00:00.000Z')
+      const setClock = useClock(start)
+      const el = relativeTime({datetime: '2026-03-07T09:00:00.000Z'})
+      relativeTime({datetime: new realDate(start - 2 * second).toISOString()})
+      await Promise.resolve()
+      Object.defineProperty(el, 'date', {get: () => new realDate('2026-01-01T09:00:00.000Z')})
+      setClock(start + second)
+      tick()
+      assert.equal(el.shadowRoot.textContent, 'on Jan 1')
+    })
+
+    test('a host time zone change re-renders even if the clock has not moved', async () => {
+      const start = Date.parse('2026-03-07T12:00:00.000Z')
+      useClock(start)
+      const el = relativeTime({datetime: '2026-03-07T09:00:00.000Z'})
+      relativeTime({datetime: new realDate(start - 2 * second).toISOString()})
+      await Promise.resolve()
+      tick()
+      const before = updates.get(el)
+      const resolvedOptions = Intl.DateTimeFormat.prototype.resolvedOptions
+      Intl.DateTimeFormat.prototype.resolvedOptions = function () {
+        return {...resolvedOptions.call(this), timeZone: 'America/Puerto_Rico'}
+      }
+      try {
+        tick()
+      } finally {
+        Intl.DateTimeFormat.prototype.resolvedOptions = resolvedOptions
+      }
+      assert.equal(updates.get(el), before + 1)
+    })
+
+    test('working out when text can change does not add formatters to the caches', async () => {
+      const start = Date.parse('2026-03-07T12:00:00.000Z')
+      useClock(start)
+      // Empties the formatter caches
+      window.dispatchEvent(new Event('languagechange'))
+      relativeTime({'time-zone': 'UTC', datetime: new realDate(start - 3 * minute).toISOString()})
+      await Promise.resolve()
+
+      // A render two days back reads the wall clock in UTC, which nothing has needed yet
+      const DateTimeFormat = Intl.DateTimeFormat
+      let wallClockFormatters = 0
+      Intl.DateTimeFormat = new Proxy(DateTimeFormat, {
+        construct(target, args) {
+          if (args[1]?.era === 'short') wallClockFormatters++
+          return Reflect.construct(target, args)
+        },
+      })
+      try {
+        relativeTime({'time-zone': 'UTC', datetime: new realDate(start - 2 * day).toISOString()})
+      } finally {
+        Intl.DateTimeFormat = DateTimeFormat
+      }
+      assert.equal(wallClockFormatters, 1)
+    })
+
+    test('overriding instances have their inputs read as often as a render reads them', async () => {
+      useClock(Date.parse('2026-03-07T12:00:00.000Z'))
+      const el = relativeTime({datetime: '2026-03-07T09:00:00.000Z'})
+      await Promise.resolve()
+      let reads = 0
+      Object.defineProperty(el, 'precision', {
+        get() {
+          reads++
+          return 'second'
+        },
+      })
+      el.update()
+      assert.equal(reads, 1)
+    })
+
+    test('renders without queueMicrotask', async () => {
+      useClock(Date.parse('2026-03-07T12:00:00.000Z'))
+      const original = globalThis.queueMicrotask
+      globalThis.queueMicrotask = undefined
+      let el
+      try {
+        el = relativeTime({datetime: '2026-03-07T09:00:00.000Z'})
+      } finally {
+        globalThis.queueMicrotask = original
+      }
+      assert.equal(el.shadowRoot.textContent, '3 hours ago')
+    })
+
+    test('an attribute change re-renders', async () => {
+      useClock(Date.parse('2026-03-07T12:00:00.000Z'))
+      const el = relativeTime({datetime: '2026-03-07T09:00:00.000Z'})
+      await Promise.resolve()
+      const before = updates.get(el)
+      el.setAttribute('format-style', 'narrow')
+      await Promise.resolve()
+      assert.equal(updates.get(el), before + 1)
+      assert.equal(el.shadowRoot.textContent, '3h ago')
+    })
+  })
 })

@@ -11,7 +11,15 @@ import {
   Unit,
   unitNames,
 } from './duration.js'
-import {dateTimeFormat, relativeTimeFormat, getLocale as intlLocale} from './intl-cache.js'
+import {
+  Lookups,
+  dateTimeFormat,
+  relativeTimeFormat,
+  getLocale as intlLocale,
+  repeatLookups,
+  startLookups,
+  stopLookups,
+} from './intl-cache.js'
 const HTMLElement = globalThis.HTMLElement || (null as unknown as typeof window['HTMLElement'])
 
 export type DeprecatedFormat = 'auto' | 'micro' | 'elapsed'
@@ -101,14 +109,68 @@ function isBrowser12hCycle(): boolean {
   return browser12hCycle
 }
 
+// Incremented on `languagechange`, which can change formatting without any DOM change.
+let environmentVersion = 0
+
 // The resolved hour-cycle preference can change when the host locale changes, so
 // drop the memoized value on `languagechange` (cached `Intl` formatters are
 // invalidated separately in intl-cache).
 if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
   window.addEventListener('languagechange', () => {
     browser12hCycle = undefined
+    environmentVersion++
   })
 }
+
+const msPerSecond = 1000
+const msPerMinute = 60 * msPerSecond
+const msPerHour = 60 * msPerMinute
+const msPerDay = 24 * msPerHour
+const msPerQuarterHour = 15 * msPerMinute
+
+// Host settings that change formatting without a `languagechange` event. The host reports
+// changes between tasks, so they are read once per tick and once per microtask checkpoint.
+// Null when they cannot be read, which never matches.
+let hostSettingsRead = false
+let hostSettings: string | null = null
+function forgetHostSettings(): void {
+  hostSettingsRead = false
+}
+function getHostSettings(): string | null {
+  if (!hostSettingsRead) {
+    try {
+      queueMicrotask(forgetHostSettings)
+      hostSettingsRead = true
+    } catch {
+      // Without a way to forget them, read them on every call
+    }
+    try {
+      hostSettings = `${new Date().getTimezoneOffset()} ${new Intl.DateTimeFormat().resolvedOptions().timeZone}`
+    } catch {
+      hostSettings = null
+    }
+  }
+  return hostSettings
+}
+
+// Names an instance could shadow to change what `update()` reads, such as `date` or `getAttribute`
+let inheritedNames: Set<PropertyKey> | null = null
+function shadowsInheritedMember(el: RelativeTimeElement): boolean {
+  if (!inheritedNames) {
+    inheritedNames = new Set()
+    for (let proto = Object.getPrototypeOf(el); proto; proto = Object.getPrototypeOf(proto)) {
+      for (const key of Reflect.ownKeys(proto)) inheritedNames.add(key)
+    }
+  }
+  for (const key of Reflect.ownKeys(el)) {
+    if (inheritedNames.has(key)) return true
+  }
+  return false
+}
+
+// Re-renders an element unless its output is known to be unchanged. Module-private so the
+// public `update()` keeps always re-rendering.
+const refresh = Symbol('refresh')
 
 const dateObserver = new (class {
   elements: Set<RelativeTimeElement> = new Set()
@@ -143,13 +205,16 @@ const dateObserver = new (class {
     let nearestDistance = Infinity
     this.updating = true
     try {
+      // Discard lookups left recording by a render that threw
+      stopLookups()
+      forgetHostSettings()
       for (const timeEl of this.elements) {
         if (!timeEl.isConnected) {
           this.elements.delete(timeEl)
           continue
         }
         nearestDistance = Math.min(nearestDistance, getUnitFactor(timeEl))
-        timeEl.update()
+        timeEl[refresh]()
       }
     } finally {
       this.updating = false
@@ -169,8 +234,30 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
   #customTitle = false
   #updating: false | Promise<void> = false
 
+  // Until `#stableUntil`, re-rendering produces the same output as long as every input recorded
+  // here is unchanged. See `#isStable` and `#stableFor`.
+  #attributeVersion = 0
+  #stableUntil = -Infinity
+  #renderedAt = 0
+  #renderedAttributeVersion = -1
+  #renderedEnvironment = 0
+  #renderedHostSettings: string | null = null
+  #renderedLookups: Lookups = []
+  #renderedLang: string | null = null
+  #renderedTimeZone: string | undefined
+  #renderedHourCycle: Intl.DateTimeFormatOptions['hourCycle']
+  #renderedRootAbsolute: string | null = null
+  #renderedBodyAbsolute: string | null | undefined
+  #renderedText: string | null = null
+  #renderedAriaHidden: string | null = null
+  #renderedFontVariantNumeric = ''
+
+  get #rawLang() {
+    return this.closest('[lang]')?.getAttribute('lang') || this.ownerDocument.documentElement.getAttribute('lang')
+  }
+
   get #lang() {
-    const lang = this.closest('[lang]')?.getAttribute('lang') || this.ownerDocument.documentElement.getAttribute('lang')
+    const lang = this.#rawLang
     if (!lang) return 'default'
     try {
       return intlLocale(lang).toString()
@@ -678,6 +765,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
   // Internal: Refresh the time element's formatted date when an attribute changes.
   attributeChangedCallback(attrName: string, oldValue: unknown, newValue: unknown): void {
     if (oldValue === newValue) return
+    this.#attributeVersion++
     if (attrName === 'datetime' && typeof newValue === 'string' && newValue && !isValidDateTimeFormat(newValue)) {
       // eslint-disable-next-line i18n-text/no-en
       globalThis.console.warn(`The datetime attribute must use the ECMAScript date-time string format: ${newValue}`)
@@ -690,7 +778,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     if (!this.#updating && !(attrName === 'title' && this.#customTitle)) {
       this.#updating = (async () => {
         await Promise.resolve()
-        this.update()
+        this[refresh]()
         this.#updating = false
       })()
     }
@@ -702,9 +790,11 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     let newTitle: string = oldTitle
     const date = this.date
     if (typeof Intl === 'undefined' || !Intl.DateTimeFormat || !date) {
+      this.#stableUntil = -Infinity
       this.#renderRoot.textContent = oldText
       return
     }
+    startLookups()
     const now = Date.now()
     // Resolve the locale/time-zone/hour-cycle once per update. Each getter walks
     // ancestors via `closest(...)`, and they are read by several formatters per
@@ -747,6 +837,10 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       this.#updateRenderRootContent(this.textContent)
     }
 
+    // Record the inputs this render used before event listeners can change any of them
+    const lookups = stopLookups()
+    this.#recordRender(date, now, format, displayUserPreferredAbsoluteTime, timeZone, hourCycle, newTitle, lookups)
+
     if (newText !== oldText || newTitle !== oldTitle) {
       this.dispatchEvent(new RelativeTimeUpdatedEvent(oldText, newText, oldTitle, newTitle))
     }
@@ -761,6 +855,135 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     } else {
       dateObserver.unobserve(this)
     }
+  }
+
+  #recordRender(
+    date: Date,
+    now: number,
+    format: ResolvedFormat,
+    displayUserPreferredAbsoluteTime: boolean,
+    timeZone: string | undefined,
+    hourCycle: Intl.DateTimeFormatOptions['hourCycle'],
+    newTitle: string,
+    lookups: Lookups | null,
+  ): void {
+    // Subclasses and overriding instances always render, so reading their inputs again is wasted
+    // and could run their code a different number of times
+    if (Object.getPrototypeOf(this) !== RelativeTimeElement.prototype || shadowsInheritedMember(this)) {
+      this.#stableUntil = -Infinity
+      return
+    }
+    // A title that is computed but not written (`no-title`) fires an event on every render
+    const titleSettled = newTitle === (this.getAttribute('title') || '')
+    const stableFor =
+      titleSettled && lookups ? this.#stableFor(date, now, format, displayUserPreferredAbsoluteTime, timeZone) : 0
+    this.#stableUntil = now + stableFor
+    if (stableFor <= 0) return
+    this.#renderedLookups = lookups!
+    this.#renderedAt = now
+    this.#renderedAttributeVersion = this.#attributeVersion
+    this.#renderedEnvironment = environmentVersion
+    this.#renderedHostSettings = getHostSettings()
+    this.#renderedLang = this.#rawLang
+    this.#renderedTimeZone = timeZone
+    this.#renderedHourCycle = hourCycle
+    this.#renderedRootAbsolute = this.ownerDocument.documentElement.getAttribute('data-prefers-absolute-time')
+    this.#renderedBodyAbsolute = this.ownerDocument.body?.getAttribute('data-prefers-absolute-time')
+    const span = this.#renderRoot.firstElementChild as HTMLElement | null
+    this.#renderedText = span?.textContent ?? null
+    this.#renderedAriaHidden = span?.getAttribute('aria-hidden') ?? null
+    this.#renderedFontVariantNumeric = span?.style.fontVariantNumeric ?? ''
+  }
+
+  [refresh](): void {
+    if (
+      // Subclasses may compute any input differently, so they always render
+      Object.getPrototypeOf(this) !== RelativeTimeElement.prototype ||
+      shadowsInheritedMember(this) ||
+      typeof Intl === 'undefined' ||
+      !Intl.DateTimeFormat ||
+      !Intl.RelativeTimeFormat ||
+      !this.#isStable(Date.now())
+    ) {
+      this.update()
+    } else if (this.isConnected) {
+      // A stable element renders relative text, which `update()` always observes
+      dateObserver.observe(this)
+    } else {
+      dateObserver.unobserve(this)
+    }
+  }
+
+  // Whether `update()` would render exactly what is already rendered and fire no event: before
+  // `#stableUntil`, with no attribute, ancestor, locale, time zone or rendered DOM change since
+  // the last render. The DOM checks match the ones `#updateRenderRootContent` uses to skip writes.
+  #isStable(now: number): boolean {
+    if (
+      !(now < this.#stableUntil) ||
+      now < this.#renderedAt ||
+      this.#attributeVersion !== this.#renderedAttributeVersion ||
+      environmentVersion !== this.#renderedEnvironment
+    ) {
+      return false
+    }
+    const root = this.#renderRoot
+    const span = root.firstElementChild as HTMLElement | null
+    return (
+      span !== null &&
+      root.childNodes.length === 1 &&
+      span.getAttribute('part') === 'root' &&
+      span.textContent === this.#renderedText &&
+      span.getAttribute('aria-hidden') === this.#renderedAriaHidden &&
+      span.style.fontVariantNumeric === this.#renderedFontVariantNumeric &&
+      this.#rawLang === this.#renderedLang &&
+      this.timeZone === this.#renderedTimeZone &&
+      this.hourCycle === this.#renderedHourCycle &&
+      this.ownerDocument.documentElement.getAttribute('data-prefers-absolute-time') === this.#renderedRootAbsolute &&
+      this.ownerDocument.body?.getAttribute('data-prefers-absolute-time') === this.#renderedBodyAbsolute &&
+      this.#renderedHostSettings !== null &&
+      getHostSettings() === this.#renderedHostSettings &&
+      // Last, as it updates the caches' least-recently-used order
+      repeatLookups(this.#renderedLookups)
+    )
+  }
+
+  // Milliseconds for which the rendered text cannot change, or 0 when unknown. Covers only
+  // `relative` output with `second` precision between a minute and 28 days, where
+  // `roundToSingleUnit` changes the text only when:
+  // - under an hour, the elapsed seconds reach :55 (rounding up a minute) or :00
+  // - from an hour, the elapsed time within the hour reaches 54:55 (rounding up an hour) or 00:00
+  // - the calendar date changes locally, in `timeZone`, or in UTC (used by `Duration.compare`)
+  // - the elapsed time reaches `threshold`, switching to `datetime`
+  #stableFor(
+    date: Date,
+    now: number,
+    format: ResolvedFormat,
+    displayUserPreferredAbsoluteTime: boolean,
+    timeZone: string | undefined,
+  ): number {
+    if (format !== 'relative' || displayUserPreferredAbsoluteTime || this.precision !== 'second') return 0
+    const delta = date.getTime() - now
+    const elapsed = Math.abs(delta)
+    if (elapsed < msPerMinute || elapsed >= 28 * msPerDay) return 0
+    const step = elapsed < msPerHour ? msPerMinute : msPerHour
+    const roundUp = elapsed < msPerHour ? 55 * msPerSecond : 54 * msPerMinute + 55 * msPerSecond
+    const position = elapsed % step
+    let stable: number
+    if (delta < 0) {
+      stable = position < roundUp ? roundUp - position : step - position
+    } else {
+      // Elapsed time shrinks toward a future date
+      stable = position >= roundUp ? position - roundUp : position
+    }
+    stable = Math.min(stable, msUntilNextDay(now), msPerDay - (now % msPerDay))
+    // Every time zone's UTC offset, and every change to it, falls on a quarter hour, so the date in
+    // `timeZone` can only change then. Unlike its exact midnight, that needs no Intl lookup.
+    if (timeZone) stable = Math.min(stable, msPerQuarterHour - (now % msPerQuarterHour))
+    if (this.tense === 'auto' && delta < 0) {
+      const threshold = Math.abs(applyDuration(now, Duration.from(this.threshold)).getTime() - now)
+      stable = Math.min(stable, threshold - elapsed - msPerSecond)
+    }
+    return Math.max(0, stable)
   }
 }
 

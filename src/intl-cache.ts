@@ -23,6 +23,10 @@ class LRUCache<V> {
   constructor(private readonly max = 100) {}
 
   get(key: string): V | undefined {
+    if (lookups) {
+      if (lookups.length < maxLookups) lookups.push([this as LRUCache<unknown>, key])
+      else lookupsOverflowed = true
+    }
     const value = this.#map.get(key)
     if (value !== undefined) {
       this.#map.delete(key)
@@ -45,6 +49,36 @@ class LRUCache<V> {
 }
 
 const registeredCaches: Array<LRUCache<unknown>> = []
+
+export type Lookups = Array<[LRUCache<unknown>, string]>
+
+// Lookups made while rendering an element. Repeating them when the element skips a render
+// leaves every cache in the same least-recently-used order as a full render would.
+let lookups: Lookups | null = null
+let lookupsOverflowed = false
+// A render makes a handful of lookups. The cap bounds a recording left running by a render that
+// threw; an overflowing recording is discarded.
+const maxLookups = 64
+
+export function startLookups(): void {
+  lookups = []
+  lookupsOverflowed = false
+}
+
+export function stopLookups(): Lookups | null {
+  const result = lookupsOverflowed ? null : lookups
+  lookups = null
+  return result
+}
+
+// Repeats recorded lookups in order. Returns false at the first entry no longer cached, which
+// a full render would have to recreate.
+export function repeatLookups(recorded: Lookups): boolean {
+  for (const [cache, key] of recorded) {
+    if (cache.get(key) === undefined) return false
+  }
+  return true
+}
 
 // Create a bounded cache that participates in `clearIntlCache` invalidation.
 export function createCache<V>(max?: number): LRUCache<V> {

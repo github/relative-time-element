@@ -1,5 +1,14 @@
 import {assert} from '@open-wc/testing'
-import {dateTimeFormat, relativeTimeFormat, numberFormat, getLocale, clearIntlCache} from '../src/intl-cache.ts'
+import {
+  dateTimeFormat,
+  relativeTimeFormat,
+  numberFormat,
+  getLocale,
+  clearIntlCache,
+  startLookups,
+  stopLookups,
+  repeatLookups,
+} from '../src/intl-cache.ts'
 
 suite('intl-cache', function () {
   test('returns the same DateTimeFormat instance for identical locale + options', () => {
@@ -47,5 +56,39 @@ suite('intl-cache', function () {
     clearIntlCache()
     const after = dateTimeFormat('en', {year: 'numeric', month: 'short'})
     assert.notStrictEqual(before, after)
+  })
+
+  test('repeating recorded lookups restores the least-recently-used order', () => {
+    clearIntlCache()
+    const recorded = dateTimeFormat('en', {year: 'numeric'})
+    startLookups()
+    dateTimeFormat('en', {year: 'numeric'})
+    const lookups = stopLookups()
+    for (let i = 0; i < 99; i++) dateTimeFormat(`en-x-b${i}`, {year: 'numeric'})
+    assert.isTrue(repeatLookups(lookups))
+    // One more entry evicts the least recently used, which is no longer the recorded one
+    dateTimeFormat('en-x-c', {year: 'numeric'})
+    assert.strictEqual(dateTimeFormat('en', {year: 'numeric'}), recorded)
+  })
+
+  test('repeating lookups reports an entry that is no longer cached', () => {
+    clearIntlCache()
+    dateTimeFormat('en', {year: 'numeric'})
+    startLookups()
+    dateTimeFormat('en', {year: 'numeric'})
+    relativeTimeFormat('en', {numeric: 'auto'})
+    const lookups = stopLookups()
+    clearIntlCache()
+    assert.isFalse(repeatLookups(lookups))
+  })
+
+  test('only records lookups between startLookups and stopLookups', () => {
+    dateTimeFormat('en', {year: 'numeric'})
+    startLookups()
+    relativeTimeFormat('en', {numeric: 'auto'})
+    const lookups = stopLookups()
+    dateTimeFormat('en', {month: 'short'})
+    assert.equal(lookups.length, 1)
+    assert.isNull(stopLookups())
   })
 })
