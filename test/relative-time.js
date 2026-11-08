@@ -4097,5 +4097,41 @@ suite('relative-time', function () {
       assert.equal(updates.get(el), before + 1)
       assert.equal(el.shadowRoot.textContent, '3h ago')
     })
+
+    // Zone offsets are not always whole quarter hours: fixed offsets accept any minute, and
+    // historical offsets have odd minutes and seconds.
+    for (const [timeZone, datetime, before, after] of [
+      ['+00:01', '2026-03-06T00:29:00.000Z', '2026-03-07T23:58:00.000Z', '2026-03-07T23:59:30.000Z'],
+      ['Africa/Monrovia', '1971-06-13T01:14:00.000Z', '1971-06-15T00:44:00.000Z', '1971-06-15T00:44:40.000Z'],
+    ]) {
+      test(`renders when a tick crosses midnight in ${timeZone}`, async () => {
+        const setClock = useClock(Date.parse(before))
+        const el = relativeTime({datetime, 'time-zone': timeZone})
+        await Promise.resolve()
+        const initial = rendered(el)
+        let events = 0
+        el.addEventListener('relative-time-updated', () => events++)
+
+        setClock(Date.parse(after))
+        tick()
+
+        assert.notEqual(rendered(el), initial)
+        assert.equal(rendered(el), freshRender(el))
+        assert.equal(events, 1)
+      })
+    }
+
+    test('renders when a tick crosses UTC midnight before 1970', async () => {
+      const setClock = useClock(Date.parse('1969-06-10T23:58:00.000Z'))
+      const el = relativeTime({datetime: '1969-06-10T20:48:00.000Z'})
+      await Promise.resolve()
+      updates.clear()
+
+      setClock(Date.parse('1969-06-11T00:00:30.000Z'))
+      tick()
+
+      assert.equal(updates.get(el), 1)
+      assert.equal(rendered(el), freshRender(el))
+    })
   })
 })

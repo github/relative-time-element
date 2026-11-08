@@ -126,7 +126,6 @@ const msPerSecond = 1000
 const msPerMinute = 60 * msPerSecond
 const msPerHour = 60 * msPerMinute
 const msPerDay = 24 * msPerHour
-const msPerQuarterHour = 15 * msPerMinute
 
 // Host settings that change formatting without a `languagechange` event. The host reports
 // changes between tasks, so they are read once per tick and once per microtask checkpoint.
@@ -166,6 +165,15 @@ function shadowsInheritedMember(el: RelativeTimeElement): boolean {
     if (inheritedNames.has(key)) return true
   }
   return false
+}
+
+// Whether `el` is a plain `relative-time` that reads its inputs only through this class. Subclasses
+// and overriding instances always render, so reading their inputs again is wasted and could run
+// their code a different number of times. This is a function rather than a class member because
+// tsc hoists private methods into the computed `[refresh]` key, which esbuild's bundle evaluates
+// before the `RelativeTimeElement` binding exists.
+function isPlainElement(el: RelativeTimeElement): boolean {
+  return Object.getPrototypeOf(el) === RelativeTimeElement.prototype && !shadowsInheritedMember(el)
 }
 
 // Re-renders an element unless its output is known to be unchanged. Module-private so the
@@ -867,9 +875,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     newTitle: string,
     lookups: Lookups | null,
   ): void {
-    // Subclasses and overriding instances always render, so reading their inputs again is wasted
-    // and could run their code a different number of times
-    if (Object.getPrototypeOf(this) !== RelativeTimeElement.prototype || shadowsInheritedMember(this)) {
+    if (!isPlainElement(this)) {
       this.#stableUntil = -Infinity
       return
     }
@@ -897,9 +903,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
 
   [refresh](): void {
     if (
-      // Subclasses may compute any input differently, so they always render
-      Object.getPrototypeOf(this) !== RelativeTimeElement.prototype ||
-      shadowsInheritedMember(this) ||
+      !isPlainElement(this) ||
       typeof Intl === 'undefined' ||
       !Intl.DateTimeFormat ||
       !Intl.RelativeTimeFormat ||
@@ -952,8 +956,11 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
   // `roundToSingleUnit` changes the text only when:
   // - under an hour, the elapsed seconds reach :55 (rounding up a minute) or :00
   // - from an hour, the elapsed time within the hour reaches 54:55 (rounding up an hour) or 00:00
-  // - the calendar date changes locally, in `timeZone`, or in UTC (used by `Duration.compare`)
+  // - the calendar date changes locally or in UTC (used by `Duration.compare`)
   // - the elapsed time reaches `threshold`, switching to `datetime`
+  // Elements with a `time-zone` are never covered: a fixed offset can be any number of minutes, and
+  // historical offsets have seconds, so only an Intl lookup could place that zone's midnight. Clocks
+  // before 1970 are not covered either, as `now % msPerDay` is negative for them.
   #stableFor(
     date: Date,
     now: number,
@@ -962,6 +969,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     timeZone: string | undefined,
   ): number {
     if (format !== 'relative' || displayUserPreferredAbsoluteTime || this.precision !== 'second') return 0
+    if (timeZone || now < 0) return 0
     const delta = date.getTime() - now
     const elapsed = Math.abs(delta)
     if (elapsed < msPerMinute || elapsed >= 28 * msPerDay) return 0
@@ -976,9 +984,6 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       stable = position >= roundUp ? position - roundUp : position
     }
     stable = Math.min(stable, msUntilNextDay(now), msPerDay - (now % msPerDay))
-    // Every time zone's UTC offset, and every change to it, falls on a quarter hour, so the date in
-    // `timeZone` can only change then. Unlike its exact midnight, that needs no Intl lookup.
-    if (timeZone) stable = Math.min(stable, msPerQuarterHour - (now % msPerQuarterHour))
     if (this.tense === 'auto' && delta < 0) {
       const threshold = Math.abs(applyDuration(now, Duration.from(this.threshold)).getTime() - now)
       stable = Math.min(stable, threshold - elapsed - msPerSecond)
