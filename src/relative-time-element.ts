@@ -178,35 +178,11 @@ function isPlainElement(el: RelativeTimeElement): boolean {
   )
 }
 
-// The prototype members a render reads, through `this` or the shared timer. Replacing any of them,
-// such as the `date` getter or `update()` itself, can change what a render produces.
-const renderedMembers = [
-  'update',
-  'date',
-  'datetime',
-  'format',
-  'formatStyle',
-  'precision',
-  'tense',
-  'threshold',
-  'noTitle',
-  'timeZone',
-  'hourCycle',
-  'second',
-  'minute',
-  'hour',
-  'weekday',
-  'day',
-  'month',
-  'year',
-  'timeZoneName',
-  'prefix',
-] as const
-
-// Whether the prototype still has exactly the members it was defined with, and the members a render
-// reads are unchanged. An added member, such as `getAttribute`, would shadow a built-in a render
-// calls. Page code can change the prototype whenever it runs, so the answer is only reused until
-// `pageCodeMayHaveRun()`: within a tick, between elements that neither render nor run overrides.
+// Whether the prototype still has exactly the members it was defined with, each unchanged. A replaced
+// member, such as the `date` getter or `update()`, or an added one, such as a `getAttribute` that
+// shadows the built-in, can change what a render produces. Page code can change the prototype
+// whenever it runs, so the answer is only reused until `pageCodeMayHaveRun()`: within a tick,
+// between elements that neither render nor have overrides.
 let pageCodeRuns = 0
 let classCheckedAfter = -1
 let classUnchanged = false
@@ -224,23 +200,34 @@ function classMatchesDefinition(): boolean {
   const proto = RelativeTimeElement.prototype
   if (Object.getPrototypeOf(proto) !== definedMembers.parent) return false
   const keys = Reflect.ownKeys(proto)
-  if (keys.length !== definedMembers.keys.size) return false
+  if (keys.length !== definedMembers.descriptors.size) return false
   for (const key of keys) {
-    if (!definedMembers.keys.has(key)) return false
-  }
-  for (const [name, defined] of definedMembers.descriptors) {
-    const current = Object.getOwnPropertyDescriptor(proto, name)
-    if (!current || defined.get !== current.get || defined.set !== current.set || defined.value !== current.value) {
+    const defined = definedMembers.descriptors.get(key)
+    const current = Object.getOwnPropertyDescriptor(proto, key)
+    if (
+      !defined ||
+      !current ||
+      defined.get !== current.get ||
+      defined.set !== current.set ||
+      defined.value !== current.value
+    ) {
       return false
     }
   }
   return true
 }
 
+interface RenderInputs {
+  attributeVersion: number
+  environment: number
+  lang: string | null
+  rootAbsolute: string | null
+  bodyAbsolute: string | null | undefined
+}
+
 interface DefinedMembers {
   parent: object | null
-  keys: Set<PropertyKey>
-  descriptors: Map<string, PropertyDescriptor>
+  descriptors: Map<PropertyKey, PropertyDescriptor>
 }
 
 // Re-renders an element unless its output is known to be unchanged. Module-private so the
@@ -304,6 +291,8 @@ const dateObserver = new (class {
           nearestDistance = Math.min(nearestDistance, factor)
           if (!plain) pageCodeMayHaveRun()
           timeEl[refresh](plain)
+          // An override can run page code after calling the inherited `update()`
+          if (!plain) pageCodeMayHaveRun()
         } catch (error) {
           ;(failed ??= new Set()).add(timeEl)
           // Page code may have run before the throw, and a render may have left lookups recording
@@ -335,6 +324,8 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
   // Until `#stableUntil`, re-rendering produces the same output as long as every input recorded
   // here is unchanged. See `#isStable` and `#stableFor`.
   #attributeVersion = 0
+  // Set while `update()` writes the title it computed, which is not a change to its inputs
+  #settingTitle = false
   #stableUntil = -Infinity
   #renderedAt = 0
   #renderedAttributeVersion = -1
@@ -863,7 +854,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
   // Internal: Refresh the time element's formatted date when an attribute changes.
   attributeChangedCallback(attrName: string, oldValue: unknown, newValue: unknown): void {
     if (oldValue === newValue) return
-    this.#attributeVersion++
+    if (!this.#settingTitle) this.#attributeVersion++
     if (attrName === 'datetime' && typeof newValue === 'string' && newValue && !isValidDateTimeFormat(newValue)) {
       // eslint-disable-next-line i18n-text/no-en
       globalThis.console.warn(`The datetime attribute must use the ECMAScript date-time string format: ${newValue}`)
@@ -884,8 +875,10 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
 
   update() {
     pageCodeMayHaveRun()
-    // Before reading any input, in case an override removes itself while being read
+    // Before reading any input, in case an override removes itself while being read, and before
+    // writing to the DOM, which can run page code that changes an input
     const plainAtStart = isPlainElement(this)
+    const inputs = plainAtStart ? this.#readInputs() : null
     const oldText: string = this.#renderRoot.textContent || this.textContent || ''
     const oldTitle: string = this.getAttribute('title') || ''
     let newTitle: string = oldTitle
@@ -893,6 +886,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     if (typeof Intl === 'undefined' || !Intl.DateTimeFormat || !date) {
       this.#stableUntil = -Infinity
       this.#renderRoot.textContent = oldText
+      pageCodeMayHaveRun()
       return
     }
     startLookups()
@@ -905,7 +899,14 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     const hourCycle = this.hourCycle
     if (!this.#customTitle) {
       newTitle = this.#getFormattedTitle(date, locale, timeZone, hourCycle) || ''
-      if (newTitle && !this.noTitle && newTitle !== oldTitle) this.setAttribute('title', newTitle)
+      if (newTitle && !this.noTitle && newTitle !== oldTitle) {
+        this.#settingTitle = true
+        try {
+          this.setAttribute('title', newTitle)
+        } finally {
+          this.#settingTitle = false
+        }
+      }
     }
 
     const duration = elapsedTime(date, this.precision, now)
@@ -949,7 +950,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       hourCycle,
       newTitle,
       lookups,
-      plainAtStart,
+      inputs,
     )
 
     if (newText !== oldText || newTitle !== oldTitle) {
@@ -967,6 +968,19 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     } else {
       dateObserver.unobserve(this)
     }
+    // Writing to the DOM can run page code, such as a removed custom element's disconnectedCallback
+    pageCodeMayHaveRun()
+  }
+
+  // Inputs that can change without a call into this element, read before a render uses them
+  #readInputs(): RenderInputs {
+    return {
+      attributeVersion: this.#attributeVersion,
+      environment: environmentVersion,
+      lang: this.#rawLang,
+      rootAbsolute: this.ownerDocument.documentElement.getAttribute('data-prefers-absolute-time'),
+      bodyAbsolute: this.ownerDocument.body?.getAttribute('data-prefers-absolute-time'),
+    }
   }
 
   #recordRender(
@@ -978,10 +992,10 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     hourCycle: Intl.DateTimeFormatOptions['hourCycle'],
     newTitle: string,
     lookups: Lookups | null,
-    plainAtStart: boolean,
+    inputs: RenderInputs | null,
   ): void {
     this.#stableUntil = -Infinity
-    if (!plainAtStart || !isPlainElement(this)) return
+    if (!inputs || !isPlainElement(this)) return
     // A title that is computed but not written (`no-title`) fires an event on every render
     const titleSettled = newTitle === (this.getAttribute('title') || '')
     const stableFor =
@@ -990,14 +1004,14 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     this.#stableUntil = now + stableFor
     this.#renderedLookups = lookups!
     this.#renderedAt = now
-    this.#renderedAttributeVersion = this.#attributeVersion
-    this.#renderedEnvironment = environmentVersion
+    this.#renderedAttributeVersion = inputs.attributeVersion
+    this.#renderedEnvironment = inputs.environment
     this.#renderedHostSettings = getHostSettings()
-    this.#renderedLang = this.#rawLang
+    this.#renderedLang = inputs.lang
     this.#renderedTimeZone = timeZone
     this.#renderedHourCycle = hourCycle
-    this.#renderedRootAbsolute = this.ownerDocument.documentElement.getAttribute('data-prefers-absolute-time')
-    this.#renderedBodyAbsolute = this.ownerDocument.body?.getAttribute('data-prefers-absolute-time')
+    this.#renderedRootAbsolute = inputs.rootAbsolute
+    this.#renderedBodyAbsolute = inputs.bodyAbsolute
     const span = this.#renderRoot.firstElementChild as HTMLElement | null
     this.#renderedText = span?.textContent ?? null
     this.#renderedAriaHidden = span?.getAttribute('aria-hidden') ?? null
@@ -1099,9 +1113,11 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
 
 const definedMembers: DefinedMembers = {
   parent: Object.getPrototypeOf(RelativeTimeElement.prototype),
-  keys: new Set(Reflect.ownKeys(RelativeTimeElement.prototype)),
   descriptors: new Map(
-    renderedMembers.map(name => [name, Object.getOwnPropertyDescriptor(RelativeTimeElement.prototype, name)!]),
+    Reflect.ownKeys(RelativeTimeElement.prototype).map(key => [
+      key,
+      Object.getOwnPropertyDescriptor(RelativeTimeElement.prototype, key)!,
+    ]),
   ),
 }
 

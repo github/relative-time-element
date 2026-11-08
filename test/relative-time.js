@@ -4565,6 +4565,88 @@ suite('relative-time', function () {
       assert.equal(updates.get(el), before + 1)
     })
 
+    test('a prototype change made by an instance override after rendering re-renders later elements', async () => {
+      const start = Date.parse('2026-03-17T12:00:00.000Z')
+      const setClock = useClock(start)
+      const first = relativeTime({datetime: '2026-03-17T09:00:00.000Z'})
+      const later = relativeTime({datetime: '2026-03-17T09:00:00.000Z'})
+      relativeTime({datetime: new realDate(start - 2 * second).toISOString()})
+      await Promise.resolve()
+      let restore = null
+      first.update = function () {
+        RelativeTimeElement.prototype.update.call(this)
+        if (!restore) restore = replaceDateGetter(() => new realDate('2020-01-01T09:00:00.000Z'))
+      }
+      try {
+        setClock(start + second)
+        tick()
+        assert.equal(later.shadowRoot.textContent, 'on Jan 1, 2020')
+      } finally {
+        if (restore) restore()
+      }
+    })
+
+    test('replacing any prototype member always re-renders', async () => {
+      const start = Date.parse('2026-03-18T12:00:00.000Z')
+      const setClock = useClock(start)
+      const el = relativeTime({datetime: '2026-03-18T09:00:00.000Z'})
+      relativeTime({datetime: new realDate(start - 2 * second).toISOString()})
+      await Promise.resolve()
+      for (const name of ['connectedCallback', 'attributeChangedCallback', 'onRelativeTimeUpdated']) {
+        const original = Object.getOwnPropertyDescriptor(RelativeTimeElement.prototype, name)
+        // A wrapper that behaves the same, so only the replacement itself can matter
+        const replacement = original.get
+          ? {
+              ...original,
+              get() {
+                return original.get.call(this)
+              },
+            }
+          : {
+              ...original,
+              value(...args) {
+                return original.value.apply(this, args)
+              },
+            }
+        Object.defineProperty(RelativeTimeElement.prototype, name, replacement)
+        try {
+          const before = updates.get(el)
+          setClock(Date.now() + second)
+          tick()
+          assert.equal(updates.get(el), before + 1, name)
+        } finally {
+          Object.defineProperty(RelativeTimeElement.prototype, name, original)
+        }
+      }
+    })
+
+    test('an input changed by page code while a render writes the DOM re-renders', async () => {
+      const start = Date.parse('2026-03-19T12:00:00.000Z')
+      const setClock = useClock(start)
+      const el = relativeTime({datetime: '2026-03-19T09:00:00.000Z'})
+      relativeTime({datetime: new realDate(start - 2 * second).toISOString()})
+      await Promise.resolve()
+      if (!customElements.get('datetime-changer')) {
+        customElements.define(
+          'datetime-changer',
+          class extends HTMLElement {
+            disconnectedCallback() {
+              this.host.setAttribute('datetime', '2026-03-19T08:00:00.000Z')
+            }
+          },
+        )
+      }
+      const changer = document.createElement('datetime-changer')
+      changer.host = el
+      el.shadowRoot.append(changer)
+      setClock(start + second)
+      tick()
+      await Promise.resolve()
+      await Promise.resolve()
+      assert.equal(el.shadowRoot.textContent, '4 hours ago')
+      assert.equal(rendered(el), freshRender(el))
+    })
+
     test('an attribute change re-renders', async () => {
       useClock(Date.parse('2026-03-07T12:00:00.000Z'))
       const el = relativeTime({datetime: '2026-03-07T09:00:00.000Z'})
