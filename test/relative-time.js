@@ -3627,6 +3627,59 @@ suite('relative-time', function () {
       assert.strictEqual(thrown(rethrows[0]), failure)
     })
 
+    test('an element whose isConnected getter throws does not stop the others or the timer', async () => {
+      const failure = new Error('isConnected failed')
+      const bad = relativeTime({datetime: ago(3 * minute)})
+      const good = relativeTime({datetime: ago(3 * minute)})
+      await settled()
+      Object.defineProperty(bad, 'isConnected', {
+        get() {
+          throw failure
+        },
+      })
+      const scheduled = timers.length
+
+      advance(minute)
+      assert.isNull(thrown(tick))
+
+      assert.equal(good.shadowRoot.textContent, '4 minutes ago')
+      assert.isAbove(timers.length, scheduled)
+      assert.equal(timers.at(-1).delay, minute)
+      assert.equal(rethrows.length, 1)
+      assert.strictEqual(thrown(rethrows[0]), failure)
+    })
+
+    test('a render that fails part way leaves later elements skipping and rendering as before', async () => {
+      const zone = document.createElement('div')
+      fixture.append(zone)
+      const bad = relativeTime({datetime: ago(3 * minute)}, zone)
+      const old = relativeTime({datetime: ago(3 * 60 * minute)})
+      const fresh = relativeTime({datetime: ago(2000)})
+      await settled()
+      // An invalid zone on an ancestor makes the next render throw after it has started
+      zone.setAttribute('time-zone', 'Not/AZone')
+      const update = RelativeTimeElement.prototype.update
+      const updates = new Map()
+      RelativeTimeElement.prototype.update = function () {
+        updates.set(this, (updates.get(this) || 0) + 1)
+        return update.call(this)
+      }
+      try {
+        advance(1000)
+        assert.isNull(thrown(tick))
+      } finally {
+        RelativeTimeElement.prototype.update = update
+      }
+
+      assert.equal(updates.get(bad), 1)
+      assert.equal(rethrows.length, 1)
+      assert.instanceOf(thrown(rethrows[0]), RangeError)
+      assert.isUndefined(updates.get(old))
+      assert.equal(old.shadowRoot.textContent, '3 hours ago')
+      assert.equal(updates.get(fresh), 1)
+      assert.equal(fresh.shadowRoot.textContent, 'now')
+    })
+
     test('an element whose date getter throws does not stop the others or the timer', async () => {
       const failure = new Error('date failed')
       const bad = relativeTime({datetime: ago(3 * minute)})

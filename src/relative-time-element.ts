@@ -217,14 +217,14 @@ const dateObserver = new (class {
       stopLookups()
       forgetHostSettings()
       for (const timeEl of this.elements) {
-        if (!timeEl.isConnected) {
-          this.elements.delete(timeEl)
-          continue
-        }
         // One element failing must not stop the others updating or the timer rescheduling. The error
         // is rethrown from a task of its own so it is still reported, uncaught, exactly once.
         // (`setTimeout` rather than `reportError`, which older browsers and non-browser hosts lack.)
         try {
+          if (!timeEl.isConnected) {
+            this.elements.delete(timeEl)
+            continue
+          }
           const factor = getUnitFactor(timeEl)
           nearestDistance = Math.min(nearestDistance, factor)
           timeEl[refresh]()
