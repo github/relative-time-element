@@ -710,7 +710,11 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     const hourCycle = this.hourCycle
     if (!this.#customTitle) {
       newTitle = this.#getFormattedTitle(date, locale, timeZone, hourCycle) || ''
-      if (newTitle && !this.noTitle && newTitle !== oldTitle) this.setAttribute('title', newTitle)
+      if (this.noTitle) {
+        this.removeAttribute('title')
+      } else if (newTitle && newTitle !== oldTitle) {
+        this.setAttribute('title', newTitle)
+      }
     }
 
     const duration = elapsedTime(date, this.precision, now)

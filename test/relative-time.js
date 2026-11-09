@@ -296,6 +296,38 @@ suite('relative-time', function () {
     assert.equal(el.getAttribute('title'), null)
   })
 
+  test('removes the title when no-title is added after rendering', async () => {
+    const el = document.createElement('relative-time')
+    el.setAttribute('datetime', new Date().toISOString())
+    await Promise.resolve()
+    assert.ok(el.getAttribute('title'))
+    el.setAttribute('no-title', '')
+    await Promise.resolve()
+    assert.equal(el.getAttribute('title'), null)
+  })
+
+  test('keeps a custom title when no-title is added', async () => {
+    const el = document.createElement('relative-time')
+    el.setAttribute('datetime', new Date().toISOString())
+    el.setAttribute('title', 'custom')
+    await Promise.resolve()
+    el.setAttribute('no-title', '')
+    await Promise.resolve()
+    assert.equal(el.getAttribute('title'), 'custom')
+  })
+
+  test('sets the title again when no-title is removed', async () => {
+    const el = document.createElement('relative-time')
+    el.setAttribute('datetime', new Date().toISOString())
+    await Promise.resolve()
+    const title = el.getAttribute('title')
+    el.setAttribute('no-title', '')
+    await Promise.resolve()
+    el.removeAttribute('no-title')
+    await Promise.resolve()
+    assert.equal(el.getAttribute('title'), title)
+  })
+
   test('shadowDOM reflects textContent with invalid date', async () => {
     const el = document.createElement('relative-time')
     el.textContent = 'A date string'
