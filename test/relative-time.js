@@ -774,7 +774,7 @@ suite('relative-time', function () {
       time.setAttribute('tense', 'past')
       time.setAttribute('datetime', '2023-01-01T00:00:00Z')
       await Promise.resolve()
-      assert.equal(time.shadowRoot.textContent, '11 years ago')
+      assert.equal(time.shadowRoot.textContent, '10 years ago')
     })
 
     test('rewrites from now past datetime to minutes ago', async () => {
@@ -842,9 +842,25 @@ suite('relative-time', function () {
       assert.equal(time.shadowRoot.textContent, '3 months ago')
     })
 
+    test('does not count an extra year for dates many years in the past', async () => {
+      freezeTime(new Date('2025-02-06T12:00:00Z'))
+      const time = document.createElement('relative-time')
+      time.setAttribute('tense', 'past')
+      time.setAttribute('datetime', '2015-02-14T15:13:48+05:00')
+      await Promise.resolve()
+      assert.equal(time.shadowRoot.textContent, '10 years ago')
+    })
+
+    test('does not count an extra year for exact multiples of five years', async () => {
+      freezeTime(new Date('2025-01-01T00:00:00Z'))
+      const time = document.createElement('relative-time')
+      time.setAttribute('tense', 'past')
+      time.setAttribute('datetime', '2020-01-01T00:00:00Z')
+      await Promise.resolve()
+      assert.equal(time.shadowRoot.textContent, '5 years ago')
+    })
+
     test('micro formats years', async () => {
-      // FIXME: there is still a bug, if the duration is long enough (say, 10 or 100 years)
-      // then the `month = Math.floor(day / 30)` in elapsedTime causes errors, then "10 years" would output "11y"
       const now = new Date(Date.now() - 2 * 365 * 24 * 60 * 60 * 1000).toISOString()
       const time = document.createElement('relative-time')
       time.setAttribute('tense', 'past')
@@ -947,8 +963,6 @@ suite('relative-time', function () {
     })
 
     test('micro formats years', async () => {
-      // FIXME: there is still a bug, if the duration is long enough (say, 10 or 100 years)
-      // then the `month = Math.floor(day / 30)` in elapsedTime causes errors, then "10 years" would output "11y"
       const now = new Date(Date.now() + 2 * 365 * 24 * 60 * 60 * 1000).toISOString()
       const time = document.createElement('relative-time')
       time.setAttribute('tense', 'future')
@@ -1696,7 +1710,7 @@ suite('relative-time', function () {
       {
         datetime: '2024-10-24T14:46:00.000Z',
         format: 'duration',
-        expected: '2 years, 11 days',
+        expected: '2 years',
       },
       {
         datetime: '2024-10-24T14:46:00.000Z',
@@ -1708,19 +1722,19 @@ suite('relative-time', function () {
         datetime: '2024-10-24T14:46:00.000Z',
         format: 'duration',
         precision: 'minute',
-        expected: '2 years, 11 days',
+        expected: '2 years',
       },
       {
         datetime: '2024-10-24T14:46:00.000Z',
         format: 'duration',
         precision: 'day',
-        expected: '2 years, 11 days',
+        expected: '2 years',
       },
       {
         datetime: '2024-10-24T14:46:00.000Z',
         format: 'duration',
         tense: 'future',
-        expected: '2 years, 11 days',
+        expected: '2 years',
       },
       {
         datetime: '2024-10-24T14:46:00.000Z',
@@ -2152,19 +2166,19 @@ suite('relative-time', function () {
       {
         datetime: '2020-10-24T14:46:00.000Z',
         format: 'duration',
-        expected: '2 years, 10 days',
+        expected: '2 years',
       },
       {
         datetime: '2020-10-24T14:46:00.000Z',
         format: 'duration',
         precision: 'minute',
-        expected: '2 years, 10 days',
+        expected: '2 years',
       },
       {
         datetime: '2020-10-24T14:46:00.000Z',
         format: 'duration',
         precision: 'day',
-        expected: '2 years, 10 days',
+        expected: '2 years',
       },
       {
         datetime: '2020-10-24T14:46:00.000Z',
@@ -2176,7 +2190,7 @@ suite('relative-time', function () {
         datetime: '2020-10-24T14:46:00.000Z',
         format: 'duration',
         tense: 'past',
-        expected: '2 years, 10 days',
+        expected: '2 years',
       },
       {
         reference: '2023-03-23T12:03:00.000Z',
