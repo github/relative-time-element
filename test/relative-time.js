@@ -2715,7 +2715,7 @@ suite('relative-time', function () {
       assert.equal(display(render({lang, datetime: yesterdayDateTime})), localized)
     })
 
-    for (const {reason, before, datetime, timeZone, after, initialText, updatedText, attributes} of [
+    for (const {reason, before, datetime, timeZone, after, initialText, updatedText, attributes, hourly} of [
       {
         reason: 'today (less than a minute old) to a date at midnight',
         before: '2034-11-03T23:59:59.500Z',
@@ -2733,12 +2733,13 @@ suite('relative-time', function () {
         updatedText: 'Nov 3, 2035',
       },
       {
-        reason: 'today (less than a minute old) to a date at midnight without a fine-grained tick',
+        reason: 'today to a date at midnight with hourly updates',
         before: '2033-11-03T12:00:30.000Z',
         datetime: '2033-11-03T12:00:00.000Z',
         after: '2033-11-04T00:00:00.000Z',
         initialText: 'today at 12:00 PM',
         updatedText: 'Nov 3, 2033',
+        hourly: true,
       },
       {
         reason: 'today (more than an hour old) to a date at midnight',
@@ -2800,9 +2801,20 @@ suite('relative-time', function () {
           await Promise.resolve()
           assert.equal(display(el), initialText)
           assert.isFunction(tick)
-          assert.equal(delay, Date.parse(after) - Date.parse(before))
-          Date.now = () => Date.parse(after)
-          tick()
+          if (hourly) {
+            let now = Date.parse(before)
+            while (now < Date.parse(after)) {
+              const nextDelay = Math.min(60 * 60 * 1000, Date.parse(after) - now)
+              assert.isAtMost(delay, 60 * 60 * 1000)
+              now += nextDelay
+              Date.now = () => now
+              tick()
+            }
+          } else {
+            assert.equal(delay, Date.parse(after) - Date.parse(before))
+            Date.now = () => Date.parse(after)
+            tick()
+          }
           assert.equal(display(el), updatedText)
         } finally {
           globalThis.setTimeout = window.setTimeout = originalSetTimeout

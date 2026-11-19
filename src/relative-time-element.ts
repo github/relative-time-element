@@ -184,10 +184,11 @@ const dateObserver = new (class {
     const date = element.date
     if (date) {
       const ms = getUnitFactor(element, compactAbsolute)
-      const time = Date.now() + ms
+      const delay = compactAbsolute ? Math.min(60 * 60 * 1000, ms) : ms
+      const time = Date.now() + delay
       if (time < this.time || this.time <= Date.now()) {
         clearTimeout(this.timer)
-        this.timer = setTimeout(() => this.update(), ms)
+        this.timer = setTimeout(() => this.update(), delay)
         this.time = time
       }
     }
