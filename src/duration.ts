@@ -166,14 +166,22 @@ export function elapsedTime(date: Date, precision: Unit = 'second', now = Date.n
   // What is left after the whole calendar years is shorter than a year, so it must not turn into another year when
   // it is split into 30 day months (a leftover of 360 to 365 days would otherwise count as one more year).
   const extraYears = calendarYears > 0 ? 0 : Math.floor(Math.floor(day / 30) / 12)
-  const month = Math.min(Math.floor(day / 30) - extraYears * 12, 11)
+  let month = Math.floor(day / 30) - extraYears * 12
+  let monthDays = (month + extraYears * 12) * 30
+  if (month > 11) {
+    // Only a leftover of 360 days or more gets here. Counting its days past the 11th month of 30 days would put
+    // the result after the next anniversary, and rounding it would add a year. Count calendar months instead.
+    const start = applyDuration(earlier, new Duration(calendarYears))
+    month = 11
+    monthDays = (applyDuration(start, new Duration(0, month)).getTime() - start.getTime()) / 86400000
+  }
   const year = Math.max(calendarYears, 0) + extraYears
   const i = unitNames.indexOf(precision)
   return new Duration(
     i >= 0 ? year * sign : 0,
     i >= 1 ? month * sign : 0,
     0,
-    i >= 3 ? (day - (month + extraYears * 12) * 30) * sign : 0,
+    i >= 3 ? (day - monthDays) * sign : 0,
     i >= 4 ? (hr - day * 24) * sign : 0,
     i >= 5 ? (min - hr * 60) * sign : 0,
     i >= 6 ? (sec - min * 60) * sign : 0,

@@ -860,6 +860,15 @@ suite('relative-time', function () {
       assert.equal(time.shadowRoot.textContent, '5 years ago')
     })
 
+    test('does not count an extra year one day short of five years', async () => {
+      freezeTime(new Date('2025-01-01T00:00:00Z'))
+      const time = document.createElement('relative-time')
+      time.setAttribute('tense', 'past')
+      time.setAttribute('datetime', '2020-01-02T00:00:00Z')
+      await Promise.resolve()
+      assert.equal(time.shadowRoot.textContent, '5 years ago')
+    })
+
     test('micro formats years', async () => {
       const now = new Date(Date.now() - 2 * 365 * 24 * 60 * 60 * 1000).toISOString()
       const time = document.createElement('relative-time')
