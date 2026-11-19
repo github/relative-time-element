@@ -222,7 +222,7 @@ const dateObserver = new (class {
 })()
 
 /**
- * @attr {'compact'} absolute-format - Optional preset for visible absolute text only.
+ * @attr {'compact'} absolute-format
  */
 export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFormatOptions {
   static define(tag = 'relative-time', registry = customElements) {
@@ -696,7 +696,11 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     this.setAttribute('format', value)
   }
 
-  /** Preset for resolved absolute text. Overrides display fields and the hour cycle, not the title. */
+  /**
+   * Optional preset for resolved absolute text. Overrides display fields and the hour cycle, not the title.
+   * @attr absolute-format
+   * @reflect
+   */
   get absoluteFormat(): AbsoluteFormat | undefined {
     if (this.getAttribute('absolute-format') === 'compact') return 'compact'
   }

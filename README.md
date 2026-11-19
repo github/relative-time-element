@@ -60,6 +60,7 @@ So, a relative date phrase is used for up to a month and then the actual date is
 | :------------- | :--------------- | :------------------------------------------------------------------------------------------ | :------------------------------- |
 | `datetime`     | `datetime`       | `string`                                                                                    | -                                |
 | `format`       | `format`         | `'datetime'\|'relative'\|'duration'`                                                        | `'auto'`                         |
+| `absoluteFormat` | `absolute-format` | `'compact'\|undefined`                                                                   | `undefined`                      |
 | `date`         | -                | `Date \| null`                                                                              | -                                |
 | `tense`        | `tense`          | `'auto'\|'past'\|'future'`                                                                  | `'auto'`                         |
 | `precision`    | `precision`      | `'year'\|'month'\|'day'\|'hour'\|'minute'\|'second'`                                        | `'second'`                       |
@@ -187,6 +188,23 @@ Code that uses `format=micro` should consider migrating to `format=relative` (pe
 |    Jan 15 2023    |    in 30 days     |     30 days, 4 hours, 20 minutes, 8 seconds      |      30d       |  30d 4h 20m 8s   |
 |    Dec 15 2022    |  21 minutes ago   |              21 minutes, 30 seconds              |      21m       |     21m 30s      |
 |    Dec 15 2022    |  37 seconds ago   |                    37 seconds                    |       1m       |       37s        |
+
+##### absolute-format (`'compact'`, default: unset)
+
+Set `absolute-format="compact"` to shorten the visible text when the element displays an absolute timestamp. It applies to explicit `format="datetime"`, dates outside the applicable `threshold`, and absolute output selected by `data-prefers-absolute-time`. It does not force absolute output or change relative and duration text.
+
+```html
+<relative-time datetime="2026-11-02T15:04:00Z" format="datetime" absolute-format="compact" lang="en-US">
+  Nov 2, 2026
+</relative-time>
+```
+
+- **Today** in the effective display time zone: a localized word for today and a 12-hour time, such as `today at 3:04 PM`. The element uses the locale's date/time connector when it can identify one safely. For Japanese and Chinese locale families, or when the connector is ambiguous, it joins the localized today and time with a space instead.
+- **Any other calendar day**: an abbreviated month, numeric day, and full numeric year in the locale's order, such as `Nov 2, 2026`. The year is included even in the current year, and the time is omitted.
+
+Compact text never shows a time zone name. It honors `lang` and `time-zone` but overrides `prefix`, `format-style`, `second`, `minute`, `hour`, `weekday`, `day`, `month`, `year`, `time-zone-name`, and `hour-cycle` for visible absolute text only. It leaves `datetime`, full title formatting (including the usual `hour-cycle`), custom titles, and `no-title` unchanged.
+
+The `absoluteFormat` property reflects the attribute and is typed as `AbsoluteFormat | undefined`, where `AbsoluteFormat` is `'compact'`. Omit the attribute, remove it, or set `absoluteFormat` to `undefined` to use the existing presentation. Empty and unrecognized attribute values also use the existing presentation.
 
 ##### tense (`'auto'|'past'|'future'`, default: `auto`)
 
