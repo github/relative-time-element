@@ -2733,6 +2733,14 @@ suite('relative-time', function () {
         updatedText: 'Nov 3, 2035',
       },
       {
+        reason: 'today (less than a minute old) to a date at midnight without a fine-grained tick',
+        before: '2033-11-03T12:00:30.000Z',
+        datetime: '2033-11-03T12:00:00.000Z',
+        after: '2033-11-04T00:00:00.000Z',
+        initialText: 'today at 12:00 PM',
+        updatedText: 'Nov 3, 2033',
+      },
+      {
         reason: 'today (more than an hour old) to a date at midnight',
         before: '2036-11-03T23:59:30.000Z',
         datetime: '2036-11-03T15:04:00.000Z',
@@ -2757,6 +2765,15 @@ suite('relative-time', function () {
         after: '2025-03-30T01:00:00.000Z',
         initialText: 'Mar 30, 2025',
         updatedText: 'today at 2:04 AM',
+      },
+      {
+        reason: 'a past date to today when Antarctica/Casey rolls back to the previous day',
+        before: '2010-03-04T14:30:00.000Z',
+        datetime: '2010-03-04T12:04:00.000Z',
+        timeZone: 'Antarctica/Casey',
+        after: '2010-03-04T15:00:00.000Z',
+        initialText: 'Mar 4, 2010',
+        updatedText: 'today at 11:04 PM',
       },
       {
         reason: 'compact absolute text back to micro duration at its threshold',

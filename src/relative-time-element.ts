@@ -55,7 +55,9 @@ function getUnitFactor(el: RelativeTimeElement, compactAbsolute: boolean): numbe
   } else if (ms < 60 * 60 * 1000) {
     factor = 60 * 1000
   }
-  if (compactAbsolute || ms >= 60 * 60 * 1000) {
+  if (compactAbsolute && date.getTime() <= now) {
+    factor = msUntilNextDay(now, el.timeZone)
+  } else if (compactAbsolute || ms >= 60 * 60 * 1000) {
     // Calendar labels change at the day boundary, even for recent compact timestamps.
     factor = Math.min(factor, msUntilNextDay(now, el.timeZone))
   }
@@ -843,8 +845,13 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     }
 
     const isFuture = date.getTime() > now
+    const compactBoundary =
+      compactAbsolute &&
+      !compactToday &&
+      !isFuture &&
+      this.#isToday(date, locale, timeZone, now + msUntilNextDay(now, timeZone))
     const shouldObserve = compactAbsolute
-      ? compactToday || isFuture
+      ? compactToday || isFuture || compactBoundary
       : (!displayUserPreferredAbsoluteTime && (format === 'relative' || format === 'duration')) ||
         (this.format === 'micro' && Boolean(this.#getExplicitThreshold()) && isFuture) ||
         (displayUserPreferredAbsoluteTime &&
