@@ -2715,7 +2715,18 @@ suite('relative-time', function () {
       assert.equal(display(render({lang, datetime: yesterdayDateTime})), localized)
     })
 
-    for (const {reason, before, datetime, timeZone, after, initialText, updatedText, attributes, hourly} of [
+    for (const {
+      reason,
+      before,
+      datetime,
+      timeZone,
+      after,
+      initialText,
+      updatedText,
+      attributes,
+      prefersAbsoluteTime,
+      hourly,
+    } of [
       {
         reason: 'today (less than a minute old) to a date at midnight',
         before: '2034-11-03T23:59:59.500Z',
@@ -2785,9 +2796,49 @@ suite('relative-time', function () {
         updatedText: '1m',
         attributes: {format: 'micro', threshold: 'PT1M'},
       },
+      {
+        reason: 'recent threshold-derived compact text to a date at midnight with hourly updates',
+        before: '2039-11-03T12:00:30.000Z',
+        datetime: '2039-11-03T12:00:00.000Z',
+        after: '2039-11-04T00:00:00.000Z',
+        initialText: 'today at 12:00 PM',
+        updatedText: 'Nov 3, 2039',
+        attributes: {format: 'relative', threshold: 'PT10S'},
+        hourly: true,
+      },
+      {
+        reason: 'a future datetime today to a date at midnight with hourly updates',
+        before: '2040-11-03T12:00:00.000Z',
+        datetime: '2040-11-03T12:00:30.000Z',
+        after: '2040-11-04T00:00:00.000Z',
+        initialText: 'today at 12:00 PM',
+        updatedText: 'Nov 3, 2040',
+        hourly: true,
+      },
+      {
+        reason: 'a future preferred absolute time today to a date at midnight with hourly updates',
+        before: '2041-11-03T12:00:00.000Z',
+        datetime: '2041-11-03T12:30:00.000Z',
+        after: '2041-11-04T00:00:00.000Z',
+        initialText: 'today at 12:30 PM',
+        updatedText: 'Nov 3, 2041',
+        attributes: {format: 'relative'},
+        prefersAbsoluteTime: true,
+        hourly: true,
+      },
+      {
+        reason: 'threshold-derived compact text to relative text at its threshold',
+        before: '2042-11-03T12:00:00.000Z',
+        datetime: '2042-11-03T12:10:10.000Z',
+        after: '2042-11-03T12:01:00.000Z',
+        initialText: 'today at 12:10 PM',
+        updatedText: 'in 9 minutes',
+        attributes: {format: 'relative', threshold: 'PT10M'},
+      },
     ]) {
       test(`automatically updates ${reason}`, async () => {
         freezeTime(new Date(before))
+        if (prefersAbsoluteTime) document.documentElement.setAttribute('data-prefers-absolute-time', 'true')
         const originalSetTimeout = window.setTimeout
         let tick
         let delay

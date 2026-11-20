@@ -36,7 +36,10 @@ export class RelativeTimeUpdatedEvent extends Event {
   }
 }
 
-function getUnitFactor(el: RelativeTimeElement, compactAbsolute: boolean): number {
+// Compact text changes at the day boundary. Text from a threshold can also turn relative.
+type CompactAbsolute = false | 'day' | 'threshold'
+
+function getUnitFactor(el: RelativeTimeElement, compactAbsolute: CompactAbsolute): number {
   const date = el.date
   if (!date) return Infinity
   const now = Date.now()
@@ -55,7 +58,7 @@ function getUnitFactor(el: RelativeTimeElement, compactAbsolute: boolean): numbe
   } else if (ms < 60 * 60 * 1000) {
     factor = 60 * 1000
   }
-  if (compactAbsolute && date.getTime() <= now) {
+  if (compactAbsolute === 'day' || (compactAbsolute && date.getTime() <= now)) {
     factor = msUntilNextDay(now, el.timeZone)
   } else if (compactAbsolute || ms >= 60 * 60 * 1000) {
     // Calendar labels change at the day boundary, even for recent compact timestamps.
@@ -174,11 +177,11 @@ if (typeof window !== 'undefined' && typeof window.addEventListener === 'functio
 }
 
 const dateObserver = new (class {
-  elements = new Map<RelativeTimeElement, boolean>()
+  elements = new Map<RelativeTimeElement, CompactAbsolute>()
   time = Infinity
   updating = false
 
-  observe(element: RelativeTimeElement, compactAbsolute: boolean) {
+  observe(element: RelativeTimeElement, compactAbsolute: CompactAbsolute) {
     this.elements.set(element, compactAbsolute)
     if (this.updating) return
     const date = element.date
@@ -858,7 +861,10 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
         (displayUserPreferredAbsoluteTime &&
           (this.#isToday(date, locale, timeZone) || this.#isCurrentYear(date, locale, timeZone)))
     if (shouldObserve) {
-      dateObserver.observe(this, compactAbsolute)
+      dateObserver.observe(
+        this,
+        compactAbsolute && (displayUserPreferredAbsoluteTime || this.format === 'datetime' ? 'day' : 'threshold'),
+      )
     } else {
       dateObserver.unobserve(this)
     }
