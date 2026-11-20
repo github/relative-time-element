@@ -2483,6 +2483,392 @@ suite('relative-time', function () {
     })
   })
 
+  suite('[absolute-format="compact"]', function () {
+    const todayDateTime = '2026-11-03T15:04:00.000Z'
+    const yesterdayDateTime = '2026-11-02T15:04:00.000Z'
+    const reference = '2026-11-03T16:04:00.000Z'
+    const display = el => el.shadowRoot.textContent
+
+    function render(attributes = {}, parent = fixture) {
+      const el = document.createElement('relative-time')
+      for (const [name, value] of Object.entries({
+        lang: 'en-US',
+        'time-zone': 'UTC',
+        datetime: todayDateTime,
+        format: 'datetime',
+        'absolute-format': 'compact',
+        ...attributes,
+      })) {
+        if (value !== undefined) el.setAttribute(name, value)
+      }
+      parent.append(el)
+      return el
+    }
+
+    teardown(() => {
+      document.documentElement.removeAttribute('data-prefers-absolute-time')
+    })
+
+    test('renders today with a time and other days with an unpadded date including the year', async () => {
+      freezeTime(new Date(reference))
+      const el = render()
+      assert.equal(display(el), 'today at 3:04 PM')
+      el.datetime = yesterdayDateTime
+      await Promise.resolve()
+      assert.equal(display(el), 'Nov 2, 2026')
+      el.datetime = '2026-11-04T15:04:00.000Z'
+      await Promise.resolve()
+      assert.equal(display(el), 'Nov 4, 2026')
+    })
+
+    for (const preferenceTarget of ['documentElement', 'body']) {
+      test(`uses the same preset when ${preferenceTarget} prefers absolute time`, async () => {
+        freezeTime(new Date(reference))
+        document[preferenceTarget].setAttribute('data-prefers-absolute-time', 'true')
+        const el = render({format: 'relative'})
+        assert.equal(display(el), 'today at 3:04 PM')
+        el.datetime = yesterdayDateTime
+        await Promise.resolve()
+        assert.equal(display(el), 'Nov 2, 2026')
+      })
+    }
+
+    test('only applies the preset after resolving the relative threshold and tense', async () => {
+      freezeTime(new Date(reference))
+      const el = render({format: 'relative'})
+      assert.equal(display(el), '1 hour ago')
+      el.threshold = 'PT30M'
+      await Promise.resolve()
+      assert.equal(display(el), 'today at 3:04 PM')
+      el.tense = 'past'
+      await Promise.resolve()
+      assert.equal(display(el), '1 hour ago')
+    })
+
+    test('leaves duration and elapsed output unchanged even with the absolute preference', () => {
+      freezeTime(new Date(reference))
+      document.body.setAttribute('data-prefers-absolute-time', 'true')
+      assert.equal(display(render({format: 'duration'})), '1 hour')
+      assert.equal(display(render({format: 'elapsed'})), '1h')
+    })
+
+    test('leaves micro duration and tense output unchanged unless it resolves to absolute', async () => {
+      freezeTime(new Date(reference))
+      const el = render({format: 'micro'})
+      assert.equal(display(el), '1h')
+      el.tense = 'past'
+      await Promise.resolve()
+      assert.equal(display(el), '1h ago')
+      document.body.setAttribute('data-prefers-absolute-time', 'true')
+      el.update()
+      assert.equal(display(el), 'today at 3:04 PM')
+      document.body.removeAttribute('data-prefers-absolute-time')
+      el.threshold = 'PT30M'
+      await Promise.resolve()
+      assert.equal(display(el), 'today at 3:04 PM')
+    })
+
+    test('updates when the property or attribute changes, and ignores empty and unknown values', async () => {
+      freezeTime(new Date(reference))
+      const el = render({'absolute-format': undefined})
+      const original = display(el)
+      assert.isUndefined(el.absoluteFormat)
+      assert.notEqual(original, 'today at 3:04 PM')
+
+      for (const value of ['', 'unknown']) {
+        el.setAttribute('absolute-format', value)
+        await Promise.resolve()
+        assert.isUndefined(el.absoluteFormat)
+        assert.equal(display(el), original)
+      }
+
+      el.absoluteFormat = 'compact'
+      await Promise.resolve()
+      assert.equal(el.getAttribute('absolute-format'), 'compact')
+      assert.equal(display(el), 'today at 3:04 PM')
+      el.removeAttribute('absolute-format')
+      await Promise.resolve()
+      assert.equal(display(el), original)
+
+      el.setAttribute('absolute-format', 'compact')
+      await Promise.resolve()
+      assert.equal(el.absoluteFormat, 'compact')
+      assert.equal(display(el), 'today at 3:04 PM')
+      el.absoluteFormat = undefined
+      await Promise.resolve()
+      assert.isFalse(el.hasAttribute('absolute-format'))
+      assert.equal(display(el), original)
+    })
+
+    test('overrides display options and hour cycle without changing the datetime or full title', async () => {
+      freezeTime(new Date(reference))
+      const parent = document.createElement('div')
+      parent.setAttribute('hour-cycle', 'h23')
+      fixture.append(parent)
+      const el = render(
+        {
+          'absolute-format': undefined,
+          prefix: 'Uploaded:',
+          'format-style': 'long',
+          weekday: 'long',
+          day: '2-digit',
+          month: 'long',
+          year: '2-digit',
+          hour: '2-digit',
+          minute: 'numeric',
+          second: 'numeric',
+          'time-zone-name': 'long',
+        },
+        parent,
+      )
+      const original = display(el)
+      const title = el.getAttribute('title')
+      assert.match(original, /^Uploaded:.*November.*15:04:00/)
+      assert.match(title, /Nov 3, 2026, 15:04 UTC/)
+      el.absoluteFormat = 'compact'
+      await Promise.resolve()
+      assert.equal(display(el), 'today at 3:04 PM', 'overrides inherited hour cycle')
+      el.setAttribute('hour-cycle', 'h23')
+      await Promise.resolve()
+      assert.equal(display(el), 'today at 3:04 PM', 'overrides explicit hour cycle')
+      assert.equal(el.getAttribute('title'), title)
+      assert.equal(el.getAttribute('datetime'), todayDateTime)
+
+      el.datetime = yesterdayDateTime
+      await Promise.resolve()
+      assert.equal(display(el), 'Nov 2, 2026')
+      el.datetime = todayDateTime
+      el.absoluteFormat = undefined
+      await Promise.resolve()
+      assert.equal(display(el), original)
+      assert.equal(el.getAttribute('title'), title)
+    })
+
+    test('preserves custom titles, no-title, and light DOM fallbacks for invalid dates', async () => {
+      freezeTime(new Date(reference))
+      const custom = render({title: 'Custom timestamp'})
+      const suppressed = render({'no-title': ''})
+      const invalid = render({datetime: 'Invalid', 'no-title': ''})
+      invalid.textContent = 'Server timestamp'
+      await Promise.resolve()
+
+      assert.equal(display(custom), 'today at 3:04 PM')
+      assert.equal(custom.title, 'Custom timestamp')
+      assert.equal(display(suppressed), 'today at 3:04 PM')
+      assert.isFalse(suppressed.hasAttribute('title'))
+      assert.equal(display(invalid), 'Server timestamp')
+      assert.isFalse(invalid.hasAttribute('title'))
+    })
+
+    test('uses the inherited display time zone rather than the browser or UTC day', async () => {
+      freezeTime(new Date('2026-11-04T03:30:00.000Z'))
+      const parent = document.createElement('div')
+      parent.setAttribute('time-zone', 'America/New_York')
+      fixture.append(parent)
+      const el = render({'time-zone': undefined}, parent)
+      assert.equal(display(el), 'today at 10:04 AM')
+      el.setAttribute('time-zone', 'UTC')
+      await Promise.resolve()
+      assert.equal(display(el), 'Nov 3, 2026')
+    })
+
+    for (const [lang, separator, timePrefix] of [
+      ['en-US', ' at '],
+      ['en-GB', ' at '],
+      ['de-DE', ' um '],
+      ['fr-FR', ' à '],
+      ['es-ES', ' a las '],
+      ['ca-ES', ', a les '],
+      ['ru-RU', ' в '],
+      ['vi-VN', ' ', 'lúc '],
+      ['ja-JP', ' '],
+      ['zh-CN', ' '],
+      ['zh-Hant-TW', ' '],
+      ['ko-KR', ' '],
+    ]) {
+      test(`uses the date/time pattern or a safe fallback for ${lang}`, () => {
+        freezeTime(new Date(reference))
+        const today = new Intl.RelativeTimeFormat(lang, {numeric: 'auto'}).format(0, 'day')
+        const time = new Intl.DateTimeFormat(lang, {
+          timeZone: 'UTC',
+          hourCycle: 'h12',
+          hour: 'numeric',
+          minute: '2-digit',
+        }).format(new Date(todayDateTime))
+
+        assert.equal(
+          display(render({lang})),
+          timePrefix ? `${timePrefix}${time}${separator}${today}` : `${today}${separator}${time}`,
+        )
+      })
+    }
+
+    test('preserves localized date order and digits', () => {
+      freezeTime(new Date(reference))
+      assert.equal(display(render({lang: 'ar-EG-u-nu-arab', datetime: yesterdayDateTime})), '٢ نوفمبر ٢٠٢٦')
+    })
+
+    for (const {
+      reason,
+      before,
+      datetime,
+      timeZone,
+      after,
+      initialText,
+      updatedText,
+      attributes,
+      prefersAbsoluteTime,
+      hourly,
+    } of [
+      {
+        reason: 'today (less than a minute old) to a date at midnight',
+        before: '2034-11-03T23:59:59.500Z',
+        datetime: '2034-11-03T23:59:30.000Z',
+        after: '2034-11-04T00:00:00.000Z',
+        initialText: 'today at 11:59 PM',
+        updatedText: 'Nov 3, 2034',
+      },
+      {
+        reason: 'today (less than an hour old) to a date at midnight',
+        before: '2035-11-03T23:59:30.000Z',
+        datetime: '2035-11-03T23:45:00.000Z',
+        after: '2035-11-04T00:00:00.000Z',
+        initialText: 'today at 11:45 PM',
+        updatedText: 'Nov 3, 2035',
+      },
+      {
+        reason: 'today to a date at midnight with hourly updates',
+        before: '2033-11-03T12:00:30.000Z',
+        datetime: '2033-11-03T12:00:00.000Z',
+        after: '2033-11-04T00:00:00.000Z',
+        initialText: 'today at 12:00 PM',
+        updatedText: 'Nov 3, 2033',
+        hourly: true,
+      },
+      {
+        reason: 'today (more than an hour old) to a date at midnight',
+        before: '2036-11-03T23:59:30.000Z',
+        datetime: '2036-11-03T15:04:00.000Z',
+        after: '2036-11-04T00:00:00.000Z',
+        initialText: 'today at 3:04 PM',
+        updatedText: 'Nov 3, 2036',
+      },
+      {
+        reason: 'a future date to today across New Year in the display zone',
+        before: '2037-01-01T04:59:30.000Z',
+        datetime: '2037-01-01T20:04:00.000Z',
+        timeZone: 'America/New_York',
+        after: '2037-01-01T05:00:00.000Z',
+        initialText: 'Jan 1, 2037',
+        updatedText: 'today at 3:04 PM',
+      },
+      {
+        reason: 'a future date to today when a DST jump skips midnight',
+        before: '2025-03-30T00:30:00.000Z',
+        datetime: '2025-03-30T03:04:00.000Z',
+        timeZone: 'America/Nuuk',
+        after: '2025-03-30T01:00:00.000Z',
+        initialText: 'Mar 30, 2025',
+        updatedText: 'today at 2:04 AM',
+      },
+      {
+        reason: 'a past date to today when Antarctica/Casey rolls back to the previous day',
+        before: '2010-03-04T14:30:00.000Z',
+        datetime: '2010-03-04T12:04:00.000Z',
+        timeZone: 'Antarctica/Casey',
+        after: '2010-03-04T15:00:00.000Z',
+        initialText: 'Mar 4, 2010',
+        updatedText: 'today at 11:04 PM',
+      },
+      {
+        reason: 'compact absolute text back to micro duration at its threshold',
+        before: '2038-11-03T16:00:00.000Z',
+        datetime: '2038-11-03T16:01:02.000Z',
+        after: '2038-11-03T16:00:02.000Z',
+        initialText: 'today at 4:01 PM',
+        updatedText: '1m',
+        attributes: {format: 'micro', threshold: 'PT1M'},
+      },
+      {
+        reason: 'recent threshold-derived compact text to a date at midnight with hourly updates',
+        before: '2039-11-03T12:00:30.000Z',
+        datetime: '2039-11-03T12:00:00.000Z',
+        after: '2039-11-04T00:00:00.000Z',
+        initialText: 'today at 12:00 PM',
+        updatedText: 'Nov 3, 2039',
+        attributes: {format: 'relative', threshold: 'PT10S'},
+        hourly: true,
+      },
+      {
+        reason: 'a future datetime today to a date at midnight with hourly updates',
+        before: '2040-11-03T12:00:00.000Z',
+        datetime: '2040-11-03T12:00:30.000Z',
+        after: '2040-11-04T00:00:00.000Z',
+        initialText: 'today at 12:00 PM',
+        updatedText: 'Nov 3, 2040',
+        hourly: true,
+      },
+      {
+        reason: 'a future preferred absolute time today to a date at midnight with hourly updates',
+        before: '2041-11-03T12:00:00.000Z',
+        datetime: '2041-11-03T12:30:00.000Z',
+        after: '2041-11-04T00:00:00.000Z',
+        initialText: 'today at 12:30 PM',
+        updatedText: 'Nov 3, 2041',
+        attributes: {format: 'relative'},
+        prefersAbsoluteTime: true,
+        hourly: true,
+      },
+      {
+        reason: 'threshold-derived compact text to relative text at its threshold',
+        before: '2042-11-03T12:00:00.000Z',
+        datetime: '2042-11-03T12:10:10.000Z',
+        after: '2042-11-03T12:01:00.000Z',
+        initialText: 'today at 12:10 PM',
+        updatedText: 'in 9 minutes',
+        attributes: {format: 'relative', threshold: 'PT10M'},
+      },
+    ]) {
+      test(`automatically updates ${reason}`, async () => {
+        freezeTime(new Date(before))
+        if (prefersAbsoluteTime) document.documentElement.setAttribute('data-prefers-absolute-time', 'true')
+        const originalSetTimeout = window.setTimeout
+        let tick
+        let delay
+        globalThis.setTimeout = window.setTimeout = function (callback, ms) {
+          tick = callback
+          delay = ms
+          return 0
+        }
+        try {
+          const el = render({datetime, 'time-zone': timeZone ?? 'UTC', ...attributes})
+          await Promise.resolve()
+          assert.equal(display(el), initialText)
+          assert.isFunction(tick)
+          if (hourly) {
+            // Only the first delay comes from this element alone. Later ticks include other observed elements.
+            assert.equal(delay, 60 * 60 * 1000)
+            let now = Date.parse(before)
+            while (now < Date.parse(after)) {
+              const nextDelay = Math.min(60 * 60 * 1000, Date.parse(after) - now)
+              assert.isAtMost(delay, 60 * 60 * 1000)
+              now += nextDelay
+              Date.now = () => now
+              tick()
+            }
+          } else {
+            assert.equal(delay, Date.parse(after) - Date.parse(before))
+            Date.now = () => Date.parse(after)
+            tick()
+          }
+          assert.equal(display(el), updatedText)
+        } finally {
+          globalThis.setTimeout = window.setTimeout = originalSetTimeout
+        }
+      })
+    }
+  })
+
   suite('[aria-hidden]', async () => {
     test('[aria-hidden="true"] applies to shadow root', async () => {
       const now = new Date().toISOString()

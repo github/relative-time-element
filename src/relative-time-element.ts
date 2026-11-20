@@ -18,6 +18,7 @@ export type DeprecatedFormat = 'auto' | 'micro' | 'elapsed'
 export type ResolvedFormat = 'duration' | 'relative' | 'datetime'
 export type Format = DeprecatedFormat | ResolvedFormat
 export type FormatStyle = 'long' | 'short' | 'narrow'
+export type AbsoluteFormat = 'compact'
 export type Tense = 'auto' | 'past' | 'future'
 
 const emptyDuration = new Duration()
@@ -35,7 +36,10 @@ export class RelativeTimeUpdatedEvent extends Event {
   }
 }
 
-function getUnitFactor(el: RelativeTimeElement): number {
+// Compact text changes at the day boundary. Text from a threshold can also turn relative.
+type CompactAbsolute = false | 'day' | 'threshold'
+
+function getUnitFactor(el: RelativeTimeElement, compactAbsolute: CompactAbsolute): number {
   const date = el.date
   if (!date) return Infinity
   const now = Date.now()
@@ -53,8 +57,11 @@ function getUnitFactor(el: RelativeTimeElement): number {
     factor = 1000
   } else if (ms < 60 * 60 * 1000) {
     factor = 60 * 1000
-  } else {
-    // Day rounding follows the calendar, so labels like "yesterday" change at midnight
+  }
+  if (compactAbsolute === 'day' || (compactAbsolute && date.getTime() <= now)) {
+    factor = msUntilNextDay(now, el.timeZone)
+  } else if (compactAbsolute || ms >= 60 * 60 * 1000) {
+    // Calendar labels change at the day boundary, even for recent compact timestamps.
     factor = Math.min(factor, msUntilNextDay(now, el.timeZone))
   }
   const threshold = getExplicitThreshold(el)
@@ -86,6 +93,65 @@ function getExplicitThreshold(el: RelativeTimeElement): string | null {
   return threshold && isDuration(threshold) ? threshold : null
 }
 
+function getAffixes(formatter: Intl.DateTimeFormat, date: Date): readonly [string, string] {
+  const parts = formatter.formatToParts(date)
+  const first = parts[0]
+  const last = parts[parts.length - 1]
+  return [first?.type === 'literal' ? first.value : '', last?.type === 'literal' ? last.value : '']
+}
+
+function stripAffixes(text: string, start: string, end: string): string | undefined {
+  if (text.startsWith(start) && text.endsWith(end) && start.length + end.length <= text.length) {
+    return text.slice(start.length, text.length - end.length)
+  }
+}
+
+function formatCompactToday(date: Date, locale: string, timeZone: string | undefined): string {
+  const options = {timeZone, hourCycle: 'h12'} as const
+  const today = relativeTimeFormat(locale, {numeric: 'auto'}).format(0, 'day')
+  const time = dateTimeFormat(locale, {...options, hour: 'numeric', minute: '2-digit'}).format(date)
+  const fallback = `${today} ${time}`
+  const pattern = dateTimeFormat(locale, {...options, dateStyle: 'long', timeStyle: 'short'})
+  if (/^(ja|zh|yue)(-|$)/.test(pattern.resolvedOptions().locale)) return fallback
+
+  const parts = pattern.formatToParts(date)
+  if (parts.some(part => part.type === 'unknown')) return fallback
+  const fields = parts.flatMap(({type}, index) =>
+    type === 'literal' ? [] : [{index, isTime: type === 'hour' || type === 'minute' || type === 'dayPeriod'}],
+  )
+  if (!fields.length) return fallback
+
+  // Find two contiguous groups of fields (date and time), in either order.
+  const timeFirst = fields[0].isTime
+  const boundary = fields.findIndex(field => field.isTime !== timeFirst)
+  if (boundary < 1 || fields.slice(boundary).some(field => field.isTime === timeFirst)) return fallback
+
+  // Standalone fields can have their own affixes, e.g. the Korean day suffix "일".
+  // Remove only matching affixes, leaving the combined pattern's connector literals intact.
+  const dateAffixes = getAffixes(dateTimeFormat(locale, {...options, dateStyle: 'long'}), date)
+  const timeAffixes = getAffixes(dateTimeFormat(locale, {...options, timeStyle: 'short'}), date)
+  const [first, second] = timeFirst ? [timeAffixes, dateAffixes] : [dateAffixes, timeAffixes]
+  const literals = (start: number, end?: number) =>
+    parts
+      .slice(start, end)
+      .map(part => part.value)
+      .join('')
+  const prefix = stripAffixes(literals(0, fields[0].index), '', first[0])
+  const separator = stripAffixes(literals(fields[boundary - 1].index + 1, fields[boundary].index), first[1], second[0])
+  const suffix = stripAffixes(literals(fields[fields.length - 1].index + 1), second[1], '')
+  // An unmatched letter or number attached to a field may be part of that field, not a connector.
+  if (
+    prefix === undefined ||
+    !separator ||
+    suffix === undefined ||
+    /^[\p{L}\p{M}\p{N}]|[\p{L}\p{M}\p{N}]$/u.test(separator)
+  ) {
+    return fallback
+  }
+
+  return timeFirst ? `${prefix}${time}${separator}${today}${suffix}` : `${prefix}${today}${separator}${time}${suffix}`
+}
+
 // Determine whether the user has a 12 (vs. 24) hour cycle preference via the
 // browser's resolved DateTimeFormat options. The result is environment-constant,
 // so it is computed once and memoized.
@@ -111,20 +177,21 @@ if (typeof window !== 'undefined' && typeof window.addEventListener === 'functio
 }
 
 const dateObserver = new (class {
-  elements: Set<RelativeTimeElement> = new Set()
+  elements = new Map<RelativeTimeElement, CompactAbsolute>()
   time = Infinity
   updating = false
 
-  observe(element: RelativeTimeElement) {
-    this.elements.add(element)
+  observe(element: RelativeTimeElement, compactAbsolute: CompactAbsolute) {
+    this.elements.set(element, compactAbsolute)
     if (this.updating) return
     const date = element.date
     if (date) {
-      const ms = getUnitFactor(element)
-      const time = Date.now() + ms
+      const ms = getUnitFactor(element, compactAbsolute)
+      const delay = compactAbsolute ? Math.min(60 * 60 * 1000, ms) : ms
+      const time = Date.now() + delay
       if (time < this.time || this.time <= Date.now()) {
         clearTimeout(this.timer)
-        this.timer = setTimeout(() => this.update(), ms)
+        this.timer = setTimeout(() => this.update(), delay)
         this.time = time
       }
     }
@@ -138,24 +205,31 @@ const dateObserver = new (class {
   timer: ReturnType<typeof setTimeout> = -1 as unknown as ReturnType<typeof setTimeout>
   update() {
     clearTimeout(this.timer)
+    this.time = Infinity
     if (!this.elements.size) return
 
     let nearestDistance = Infinity
     this.updating = true
     try {
-      for (const timeEl of this.elements) {
-        nearestDistance = Math.min(nearestDistance, getUnitFactor(timeEl))
+      for (const timeEl of this.elements.keys()) {
         timeEl.update()
+        const compactAbsolute = this.elements.get(timeEl)
+        if (compactAbsolute !== undefined)
+          nearestDistance = Math.min(nearestDistance, getUnitFactor(timeEl, compactAbsolute))
       }
     } finally {
       this.updating = false
     }
-    this.time = Math.min(60 * 60 * 1000, nearestDistance)
-    this.timer = setTimeout(() => this.update(), this.time)
-    this.time += Date.now()
+    if (!this.elements.size) return
+    const ms = Math.min(60 * 60 * 1000, nearestDistance)
+    this.timer = setTimeout(() => this.update(), ms)
+    this.time = Date.now() + ms
   }
 })()
 
+/**
+ * @attr {'compact'} absolute-format
+ */
 export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFormatOptions {
   static define(tag = 'relative-time', registry = customElements) {
     registry.define(tag, this)
@@ -214,6 +288,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       'precision',
       'format',
       'format-style',
+      'absolute-format',
       'no-title',
       'datetime',
       'lang',
@@ -349,8 +424,12 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     return `${this.prefix} ${formatter.format(date)}`.trim()
   }
 
-  #isToday(date: Date, locale: string, timeZone: string | undefined): boolean {
-    const now = new Date()
+  #getCompactAbsoluteTimeFormat(date: Date, locale: string, timeZone: string | undefined, isToday: boolean): string {
+    if (isToday) return formatCompactToday(date, locale, timeZone)
+    return dateTimeFormat(locale, {timeZone, month: 'short', day: 'numeric', year: 'numeric'}).format(date)
+  }
+
+  #isToday(date: Date, locale: string, timeZone: string | undefined, now = Date.now()): boolean {
     const formatter = dateTimeFormat(locale, {
       timeZone,
       year: 'numeric',
@@ -623,6 +702,23 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
     this.setAttribute('format', value)
   }
 
+  /**
+   * Optional preset for resolved absolute text. Overrides display fields and the hour cycle, not the title.
+   * @attr absolute-format
+   * @reflect
+   */
+  get absoluteFormat(): AbsoluteFormat | undefined {
+    if (this.getAttribute('absolute-format') === 'compact') return 'compact'
+  }
+
+  set absoluteFormat(value: AbsoluteFormat | undefined) {
+    if (value === undefined) {
+      this.removeAttribute('absolute-format')
+    } else {
+      this.setAttribute('absolute-format', value)
+    }
+  }
+
   get formatStyle(): FormatStyle {
     const formatStyle = this.getAttribute('format-style')
     if (formatStyle === 'long') return 'long'
@@ -720,7 +816,12 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
 
     // Experimental: Enable absolute time if users prefers it, but never for `duration` format
     const displayUserPreferredAbsoluteTime = this.#shouldDisplayUserPreferredAbsoluteTime(format)
-    if (displayUserPreferredAbsoluteTime) {
+    const compactAbsolute =
+      this.absoluteFormat === 'compact' && (displayUserPreferredAbsoluteTime || format === 'datetime')
+    const compactToday = compactAbsolute && this.#isToday(date, locale, timeZone, now)
+    if (compactAbsolute) {
+      newText = this.#getCompactAbsoluteTimeFormat(date, locale, timeZone, compactToday)
+    } else if (displayUserPreferredAbsoluteTime) {
       newText = this.#getUserPreferredAbsoluteTimeFormat(date, locale, timeZone, hourCycle)
     } else {
       if (format === 'duration') {
@@ -747,13 +848,23 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
       this.dispatchEvent(new RelativeTimeUpdatedEvent(oldText, newText, oldTitle, newTitle))
     }
 
-    const shouldObserve =
-      (!displayUserPreferredAbsoluteTime && (format === 'relative' || format === 'duration')) ||
-      (this.format === 'micro' && Boolean(this.#getExplicitThreshold()) && date.getTime() > now) ||
-      (displayUserPreferredAbsoluteTime &&
-        (this.#isToday(date, locale, timeZone) || this.#isCurrentYear(date, locale, timeZone)))
+    const isFuture = date.getTime() > now
+    const compactBoundary =
+      compactAbsolute &&
+      !compactToday &&
+      !isFuture &&
+      this.#isToday(date, locale, timeZone, now + msUntilNextDay(now, timeZone))
+    const shouldObserve = compactAbsolute
+      ? compactToday || isFuture || compactBoundary
+      : (!displayUserPreferredAbsoluteTime && (format === 'relative' || format === 'duration')) ||
+        (this.format === 'micro' && Boolean(this.#getExplicitThreshold()) && isFuture) ||
+        (displayUserPreferredAbsoluteTime &&
+          (this.#isToday(date, locale, timeZone) || this.#isCurrentYear(date, locale, timeZone)))
     if (shouldObserve) {
-      dateObserver.observe(this)
+      dateObserver.observe(
+        this,
+        compactAbsolute && (displayUserPreferredAbsoluteTime || this.format === 'datetime' ? 'day' : 'threshold'),
+      )
     } else {
       dateObserver.unobserve(this)
     }
