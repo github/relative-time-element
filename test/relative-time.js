@@ -2705,14 +2705,7 @@ suite('relative-time', function () {
 
     test('preserves localized date order and digits', () => {
       freezeTime(new Date(reference))
-      const lang = 'ar-EG-u-nu-arab'
-      const localized = new Intl.DateTimeFormat(lang, {
-        timeZone: 'UTC',
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-      }).format(new Date(yesterdayDateTime))
-      assert.equal(display(render({lang, datetime: yesterdayDateTime})), localized)
+      assert.equal(display(render({lang: 'ar-EG-u-nu-arab', datetime: yesterdayDateTime})), '٢ نوفمبر ٢٠٢٦')
     })
 
     for (const {
