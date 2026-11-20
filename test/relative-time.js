@@ -2802,6 +2802,8 @@ suite('relative-time', function () {
           assert.equal(display(el), initialText)
           assert.isFunction(tick)
           if (hourly) {
+            // Only the first delay comes from this element alone. Later ticks include other observed elements.
+            assert.equal(delay, 60 * 60 * 1000)
             let now = Date.parse(before)
             while (now < Date.parse(after)) {
               const nextDelay = Math.min(60 * 60 * 1000, Date.parse(after) - now)
