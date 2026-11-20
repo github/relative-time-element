@@ -2,31 +2,28 @@
 
 ## Development
 
+Use Node.js 24 LTS, the same version used by CI and publishing.
+
 Clone the repository from GitHub.
 
 ```
-$ git clone https://github.com/github/time-elements
+$ git clone https://github.com/github/relative-time-element
 ```
 
-Now just cd into the directory and run `make` to install the development dependencies.
+Now cd into the directory and install the development dependencies.
 
 ```
-$ cd time-elements/
-$ make
+$ cd relative-time-element/
+$ npm ci
+$ npx playwright install chromium
 ```
 
 ## Testing
 
-Lint tools and headless tests can be ran via `make`.
+Run lint tools, build the package, and run the headless browser tests.
 
 ```
-$ make test
-```
-
-The QUnit test suite can also be ran in the browser.
-
-```
-$ open test/test.html
+$ npm test
 ```
 
 ## Publishing
