@@ -211,15 +211,42 @@ const dateObserver = new (class {
     let nearestDistance = Infinity
     this.updating = true
     try {
+      // An element that fails is not visited again this tick, even if it rejoined the observer by moving
+      // itself, so it can't keep the tick from finishing
+      let failed: Set<RelativeTimeElement> | undefined
       for (const timeEl of this.elements.keys()) {
-        if (!timeEl.isConnected) {
-          this.elements.delete(timeEl)
-          continue
+        if (failed?.has(timeEl)) continue
+        // One element failing must not stop the others updating or the timer rescheduling. The error
+        // is rethrown from a task of its own so it is still reported, uncaught, exactly once.
+        // (`setTimeout` rather than `reportError`, which older browsers and non-browser hosts lack.)
+        try {
+          if (!timeEl.isConnected) {
+            this.elements.delete(timeEl)
+            continue
+          }
+          const previousCompactAbsolute = this.elements.get(timeEl)
+          const previousFactor =
+            previousCompactAbsolute === undefined ? undefined : getUnitFactor(timeEl, previousCompactAbsolute)
+          try {
+            timeEl.update()
+          } catch (error) {
+            ;(failed ??= new Set()).add(timeEl)
+            setTimeout(() => {
+              throw error
+            })
+          }
+          const compactAbsolute = this.elements.get(timeEl)
+          if (compactAbsolute !== undefined) {
+            const factor =
+              compactAbsolute === previousCompactAbsolute ? previousFactor : getUnitFactor(timeEl, compactAbsolute)
+            if (factor !== undefined) nearestDistance = Math.min(nearestDistance, factor)
+          }
+        } catch (error) {
+          ;(failed ??= new Set()).add(timeEl)
+          setTimeout(() => {
+            throw error
+          })
         }
-        timeEl.update()
-        const compactAbsolute = this.elements.get(timeEl)
-        if (compactAbsolute !== undefined)
-          nearestDistance = Math.min(nearestDistance, getUnitFactor(timeEl, compactAbsolute))
       }
     } finally {
       this.updating = false
