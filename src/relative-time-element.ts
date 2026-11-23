@@ -212,6 +212,10 @@ const dateObserver = new (class {
     this.updating = true
     try {
       for (const timeEl of this.elements.keys()) {
+        if (!timeEl.isConnected) {
+          this.elements.delete(timeEl)
+          continue
+        }
         timeEl.update()
         const compactAbsolute = this.elements.get(timeEl)
         if (compactAbsolute !== undefined)
@@ -860,7 +864,7 @@ export class RelativeTimeElement extends HTMLElement implements Intl.DateTimeFor
         (this.format === 'micro' && Boolean(this.#getExplicitThreshold()) && isFuture) ||
         (displayUserPreferredAbsoluteTime &&
           (this.#isToday(date, locale, timeZone) || this.#isCurrentYear(date, locale, timeZone)))
-    if (shouldObserve) {
+    if (shouldObserve && this.isConnected) {
       dateObserver.observe(
         this,
         compactAbsolute && (displayUserPreferredAbsoluteTime || this.format === 'datetime' ? 'day' : 'threshold'),
