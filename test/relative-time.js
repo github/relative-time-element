@@ -3828,8 +3828,7 @@ suite('relative-time', function () {
       Map.prototype.set = originalMapSet
     })
 
-    // The observer's Map is module-private, so detect membership by recording every Map that a
-    // RelativeTimeElement is added to and checking it afterwards.
+    // The observer's Map is module-private, so record the maps that use a RelativeTimeElement as a key.
     function isObserved(el) {
       return [...observedMaps].some(map => map.has(el))
     }
@@ -3903,7 +3902,7 @@ suite('relative-time', function () {
 
         // Force a detached element into the Map as if it had been retained before removal.
         const map = [...observedMaps].find(candidate => candidate.has(connected))
-        originalMapSet.call(map, detached, false)
+        originalMapSet.call(map, detached, map.get(connected))
         detached.setAttribute('datetime', '2099-12-31T23:57:00.000Z')
         let detachedUpdates = 0
         const update = detached.update
